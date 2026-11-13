@@ -37,6 +37,8 @@ import pandas as pd
 ROOT = Path(__file__).parent
 STATE_FILE = ROOT / "docs" / "state.json"
 SYMBOLS_FILE = ROOT / "data" / "symbols.txt"
+NAMES_FILE = ROOT / "data" / "names.json"      # ticker -> company name
+TRADES_CSV = ROOT / "docs" / "trades.csv"      # permanent log of every buy and sell
 IST = timezone(timedelta(hours=5, minutes=30))
 
 STARTING_CAPITAL = 1_000_000.0  # ₹10 lakh fake money
@@ -89,11 +91,17 @@ def refresh_symbols() -> int:
             if len(syms) > 500:
                 SYMBOLS_FILE.parent.mkdir(exist_ok=True)
                 SYMBOLS_FILE.write_text("\n".join(syms) + "\n")
+                names = {row["SYMBOL"]: row.get("NAME OF COMPANY", "") for row in rows if row.get("SERIES") == "EQ"}
+                NAMES_FILE.write_text(json.dumps(names, indent=0, sort_keys=True))
                 print(f"Saved {len(syms)} symbols from {url}")
                 return len(syms)
         except Exception as e:  # noqa: BLE001
             print(f"Could not fetch {url}: {e}")
     return 0
+
+
+def company_names() -> dict:
+    return json.loads(NAMES_FILE.read_text()) if NAMES_FILE.exists() else {}
 
 
 def all_tickers(demo=False) -> list[str]:
@@ -266,6 +274,13 @@ def load_state() -> dict:
 def save_state(state: dict) -> None:
     STATE_FILE.parent.mkdir(exist_ok=True)
     STATE_FILE.write_text(json.dumps(state, indent=1))
+    # every trade ever made, one per line, with its exact timestamp (IST)
+    with TRADES_CSV.open("w", newline="") as f:
+        w = csv.writer(f)
+        w.writerow(["time_ist", "side", "ticker", "company", "qty", "price", "value", "fee"])
+        for t in state["trades"]:
+            w.writerow([t["time"], t["side"], t["ticker"], t.get("name", ""), t["qty"], t["price"],
+                        t.get("value", round(t["qty"] * t["price"], 2)), t["fee"]])
 
 
 # ---------------------------------------------------------------- execution
@@ -277,6 +292,8 @@ def trade(state, ticker, qty, price, ts):
     pos = state["positions"].get(ticker, {"qty": 0, "avg_price": 0.0})
     if qty > 0:
         pos["avg_price"] = (pos["qty"] * pos["avg_price"] + value) / (pos["qty"] + qty)
+        pos.setdefault("bought_at", ts)   # when this holding was first bought
+        pos["last_buy"] = ts              # most recent top-up
     pos["qty"] += qty
     if pos["qty"] == 0:
         state["positions"].pop(ticker, None)
@@ -284,7 +301,8 @@ def trade(state, ticker, qty, price, ts):
         state["positions"][ticker] = pos
     state["trades"].append({"time": ts, "ticker": ticker.replace(".NS", ""),
                             "side": "BUY" if qty > 0 else "SELL", "qty": abs(qty),
-                            "price": round(price, 2), "fee": round(fee, 2)})
+                            "price": round(price, 2), "value": round(abs(value), 2),
+                            "fee": round(fee, 2)})
 
 
 def portfolio_value(state, last):
@@ -372,6 +390,9 @@ def main():
                 state.update(benchmark=sym, benchmark_name=name, benchmark_start=float(last[sym]))
                 break
     bsym = state.get("benchmark")
+    names = company_names()
+    for t in state["trades"]:
+        t.setdefault("name", names.get(t["ticker"], ""))
     value = portfolio_value(state, last)
     bench = float(last[bsym]) if bsym and pd.notna(last.get(bsym)) else None
     bench_pct = (bench / state["benchmark_start"] - 1) * 100 if bench and state["benchmark_start"] else None
@@ -381,7 +402,8 @@ def main():
         "benchmark_pct": round(bench_pct, 3) if bench_pct is not None else None,
     })
     state["holdings"] = [{
-        "ticker": t.replace(".NS", ""), "qty": p["qty"],
+        "ticker": t.replace(".NS", ""), "name": names.get(t.replace(".NS", ""), ""), "qty": p["qty"],
+        "bought_at": p.get("bought_at"), "last_buy": p.get("last_buy"),
         "avg_price": round(p["avg_price"], 2), "price": round(float(last[t]), 2),
         "value": round(p["qty"] * float(last[t]), 2),
         "pnl_pct": round((float(last[t]) / p["avg_price"] - 1) * 100, 2),

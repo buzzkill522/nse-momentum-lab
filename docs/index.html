@@ -6,84 +6,190 @@
 <title>NSE Momentum Lab</title>
 <script src="chart.umd.js"></script>
 <style>
-  :root { --bg:#f7f7f5; --card:#fff; --fg:#1a1a1a; --muted:#6b6b6b; --line:#e4e4e0;
-          --up:#0a8a4a; --down:#c4322b; --accent:#2f5bd3; --alt:#b7791f; }
+  :root { --bg:#f6f6f3; --card:#fff; --fg:#191919; --muted:#6a6a6a; --line:#e5e5e0;
+          --up:#0a8a4a; --down:#c4322b; --upbg:#e6f4ec; --downbg:#fbe9e7;
+          --accent:#2f5bd3; --alt:#b7791f; --chip:#ecece7; }
   @media (prefers-color-scheme: dark) {
-    :root { --bg:#121212; --card:#1c1c1c; --fg:#ececec; --muted:#9a9a9a; --line:#2c2c2c;
-            --up:#3ccf7f; --down:#ff6b61; --accent:#7ea2ff; --alt:#e0b050; }
+    :root { --bg:#111; --card:#1b1b1b; --fg:#ededed; --muted:#9c9c9c; --line:#2d2d2d;
+            --up:#3ccf7f; --down:#ff6b61; --upbg:#143524; --downbg:#3f1b18;
+            --accent:#7ea2ff; --alt:#e0b050; --chip:#262626; }
   }
   * { box-sizing:border-box; }
   body { margin:0; background:var(--bg); color:var(--fg);
-         font:15px/1.5 system-ui, -apple-system, Segoe UI, sans-serif; }
-  main { max-width:1000px; margin:0 auto; padding:24px 16px 48px; }
-  h1 { font-size:22px; margin:0 0 4px; }
-  .sub { color:var(--muted); font-size:13px; }
-  .tiles { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:12px; margin-top:16px; }
-  .tile, .card { background:var(--card); border:1px solid var(--line); border-radius:10px; padding:14px 16px; }
-  .tile .k { color:var(--muted); font-size:12px; text-transform:uppercase; letter-spacing:.04em; }
-  .tile .v { font-size:22px; font-weight:600; font-variant-numeric:tabular-nums; }
-  .tile .n { color:var(--muted); font-size:12px; }
-  .card { margin-top:16px; }
-  .card h2 { font-size:15px; margin:0 0 10px; }
+         font:16px/1.5 system-ui, -apple-system, Segoe UI, sans-serif; }
+  main { max-width:920px; margin:0 auto; padding:20px 16px 56px; }
+  header { display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap; }
+  h1 { font-size:18px; margin:0; }
+  h2 { font-size:16px; margin:0 0 4px; }
+  .muted { color:var(--muted); } .small { font-size:13px; }
   .up { color:var(--up); } .down { color:var(--down); }
+  .num { font-variant-numeric:tabular-nums; }
+  .pill { display:inline-flex; align-items:center; gap:6px; font-size:13px; padding:3px 10px;
+          border-radius:99px; background:var(--chip); color:var(--muted); }
+  .pill i { width:8px; height:8px; border-radius:50%; background:var(--muted); }
+  .pill.open i { background:var(--up); }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:16px; margin-top:14px; }
+
+  /* headline */
+  .hero .label { font-size:13px; color:var(--muted); }
+  .hero .big { font-size:38px; font-weight:650; line-height:1.15; }
+  .hero .line { margin-top:6px; }
+  .tag { display:inline-block; padding:1px 8px; border-radius:6px; font-weight:600; }
+  .tag.up { background:var(--upbg); } .tag.down { background:var(--downbg); }
+  .facts { display:grid; grid-template-columns:repeat(auto-fit,minmax(130px,1fr)); gap:12px;
+           margin-top:14px; padding-top:14px; border-top:1px solid var(--line); }
+  .facts .k { font-size:12px; color:var(--muted); }
+  .facts .v { font-size:17px; font-weight:600; }
+
+  /* tabs */
+  nav { display:flex; gap:4px; margin-top:18px; overflow-x:auto; border-bottom:1px solid var(--line); }
+  nav button { font:inherit; font-size:15px; padding:10px 14px; background:none; border:0; color:var(--muted);
+               border-bottom:3px solid transparent; cursor:pointer; white-space:nowrap; }
+  nav button.on { color:var(--fg); border-bottom-color:var(--accent); font-weight:600; }
+  section { display:none; } section.on { display:block; }
+
+  /* controls */
+  .row { display:flex; gap:8px; align-items:center; flex-wrap:wrap; justify-content:space-between; }
+  .chips { display:flex; gap:6px; flex-wrap:wrap; }
+  .chips button, select, input[type=search], a.btn { font:inherit; font-size:14px; padding:6px 12px; border-radius:8px;
+           border:1px solid var(--line); background:var(--card); color:var(--fg); cursor:pointer; text-decoration:none; }
+  .chips button.on { background:var(--fg); color:var(--card); border-color:var(--fg); }
+  input[type=search] { cursor:text; min-width:0; flex:1 1 160px; }
+  .chartbox { position:relative; height:260px; margin-top:10px; }
+
+  /* lists */
+  .list { margin-top:8px; }
+  .item { display:flex; justify-content:space-between; gap:12px; padding:10px 0; border-bottom:1px solid var(--line); }
+  .item:last-child { border-bottom:0; }
+  .item .l { min-width:0; } .item .r { text-align:right; white-space:nowrap; }
+  .item .t { font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .item .s { font-size:13px; color:var(--muted); }
+  .side { display:inline-block; width:44px; text-align:center; font-size:12px; font-weight:700; border-radius:5px; padding:1px 0; margin-right:6px; }
+  .side.BUY { background:var(--upbg); color:var(--up); } .side.SELL { background:var(--downbg); color:var(--down); }
+  .day { margin:16px 0 0; font-size:13px; font-weight:600; color:var(--muted); }
+  .two { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+  @media (max-width:640px) { .two { grid-template-columns:1fr; } .hero .big { font-size:32px; } }
   .scroll { overflow-x:auto; }
-  table { width:100%; border-collapse:collapse; font-variant-numeric:tabular-nums; font-size:14px; }
-  th, td { text-align:right; padding:6px 8px; border-bottom:1px solid var(--line); white-space:nowrap; }
+  table { width:100%; border-collapse:collapse; font-size:14px; }
+  th, td { text-align:right; padding:7px 8px; border-bottom:1px solid var(--line); white-space:nowrap; }
   th:first-child, td:first-child { text-align:left; }
   th { color:var(--muted); font-weight:500; font-size:12px; }
-  .chartbox { position:relative; height:280px; }
-  .badge { display:inline-block; background:var(--accent); color:#fff; border-radius:4px; padding:0 6px; font-size:11px; vertical-align:middle; }
-  .section { margin:32px 0 0; font-size:17px; }
-  .notice { border-left:3px solid var(--accent); }
+  ol.steps { margin:8px 0 0; padding-left:20px; } ol.steps li { margin:6px 0; }
+  dl { margin:8px 0 0; } dt { font-weight:600; margin-top:10px; } dd { margin:0; color:var(--muted); }
+  .more { display:block; width:100%; margin-top:12px; }
 </style>
 </head>
 <body>
 <main>
-  <h1>NSE Momentum Lab <span class="badge">PAPER MONEY</span></h1>
-  <div class="sub" id="sub">Loading…</div>
+  <header>
+    <h1>NSE Momentum Lab <span class="muted small">· practice money, not real</span></h1>
+    <span class="pill" id="status"><i></i><span>Loading…</span></span>
+  </header>
 
-  <div id="live" hidden>
-    <div class="tiles">
-      <div class="tile"><div class="k">Portfolio value</div><div class="v" id="value">–</div><div class="n" id="started"></div></div>
-      <div class="tile"><div class="k">Total return</div><div class="v" id="ret">–</div><div class="n" id="retabs"></div></div>
-      <div class="tile"><div class="k">Today</div><div class="v" id="today">–</div><div class="n" id="todayabs"></div></div>
-      <div class="tile"><div class="k" id="benchk">Index</div><div class="v" id="bench">–</div><div class="n">same period</div></div>
-      <div class="tile"><div class="k">Invested</div><div class="v" id="inv">–</div><div class="n" id="cash"></div></div>
+  <div class="card hero" id="hero"></div>
+
+  <nav id="tabs">
+    <button data-t="overview">Overview</button>
+    <button data-t="holdings">Holdings</button>
+    <button data-t="trades">Trade log</button>
+    <button data-t="backtest">Past test</button>
+    <button data-t="how">How it works</button>
+  </nav>
+
+  <section id="overview">
+    <div class="card">
+      <div class="row"><h2>How it's going</h2>
+        <div class="chips" id="range"><button data-r="1">Today</button><button data-r="7">Week</button><button data-r="0">All</button></div></div>
+      <div class="small muted" id="chartnote"></div>
+      <div class="chartbox"><canvas id="chart"></canvas></div>
     </div>
-    <div class="card"><h2 id="charth">Return since start (%)</h2><div class="chartbox"><canvas id="chart"></canvas></div></div>
-    <div class="card"><h2 id="holdh">Holdings</h2><div class="scroll"><table id="hold"></table></div></div>
-    <div class="card"><h2>Recent trades</h2><div class="scroll"><table id="trades"></table></div></div>
-  </div>
-  <div class="card notice" id="waiting" hidden>
-    The bot has not traded yet. It starts on its own at the next market open
-    (Monday to Friday, 9:15 am IST) and this page fills in from then.
-  </div>
-
-  <div id="bt" hidden>
-    <h2 class="section">Backtest: how these rules would have done</h2>
-    <div class="sub" id="btsub"></div>
-    <div class="tiles">
-      <div class="tile"><div class="k">Per year</div><div class="v" id="b_yr">–</div><div class="n" id="b_yr_n"></div></div>
-      <div class="tile"><div class="k">Worst fall</div><div class="v down" id="b_dd">–</div><div class="n">from a peak</div></div>
-      <div class="tile"><div class="k">Months up</div><div class="v" id="b_um">–</div><div class="n" id="b_wm"></div></div>
-      <div class="tile"><div class="k">Worst year</div><div class="v" id="b_wy">–</div><div class="n" id="b_ly"></div></div>
+    <div class="two">
+      <div class="card"><h2>Doing best</h2><div class="list" id="best"></div></div>
+      <div class="card"><h2>Doing worst</h2><div class="list" id="worst"></div></div>
     </div>
-    <div class="card"><h2>Backtest growth (%)</h2><div class="chartbox"><canvas id="btchart"></canvas></div></div>
-    <div class="card"><h2>Year by year (%)</h2><div class="scroll"><table id="bttable"></table></div></div>
-  </div>
+    <div class="card"><div class="row"><h2>Latest trades</h2><a class="btn" href="#trades">See all</a></div><div class="list" id="latest"></div></div>
+  </section>
 
-  <div class="card sub" id="rules" hidden></div>
+  <section id="holdings">
+    <div class="card">
+      <div class="row"><h2 id="holdh">What the bot owns</h2>
+        <select id="hsort" aria-label="Sort holdings">
+          <option value="gain">Sort: biggest gain</option><option value="loss">Sort: biggest loss</option>
+          <option value="value">Sort: largest holding</option><option value="new">Sort: newest</option><option value="name">Sort: A to Z</option>
+        </select></div>
+      <div class="list" id="hold"></div>
+    </div>
+  </section>
+
+  <section id="trades">
+    <div class="card">
+      <div class="row"><h2>Every buy and sell</h2><a class="btn" href="trades.csv" download>Download as spreadsheet</a></div>
+      <div class="small muted" id="tcount"></div>
+      <div class="row" style="margin-top:10px">
+        <div class="chips" id="tside"><button data-s="">All</button><button data-s="BUY">Buys</button><button data-s="SELL">Sells</button></div>
+        <input type="search" id="tq" placeholder="Search a stock…" aria-label="Search trades by stock">
+      </div>
+      <div id="tlist"></div>
+    </div>
+  </section>
+
+  <section id="backtest">
+    <div class="card">
+      <h2>If the bot had run for the last 5 years</h2>
+      <div class="small muted" id="btsub"></div>
+      <div class="facts" id="btfacts"></div>
+    </div>
+    <div class="card"><h2>Growth over the test</h2><div class="chartbox"><canvas id="btchart"></canvas></div></div>
+    <div class="card"><h2>Year by year</h2><div class="scroll"><table id="bttable" class="num"></table></div></div>
+  </section>
+
+  <section id="how">
+    <div class="card"><h2>What the bot does</h2><ol class="steps" id="steps"></ol></div>
+    <div class="card"><h2>What the words mean</h2>
+      <dl>
+        <dt>Practice money</dt><dd>The bot starts with a pretend ₹10,00,000. No real orders are placed.</dd>
+        <dt>Total gain</dt><dd>How much the pretend portfolio is up or down since the start, after trading costs.</dd>
+        <dt>Index</dt><dd>The average of the market. If the bot's gain is higher than the index, it is beating the market.</dd>
+        <dt>Invested</dt><dd>The share of the money that is in stocks. The rest is kept as cash.</dd>
+        <dt>Times</dt><dd>All times are Indian Standard Time. Prices come from Yahoo Finance and can be about 15 minutes behind.</dd>
+      </dl>
+    </div>
+  </section>
 </main>
+
 <script>
 const $ = id => document.getElementById(id);
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 const inr = v => "₹" + Math.round(v).toLocaleString("en-IN");
-const pct = (v, d = 2) => v == null ? "–" : (v >= 0 ? "+" : "") + v.toFixed(d) + "%";
+const sinr = v => (v >= 0 ? "+" : "−") + inr(Math.abs(v));
+const pct = (v, d = 2) => v == null ? "–" : (v >= 0 ? "+" : "−") + Math.abs(v).toFixed(d) + "%";
 const cls = v => v == null ? "" : v >= 0 ? "up" : "down";
-const set = (id, txt, c) => { $(id).textContent = txt; if (c !== undefined) $(id).className = "v " + c; };
 const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
-const when = t => new Date(t).toLocaleString("en-IN", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
+const IST = { timeZone: "Asia/Kolkata" };
+const fDate = t => new Date(t).toLocaleDateString("en-IN", { ...IST, weekday: "short", day: "numeric", month: "short", year: "numeric" });
+const fDay = t => new Date(t).toLocaleDateString("en-IN", { ...IST, day: "numeric", month: "short" });
+const fTime = t => new Date(t).toLocaleTimeString("en-IN", { ...IST, hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: true });
+const fShort = t => new Date(t).toLocaleString("en-IN", { ...IST, day: "numeric", month: "short", hour: "numeric", minute: "2-digit", hour12: true });
 const get = f => fetch(f + "?t=" + Date.now()).then(r => r.ok ? r.json() : null).catch(() => null);
+const pretty = n => String(n || "").replace(/\b(Limited|Ltd\.?)$/i, "").trim();
+const store = { get: k => { try { return localStorage.getItem(k); } catch { return null; } }, set: (k, v) => { try { localStorage.setItem(k, v); } catch {} } };
+
+let S = null, B = null, range = 0, side = "", shown = 100;
 const charts = {};
+
+function ago(t) {
+  const m = Math.round((Date.now() - new Date(t)) / 60000);
+  if (m < 1) return "just now";
+  if (m < 60) return m + " min ago";
+  if (m < 1440) return Math.round(m / 60) + " hr ago";
+  return Math.round(m / 1440) + " days ago";
+}
+function marketOpen() {
+  const p = Object.fromEntries(new Intl.DateTimeFormat("en-GB", { ...IST, weekday: "short", hour: "2-digit", minute: "2-digit", hour12: false })
+    .formatToParts(new Date()).map(x => [x.type, x.value]));
+  const mins = +p.hour * 60 + +p.minute;
+  return !["Sat", "Sun"].includes(p.weekday) && mins >= 555 && mins <= 930;
+}
 
 function line(id, labels, sets) {
   if (!window.Chart) return;
@@ -93,87 +199,171 @@ function line(id, labels, sets) {
     data: { labels, datasets: sets.map(([label, data, color, dash]) =>
       ({ label, data, borderColor: css(color), borderWidth: 2, borderDash: dash ? [4, 4] : [], pointRadius: 0, tension: .2 })) },
     options: { maintainAspectRatio: false, animation: false, interaction: { mode: "index", intersect: false },
-      scales: { x: { ticks: { color: css("--muted"), maxTicksLimit: 7, maxRotation: 0 }, grid: { color: css("--line") } },
+      scales: { x: { ticks: { color: css("--muted"), maxTicksLimit: 6, maxRotation: 0 }, grid: { display: false } },
                 y: { ticks: { color: css("--muted"), callback: v => v + "%" }, grid: { color: css("--line") } } },
-      plugins: { legend: { labels: { color: css("--fg"), boxHeight: 2 } } } }
+      plugins: { legend: { labels: { color: css("--fg"), boxHeight: 2 } },
+                 tooltip: { callbacks: { label: c => `${c.dataset.label}: ${pct(c.parsed.y)}` } } } }
   });
 }
 
-function showLive(s) {
-  const H = s.history || [];
-  if (!H.length) { $("waiting").hidden = false; $("live").hidden = true; return false; }
-  $("live").hidden = false; $("waiting").hidden = true;
+/* ---------- headline ---------- */
+function hero() {
+  const open = marketOpen();
+  $("status").className = "pill" + (open ? " open" : "");
+  const H = S && S.history || [];
+  if (!H.length) {
+    $("status").lastElementChild.textContent = open ? "Market open" : "Market closed";
+    $("hero").innerHTML = `<div class="label">Practice portfolio</div><div class="big num">₹10,00,000</div>
+      <div class="line">The bot has not traded yet. It starts by itself at the next market open
+      (Monday to Friday, 9:15 am India time) and this page fills in from then.</div>`;
+    return;
+  }
   const last = H.at(-1), day = t => t.slice(0, 10);
   const prev = [...H].reverse().find(h => day(h.time) !== day(last.time));
-  const base = prev ? prev.value : s.starting_capital;
-  const dchg = (last.value / base - 1) * 100;
-  const invested = (s.holdings || []).reduce((a, h) => a + h.value, 0);
-  const days = new Set(H.map(h => day(h.time))).size;
-  const bname = s.benchmark_name || "Index";
-
-  set("value", inr(last.value));
-  $("started").textContent = `from ${inr(s.starting_capital)} · day ${days}`;
-  set("ret", pct(last.pct), cls(last.pct));
-  $("retabs").textContent = (last.value >= s.starting_capital ? "+" : "−") + inr(Math.abs(last.value - s.starting_capital));
-  set("today", pct(dchg), cls(dchg));
-  $("todayabs").textContent = (last.value >= base ? "+" : "−") + inr(Math.abs(last.value - base));
-  set("bench", pct(last.benchmark_pct), cls(last.benchmark_pct));
-  $("benchk").textContent = bname;
-  set("inv", Math.round(invested / last.value * 100) + "%");
-  $("cash").textContent = inr(s.cash) + " in cash";
-  $("charth").textContent = `Return since start vs ${bname} (%)`;
-  line("chart", H.map(h => when(h.time)),
-    [["Bot", H.map(h => h.pct), "--accent"], [bname, H.map(h => h.benchmark_pct), "--muted", true]]);
-
-  const hold = [...(s.holdings || [])].sort((a, b) => b.pnl_pct - a.pnl_pct);
-  $("holdh").textContent = `Holdings (${hold.length})`;
-  $("hold").innerHTML = hold.length
-    ? "<tr><th>Stock</th><th>Qty</th><th>Bought at</th><th>Now</th><th>Value</th><th>Gain</th></tr>" +
-      hold.map(h => `<tr><td>${h.ticker}</td><td>${h.qty}</td><td>${h.avg_price.toFixed(2)}</td><td>${h.price.toFixed(2)}</td><td>${inr(h.value)}</td><td class="${cls(h.pnl_pct)}">${pct(h.pnl_pct)}</td></tr>`).join("")
-    : "<tr><td>All cash right now.</td></tr>";
-  const T = s.trades || [];
-  $("trades").innerHTML = T.length
-    ? "<tr><th>Time</th><th>Side</th><th>Stock</th><th>Qty</th><th>Price</th></tr>" +
-      T.slice(-30).reverse().map(t => `<tr><td>${when(t.time)}</td><td class="${t.side === "BUY" ? "up" : "down"}">${t.side}</td><td>${t.ticker}</td><td>${t.qty}</td><td>${t.price.toFixed(2)}</td></tr>`).join("")
-    : "<tr><td>No trades yet.</td></tr>";
-  return true;
+  const base = prev ? prev.value : S.starting_capital;
+  const total = last.value - S.starting_capital, today = last.value - base;
+  const invested = (S.holdings || []).reduce((a, h) => a + h.value, 0);
+  const diff = last.benchmark_pct == null ? null : last.pct - last.benchmark_pct;
+  $("status").lastElementChild.textContent = (open ? "Market open" : "Market closed") + " · updated " + ago(S.updated_at);
+  $("hero").innerHTML = `
+    <div class="label">Practice portfolio is worth${S.demo ? " (DEMO DATA)" : ""}</div>
+    <div class="big num">${inr(last.value)}</div>
+    <div class="line num"><span class="tag ${cls(total)}">${sinr(total)} (${pct(last.pct)})</span>
+      <span class="muted">since ${fDay(S.started_at)}</span></div>
+    <div class="facts num">
+      <div><div class="k">Today</div><div class="v ${cls(today)}">${sinr(today)} <span class="small">(${pct((last.value / base - 1) * 100)})</span></div></div>
+      <div><div class="k">${esc(S.benchmark_name || "Index")}, same period</div><div class="v">${pct(last.benchmark_pct)}</div>
+        <div class="small ${cls(diff)}">${diff == null ? "" : "bot is " + Math.abs(diff).toFixed(2) + " points " + (diff >= 0 ? "ahead" : "behind")}</div></div>
+      <div><div class="k">Invested in stocks</div><div class="v">${Math.round(invested / last.value * 100)}%</div>
+        <div class="small muted">${(S.holdings || []).length} stocks</div></div>
+      <div><div class="k">Cash</div><div class="v">${inr(S.cash)}</div></div>
+    </div>`;
 }
 
-function showBacktest(b) {
-  const t = b.table, me = t["LIVE CONFIG"], all = t["ALL 400 LISTED (no costs)"], nifty = t["Nifty 50"];
-  if (!me) return;
-  $("bt").hidden = false;
-  $("btsub").textContent = `${b.period}, after trading costs. The stock list was rebuilt each month from past data only. ` +
-    `Past results do not predict future ones.` + (b.demo ? " DEMO DATA." : "");
-  set("b_yr", pct(me["per yr %"], 1), cls(me["per yr %"]));
-  $("b_yr_n").textContent = `all 400 stocks: ${pct(all["per yr %"], 1)}`;
-  set("b_dd", me["worst fall %"].toFixed(1) + "%");
-  set("b_um", Math.round(me["up months %"]) + "%");
-  $("b_wm").textContent = `worst month ${me["worst month %"].toFixed(1)}%`;
-  set("b_wy", pct(me["worst yr %"], 1), cls(me["worst yr %"]));
-  $("b_ly").textContent = `last 6 months ${pct(me["last 6m %"], 1)}`;
-  line("btchart", b.curve.map(c => c.date.slice(0, 7)),
-    [["Bot", b.curve.map(c => c.live), "--accent"],
-     ["All 400 stocks on its list", b.curve.map(c => c.all_listed), "--alt"],
-     ["Nifty 50", b.curve.map(c => c.nifty50), "--muted", true]]);
+/* ---------- overview ---------- */
+const holdRow = h => `<div class="item"><div class="l"><div class="t">${esc(pretty(h.name) || h.ticker)}</div>
+  <div class="s">${esc(h.ticker)} · bought ${h.bought_at ? fShort(h.bought_at) : "–"}</div></div>
+  <div class="r num"><div class="t ${cls(h.pnl_pct)}">${pct(h.pnl_pct)}</div><div class="s">${inr(h.value)}</div></div></div>`;
+const tradeRow = (t, withDate) => `<div class="item"><div class="l"><div class="t"><span class="side ${t.side}">${t.side}</span>${esc(pretty(t.name) || t.ticker)}</div>
+  <div class="s num">${withDate ? fDay(t.time) + ", " : ""}${fTime(t.time)} · ${esc(t.ticker)}</div></div>
+  <div class="r num"><div class="t">${inr(t.value ?? t.qty * t.price)}</div><div class="s">${t.qty} × ₹${t.price.toFixed(2)}</div></div></div>`;
+const empty = msg => `<div class="muted small" style="padding:10px 0">${msg}</div>`;
+
+function overview() {
+  const H = S && S.history || [];
+  document.querySelectorAll("#range button").forEach(b => b.classList.toggle("on", +b.dataset.r === range));
+  if (H.length) {
+    const days = [...new Set(H.map(h => h.time.slice(0, 10)))];
+    const keep = range ? new Set(days.slice(-range)) : null;
+    const pts = keep ? H.filter(h => keep.has(h.time.slice(0, 10))) : H;
+    const b = S.benchmark_name || "Index";
+    $("chartnote").textContent = `Gain or loss since the start, compared with the ${b}.`;
+    line("chart", pts.map(h => range === 1 ? fTime(h.time).replace(/:\d\d /, " ") : fShort(h.time)),
+      [["Bot", pts.map(h => h.pct), "--accent"], [b, pts.map(h => h.benchmark_pct), "--muted", true]]);
+  } else $("chartnote").textContent = "The chart appears after the first run.";
+  const hs = [...(S && S.holdings || [])].sort((a, b) => b.pnl_pct - a.pnl_pct);
+  $("best").innerHTML = hs.slice(0, 3).map(holdRow).join("") || empty("No holdings yet.");
+  $("worst").innerHTML = hs.slice(-3).reverse().map(holdRow).join("") || empty("No holdings yet.");
+  $("latest").innerHTML = (S && S.trades || []).slice(-5).reverse().map(t => tradeRow(t, true)).join("") || empty("No trades yet.");
+}
+
+/* ---------- holdings ---------- */
+function holdings() {
+  const hs = [...(S && S.holdings || [])], k = $("hsort").value;
+  hs.sort({ gain: (a, b) => b.pnl_pct - a.pnl_pct, loss: (a, b) => a.pnl_pct - b.pnl_pct, value: (a, b) => b.value - a.value,
+            new: (a, b) => String(b.bought_at).localeCompare(String(a.bought_at)),
+            name: (a, b) => (pretty(a.name) || a.ticker).localeCompare(pretty(b.name) || b.ticker) }[k]);
+  $("holdh").textContent = `What the bot owns (${hs.length})`;
+  $("hold").innerHTML = hs.map(h => `<div class="item"><div class="l"><div class="t">${esc(pretty(h.name) || h.ticker)}</div>
+    <div class="s num">${esc(h.ticker)} · ${h.qty} shares · bought at ₹${h.avg_price.toFixed(2)}, now ₹${h.price.toFixed(2)}</div>
+    <div class="s num">First bought ${h.bought_at ? fDate(h.bought_at) + ", " + fTime(h.bought_at) : "–"}</div></div>
+    <div class="r num"><div class="t ${cls(h.pnl_pct)}">${pct(h.pnl_pct)}</div><div class="s">${inr(h.value)}</div>
+    <div class="s ${cls(h.pnl_pct)}">${sinr(h.value - h.qty * h.avg_price)}</div></div></div>`).join("")
+    || empty("The bot is holding only cash right now.");
+}
+
+/* ---------- trade log ---------- */
+function trades() {
+  const all = S && S.trades || [], q = $("tq").value.trim().toLowerCase();
+  document.querySelectorAll("#tside button").forEach(b => b.classList.toggle("on", b.dataset.s === side));
+  const rows = all.filter(t => (!side || t.side === side) && (!q || (t.ticker + " " + (t.name || "")).toLowerCase().includes(q))).reverse();
+  const buys = all.filter(t => t.side === "BUY").length;
+  $("tcount").textContent = all.length
+    ? `${all.length} trades recorded (${buys} buys, ${all.length - buys} sells). Every trade is kept with its exact date and time, India time.`
+    : "Every trade will be listed here with its exact date and time.";
+  let html = "", lastDay = "";
+  for (const t of rows.slice(0, shown)) {
+    const d = fDate(t.time);
+    if (d !== lastDay) { html += `<div class="day">${d}</div><div class="list">`; lastDay = d; }
+    html += tradeRow(t, false);
+  }
+  if (rows.length > shown) html += `<button class="btn more chips" id="more">Show ${Math.min(100, rows.length - shown)} more</button>`;
+  $("tlist").innerHTML = html || empty(all.length ? "No trades match." : "No trades yet.");
+  const m = $("more"); if (m) m.onclick = () => { shown += 100; trades(); };
+}
+
+/* ---------- past test ---------- */
+function backtest() {
+  if (!B || !B.table["LIVE CONFIG"]) { $("btsub").textContent = "No test results available yet."; return; }
+  const t = B.table, me = t["LIVE CONFIG"], all = t["ALL 400 LISTED (no costs)"], nifty = t["Nifty 50"];
+  const [from, to] = B.period.split(" to ");
+  $("btsub").textContent = `${fDay(from)} ${from.slice(0, 4)} to ${fDay(to)} ${to.slice(0, 4)}, after trading costs. ` +
+    "This is a replay on old prices, so it shows what could have happened, not what will." + (B.demo ? " DEMO DATA." : "");
+  const f = (k, v, c, n) => `<div><div class="k">${k}</div><div class="v ${c || ""}">${v}</div><div class="small muted">${n || ""}</div></div>`;
+  $("btfacts").innerHTML =
+    f("Average per year", pct(me["per yr %"], 1), cls(me["per yr %"]), `whole market list: ${pct(all["per yr %"], 1)}`) +
+    f("Biggest drop", "−" + Math.abs(me["worst fall %"]).toFixed(1) + "%", "down", "from a high point") +
+    f("Months with a gain", Math.round(me["up months %"]) + " in 100", "", `worst month ${pct(me["worst month %"], 1)}`) +
+    f("Worst year", pct(me["worst yr %"], 1), cls(me["worst yr %"]), `last 6 months ${pct(me["last 6m %"], 1)}`);
+  line("btchart", B.curve.map(c => c.date.slice(0, 7)),
+    [["Bot", B.curve.map(c => c.live), "--accent"], ["All 400 stocks on its list", B.curve.map(c => c.all_listed), "--alt"],
+     ["Nifty 50", B.curve.map(c => c.nifty50), "--muted", true]]);
   const years = Object.keys(me).filter(k => /^\d{4}$/.test(k)).sort();
-  const row = (name, r) => `<tr><td>${name}</td>` + years.map(y => `<td class="${cls(r[y])}">${pct(r[y], 1)}</td>`).join("") +
-    `<td>${pct(r["per yr %"], 1)}</td></tr>`;
-  $("bttable").innerHTML = "<tr><th></th>" + years.map(y => `<th>${y}</th>`).join("") + "<th>Per year</th></tr>" +
+  const row = (name, r) => `<tr><td>${name}</td>` + years.map(y => `<td class="${cls(r[y])}">${pct(r[y], 1)}</td>`).join("") + `<td><b>${pct(r["per yr %"], 1)}</b></td></tr>`;
+  $("bttable").innerHTML = "<tr><th></th>" + years.map(y => `<th>${y}</th>`).join("") + "<th>Average</th></tr>" +
     row("Bot", me) + row("All 400 stocks", all) + row("Nifty 50", nifty);
-  return b.description;
 }
 
-async function load() {
-  const [s, b] = await Promise.all([get("state.json"), get("backtest.json")]);
-  const live = s ? showLive(s) : ($("waiting").hidden = false, false);
-  const desc = (s && s.params && s.params.description) || (b && showBacktest(b)) || "";
-  if (b && s && s.params) showBacktest(b);
-  $("sub").textContent = live
-    ? `Started ${when(s.started_at)} · last update ${when(s.updated_at)} · refreshes every 30 min in market hours` + (s.demo ? " · DEMO DATA" : "")
-    : "A bot that trades mid- and small-cap NSE stocks with fake money.";
-  if (desc) { $("rules").hidden = false; $("rules").textContent = "How it works: " + desc; }
+/* ---------- how it works ---------- */
+function how() {
+  const c = (S && S.params) || (B && B.config);
+  if (!c) { $("steps").innerHTML = "<li>Details appear after the first run.</li>"; return; }
+  const months = Math.round(c.lookback / 21), ex = c.exposure || [];
+  const pick = { mom: `holds the ${c.top_n} that have risen the most`,
+                 mom_vol: `holds the ${c.top_n} that have risen the most for how bumpy they are`,
+                 lowvol: `takes the best-rising third and holds the ${c.top_n} calmest (least bumpy) of them` }[c.select];
+  const steps = [
+    `<b>Builds its own stock list.</b> Once a month it looks at every share on the NSE, skips the ${c.universe_skip} most traded (the giants) and keeps the next ${c.universe_size}. Nobody hand-picks anything.`,
+    `<b>Looks for stocks on the way up.</b> A stock qualifies if it rose over the last ${months} months and is above its ${c.trend_sma}-day average price.`,
+    `<b>Chooses ${c.top_n}.</b> From those, it ${pick}, with equal money in each.`,
+    `<b>Re-checks ${c.rebalance}.</b> Stocks that no longer qualify are sold and replaced. A stock it already owns is kept while it stays in the top ${Math.round(c.top_n * c.buffer)}.`,
+  ];
+  if (ex.includes("voltarget")) steps.push("<b>Plays safer in rough weather.</b> When the market gets unusually jumpy, it moves part of the money into cash. Checked weekly.");
+  if (ex.includes("breadth")) steps.push("<b>Follows the crowd's health.</b> When fewer than half of the stocks are rising, it invests less.");
+  if (ex.includes("regime")) steps.push("<b>Steps aside in a weak market.</b> When the Nifty 50 is below its 200-day average, it moves fully to cash.");
+  steps.push(`<b>Pays costs.</b> Every pretend trade is charged ${(c.cost ?? 0.002) * 100}% to mimic real brokerage and taxes.`);
+  $("steps").innerHTML = steps.map(s => `<li>${s}</li>`).join("");
 }
+
+/* ---------- wiring ---------- */
+function tab(name) {
+  if (!$(name) || $(name).tagName !== "SECTION") name = "overview";
+  document.querySelectorAll("section").forEach(s => s.classList.toggle("on", s.id === name));
+  document.querySelectorAll("nav button").forEach(b => b.classList.toggle("on", b.dataset.t === name));
+  if (name === "overview") overview();   // charts need a visible canvas
+  if (name === "backtest") backtest();
+}
+function render() { hero(); holdings(); trades(); how(); tab(location.hash.slice(1) || "overview"); }
+async function load() { [S, B] = await Promise.all([get("state.json"), get("backtest.json")]); render(); }
+
+$("tabs").onclick = e => { const t = e.target.dataset.t; if (t) location.hash = t; };
+window.onhashchange = () => { tab(location.hash.slice(1)); window.scrollTo(0, 0); };
+$("range").onclick = e => { if (e.target.dataset.r != null) { range = +e.target.dataset.r; store.set("range", range); overview(); } };
+$("tside").onclick = e => { if (e.target.dataset.s != null) { side = e.target.dataset.s; shown = 100; trades(); } };
+$("tq").oninput = () => { shown = 100; trades(); };
+$("hsort").onchange = () => { store.set("hsort", $("hsort").value); holdings(); };
+range = +(store.get("range") || 0);
+if (store.get("hsort")) $("hsort").value = store.get("hsort");
 load();
 setInterval(load, 5 * 60 * 1000);
 </script>
