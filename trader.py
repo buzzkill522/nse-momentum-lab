@@ -80,7 +80,7 @@ CONFIG = {
     "exposure_step": 0.0,   # ignore changes in the invested share smaller than this (e.g. 0.1)
     "cash_yield": 0.0,      # yearly interest assumed on idle cash (e.g. 0.06 for a liquid fund)
     # --- timing
-    "rebalance": "monthly", # when stocks are re-picked
+    "rebalance": "monthly", # when stocks are re-picked: "monthly" or "quarterly"
     "risk_check": None,     # when exposure is re-checked (None = only at rebalance)
     "drift": 0.25,          # only resize a holding if it is >25% away from its target size
 }
@@ -90,14 +90,15 @@ CONFIG = {
 MODELS = {
     "growth": {
         "name": "Growth bot",
-        "tagline": "Buys the 20 biggest 12-month winners. Aims for higher returns and accepts bigger drops.",
-        "config": {**CONFIG},
+        "tagline": "Buys the 20 biggest 12-month winners and re-picks every quarter. Aims for higher returns and accepts bigger drops.",
+        "config": {**CONFIG, "rebalance": "quarterly", "cash_yield": 0.06},
     },
     "steady": {
         "name": "Steady bot",
         "tagline": "Buys 20 calm, steadily rising stocks and holds back cash when the market gets rough. "
                    "Aims for smoother returns and accepts lower gains.",
-        "config": {**CONFIG, "lookback": 126, "select": "lowvol", "exposure": ["voltarget"], "risk_check": "weekly"},
+        "config": {**CONFIG, "lookback": 126, "select": "lowvol", "exposure": ["voltarget"], "risk_check": "weekly",
+                   "sector_cap": 4, "cash_yield": 0.06},
     },
 }
 
@@ -340,14 +341,16 @@ def pick_stocks(prices, universe, cfg=CONFIG, held=(), locked=False) -> dict:
     return {t: float(x) for t, x in w.items()}
 
 
-def period_key(day, freq) -> str:
+def period_key(day, freq, offset=0) -> str:
+    """offset shifts which months a quarter starts in (0 = Jan/Apr/Jul/Oct)."""
     if freq == "weekly":
         y, w, _ = day.isocalendar()
         return f"{y}-W{w:02d}"
     if freq == "monthly":
         return day.strftime("%Y-%m")
     if freq == "quarterly":
-        return f"{day.year}-Q{(day.month - 1) // 3 + 1}"
+        m = day.year * 12 + day.month - 1 - offset
+        return f"Q{m // 3}"
     return day.isoformat()
 
 
@@ -363,6 +366,8 @@ def describe(cfg=CONFIG) -> str:
     if cfg.get("near_high"):
         s += f" and within {round((1 - cfg['near_high']) * 100)}% of their 52-week high"
     s += f" it holds {how}. Stocks are re-picked {cfg['rebalance']}."
+    if cfg.get("sector_cap"):
+        s += f" At most {cfg['sector_cap']} stocks may come from one industry."
     if cfg.get("cut_losers"):
         s += " Each week, holdings that fall below their average price are sold and replaced."
     ex = []
@@ -374,6 +379,8 @@ def describe(cfg=CONFIG) -> str:
         ex.append("invests less when the market is unusually jumpy")
     if ex:
         s += " It " + ", and ".join(ex) + (f" (checked {cfg['risk_check']})." if cfg["risk_check"] else ".")
+    if cfg.get("cash_yield"):
+        s += f" Idle cash is assumed to earn {cfg['cash_yield'] * 100:.0f}% a year, as in a liquid fund."
     return s + f" {COST * 100:.1f}% cost per trade. Prices from Yahoo Finance (may be delayed ~15 min)."
 
 
@@ -468,7 +475,7 @@ def accrue_interest(state, day, cfg):
 def step(state, prices, day, ts, cfg, universe_fn):
     """One decision point. `prices` last row = now. Returns True if it acted.
     universe_fn() is only called when the stock list needs rebuilding."""
-    mkey = period_key(day, cfg["rebalance"])
+    mkey = period_key(day, cfg["rebalance"], cfg.get("rebalance_offset", 0))
     rkey = period_key(day, cfg["risk_check"]) if cfg["risk_check"] else mkey
     new_month = state["last_rebalance"] != mkey or state["universe"] is None
     if not new_month and state["last_risk"] == rkey:
@@ -548,7 +555,7 @@ def main():
     def due(model):
         """'month' = re-pick stocks, 'week' = re-check risk, None = just record value."""
         cfg, st = MODELS[model]["config"], states[model]
-        mkey = period_key(now.date(), cfg["rebalance"])
+        mkey = period_key(now.date(), cfg["rebalance"], cfg.get("rebalance_offset", 0))
         rkey = period_key(now.date(), cfg["risk_check"]) if cfg["risk_check"] else mkey
         if st["universe"] is None or st["last_rebalance"] != mkey:
             return "month"

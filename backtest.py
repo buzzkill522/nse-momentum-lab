@@ -52,6 +52,15 @@ def variants():
             v[f"{name} [{pool}]"] = {**cfg, **POOLS[pool]}
     for name in ("winners", "winners 12m", "winners near high + cut", "calm risers (previous bot)"):
         v[f"{name} [large]"] = {**kinds[name], **POOLS["large"]}
+    # robustness: do the adopted changes hold up when varied?
+    g, s = T.MODELS["growth"]["config"], T.MODELS["steady"]["config"]
+    for pool in ("index", "nohind"):
+        v[f"CHECK growth monthly [{pool}]"] = {**g, **POOLS[pool], "rebalance": "monthly"}
+        for off in (1, 2):
+            v[f"CHECK growth quarterly, start month +{off} [{pool}]"] = {**g, **POOLS[pool], "rebalance_offset": off}
+        v[f"CHECK growth, no cash interest [{pool}]"] = {**g, **POOLS[pool], "cash_yield": 0.0}
+        v[f"CHECK steady, no sector cap [{pool}]"] = {**s, **POOLS[pool], "sector_cap": 0}
+        v[f"CHECK steady, no cash interest [{pool}]"] = {**s, **POOLS[pool], "cash_yield": 0.0}
     for mid, m in T.MODELS.items():
         v[f"MODEL {mid}"] = dict(m["config"])
         v[f"MODEL {mid} [nohind]"] = {**m["config"], **POOLS["nohind"]}
@@ -113,7 +122,7 @@ class Sim:
     def run(self, cfg):
         state, values = T.new_state(), []
         for d in self.days:
-            mkey = T.period_key(d.date(), cfg["rebalance"])
+            mkey = T.period_key(d.date(), cfg["rebalance"], cfg.get("rebalance_offset", 0))
             rkey = T.period_key(d.date(), cfg["risk_check"]) if cfg["risk_check"] else mkey
             T.accrue_interest(state, d.date(), cfg)
             if state["last_rebalance"] != mkey or state["last_risk"] != rkey:
