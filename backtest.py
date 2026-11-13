@@ -58,6 +58,37 @@ def variants():
     return v
 
 
+def experiments():
+    """One change at a time to each bot, on both stock lists, to see which decisions matter."""
+    both = {
+        "base": {},
+        "keep-zone 1.5x": {"buffer": 1.5}, "keep-zone 3x": {"buffer": 3.0},
+        "re-pick quarterly": {"rebalance": "quarterly"},
+        "sector cap 4": {"sector_cap": 4}, "sector cap 6": {"sector_cap": 6},
+        "calmer stocks get more money": {"weighting": "inv_vol"},
+        "resize only if 50% off": {"drift": 0.5},
+        "hold 15": {"top_n": 15}, "hold 30": {"top_n": 30},
+        "no skip month": {"skip": 0},
+        "trend 100d": {"trend_sma": 100}, "trend 200d": {"trend_sma": 200},
+        "cash interest 6%": {"cash_yield": 0.06},
+    }
+    only = {
+        "growth": {"rise 6m": {"lookback": 126}, "rise 9m": {"lookback": 189},
+                   "rough-market cash, step 10": {"exposure": ["voltarget"], "risk_check": "weekly", "exposure_step": 0.1}},
+        "steady": {"rise 9m": {"lookback": 189}, "rise 12m": {"lookback": 252},
+                   "cash step 10": {"exposure_step": 0.1}, "cash step 20": {"exposure_step": 0.2},
+                   "cash checked monthly": {"risk_check": None},
+                   "target swing 12%": {"vol_target": 0.12}, "target swing 20%": {"vol_target": 0.20},
+                   "cash step 10 + interest 6%": {"exposure_step": 0.1, "cash_yield": 0.06}},
+    }
+    v = {}
+    for mid, m in T.MODELS.items():
+        for pool in ("nohind", "index"):
+            for name, ch in {**both, **only[mid]}.items():
+                v[f"{mid:6s} | {pool:6s} | {name}"] = {**m["config"], **POOLS[pool], **ch}
+    return v
+
+
 class Sim:
     def __init__(self, opn, close, volume, days):
         self.opn, self.close, self.volume, self.days = opn, close, volume, days
@@ -84,6 +115,7 @@ class Sim:
         for d in self.days:
             mkey = T.period_key(d.date(), cfg["rebalance"])
             rkey = T.period_key(d.date(), cfg["risk_check"]) if cfg["risk_check"] else mkey
+            T.accrue_interest(state, d.date(), cfg)
             if state["last_rebalance"] != mkey or state["last_risk"] != rkey:
                 uni = self.universe(d, cfg) if state["last_rebalance"] != mkey else state["universe"]
                 cols = list(dict.fromkeys(uni + list(state["positions"]) + [T.REGIME_INDEX]))
@@ -142,7 +174,16 @@ def main():
     T.CONFIG["_members"] = syms[100:500] if demo else T.index_members()
     for m in T.MODELS.values():
         m["config"]["_members"] = T.CONFIG["_members"]
-    opn, close, volume = T.demo_data(syms, 252 * (years + 2), seed=7) if demo else T.download(syms, f"{years + 2}y")
+    cache = Path(__file__).parent / ".cache" / "prices.pkl"
+    if demo:
+        opn, close, volume = T.demo_data(syms, 252 * (years + 2), seed=7)
+    elif cache.exists():
+        opn, close, volume = pd.read_pickle(cache)
+        print("Using cached prices up to", close.index[-1].date())
+    else:
+        opn, close, volume = T.download(syms, f"{years + 2}y")
+        cache.parent.mkdir(exist_ok=True)
+        pd.to_pickle((opn, close, volume), cache)
     days = close.index[close.index > close.index[-1] - pd.DateOffset(years=years)]
     cap = T.STARTING_CAPITAL
     sim = Sim(opn, close, volume, days)
@@ -151,6 +192,20 @@ def main():
              "Stock list size at start / end: " + ", ".join(
                  f"{k} {len(sim.universe(days[0], {**T.CONFIG, **p}))} / {len(sim.universe(days[-1], {**T.CONFIG, **p}))}"
                  for k, p in POOLS.items())]
+
+    if "--experiments" in sys.argv:
+        cols = ["per yr %", "sharpe", "worst fall %", "worst yr %", "worst month %", "1st half /yr", "2nd half /yr",
+                "trades/yr", "fees %/yr"]
+        rows = {}
+        for name, cfg in experiments().items():
+            v, state = sim.run(cfg)
+            rows[name] = {k: stats(v, cap, state)[k] for k in cols}
+        pd.set_option("display.width", 300)
+        text = "\n".join(lines + ["=== EXPERIMENTS: one change at a time (after costs) ===",
+                                  pd.DataFrame(rows).T.round(2).to_string()])
+        print(text)
+        (OUT / "experiments.txt").write_text(text + "\n")
+        return
 
     rows, curves = {}, {}
     idx = close[T.REGIME_INDEX]

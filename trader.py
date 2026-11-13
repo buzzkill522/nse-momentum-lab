@@ -40,6 +40,7 @@ ROOT = Path(__file__).parent
 SYMBOLS_FILE = ROOT / "data" / "symbols.txt"
 NAMES_FILE = ROOT / "data" / "names.json"      # ticker -> company name
 INDEX_FILE = ROOT / "data" / "midsmallcap400.txt"   # current Nifty MidSmallcap 400 members
+SECTORS_FILE = ROOT / "data" / "sectors.json"       # ticker -> industry, from the index file
 IST = timezone(timedelta(hours=5, minutes=30))
 
 STARTING_CAPITAL = 1_000_000.0  # ₹10 lakh fake money
@@ -70,11 +71,14 @@ CONFIG = {
                             # "lowvol"  = calmest stocks among the top third by return
     "weighting": "equal",   # "equal" or "inv_vol" (calmer stocks get more money)
     "buffer": 2.0,          # keep a held stock while it ranks in top_n x buffer
+    "sector_cap": 0,        # most stocks allowed from one industry (0 = no limit)
     # --- how much to invest
     "exposure": [],         # any of: "regime"    = all cash if Nifty 50 < its 200-day average
                             #         "breadth"   = invest less when under half of stocks are in uptrends
                             #         "voltarget" = invest less when the market is jumpy
     "vol_target": 0.15,     # for "voltarget": aim for this yearly volatility
+    "exposure_step": 0.0,   # ignore changes in the invested share smaller than this (e.g. 0.1)
+    "cash_yield": 0.0,      # yearly interest assumed on idle cash (e.g. 0.06 for a liquid fund)
     # --- timing
     "rebalance": "monthly", # when stocks are re-picked
     "risk_check": None,     # when exposure is re-checked (None = only at rebalance)
@@ -112,7 +116,7 @@ HDR = {"User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/
 
 
 def _index_csv(name):
-    """Symbols in one NSE index constituent file, or [] if it cannot be fetched."""
+    """{symbol: industry} from one NSE index constituent file, or {} if it cannot be fetched."""
     import requests
     for base in ("https://nsearchives.nseindia.com/content/indices/", "https://archives.nseindia.com/content/indices/",
                  "https://www.niftyindices.com/IndexConstituent/"):
@@ -120,26 +124,39 @@ def _index_csv(name):
             r = requests.get(base + name, headers=HDR, timeout=30)
             r.raise_for_status()
             rows = [{k.strip(): v.strip() for k, v in row.items()} for row in csv.DictReader(io.StringIO(r.text))]
-            syms = sorted({row["Symbol"] for row in rows if row.get("Symbol")})
+            syms = {row["Symbol"]: row.get("Industry", "") for row in rows if row.get("Symbol")}
             if syms:
                 print(f"{name}: {len(syms)} symbols from {base}")
                 return syms
         except Exception as e:  # noqa: BLE001
             print(f"Could not fetch {base + name}: {e}")
-    return []
+    return {}
 
 
 def refresh_index() -> int:
     """Download the current Nifty MidSmallcap 400 members."""
     syms = _index_csv("ind_niftymidsmallcap400list.csv")
     if len(syms) < 350:   # fall back to its two halves
-        syms = sorted(set(_index_csv("ind_niftymidcap150list.csv")) | set(_index_csv("ind_niftysmallcap250list.csv")))
+        syms = {**_index_csv("ind_niftymidcap150list.csv"), **_index_csv("ind_niftysmallcap250list.csv")}
     if len(syms) >= 350:
         INDEX_FILE.parent.mkdir(exist_ok=True)
-        INDEX_FILE.write_text("\n".join(syms) + "\n")
+        INDEX_FILE.write_text("\n".join(sorted(syms)) + "\n")
+        SECTORS_FILE.write_text(json.dumps(syms, indent=0, sort_keys=True))
         print(f"Saved {len(syms)} Nifty MidSmallcap 400 members")
         return len(syms)
     return 0
+
+
+_SECTORS = None
+
+
+def sectors() -> dict:
+    """{ticker.NS: industry}. Stocks missing from the file have no industry and are never capped."""
+    global _SECTORS
+    if _SECTORS is None:
+        raw = json.loads(SECTORS_FILE.read_text()) if SECTORS_FILE.exists() else {}
+        _SECTORS = {k + ".NS": v for k, v in raw.items() if v}
+    return _SECTORS
 
 
 def index_members() -> list[str]:
@@ -296,7 +313,23 @@ def pick_stocks(prices, universe, cfg=CONFIG, held=(), locked=False) -> dict:
         score = mom[ok]
     ranked = score.sort_values(ascending=False).index.tolist()
     keep = [t for t in held if locked or t in ranked[: int(n * cfg["buffer"])]][:n]
-    chosen = keep + [t for t in ranked if t not in keep][: n - len(keep)]
+    cap = cfg.get("sector_cap") or 0
+    if cap:                                      # limit how many stocks come from one industry
+        sec = cfg.get("_sectors") or sectors()
+        count = {}
+        for t in keep:
+            count[sec.get(t)] = count.get(sec.get(t), 0) + 1
+        chosen = list(keep)
+        for t in ranked:
+            if len(chosen) >= n:
+                break
+            g = sec.get(t)
+            if t in chosen or (g and count.get(g, 0) >= cap):
+                continue
+            chosen.append(t)
+            count[g] = count.get(g, 0) + 1
+    else:
+        chosen = keep + [t for t in ranked if t not in keep][: n - len(keep)]
     if not chosen:
         return {}
     if cfg["weighting"] == "inv_vol":
@@ -313,6 +346,8 @@ def period_key(day, freq) -> str:
         return f"{y}-W{w:02d}"
     if freq == "monthly":
         return day.strftime("%Y-%m")
+    if freq == "quarterly":
+        return f"{day.year}-Q{(day.month - 1) // 3 + 1}"
     return day.isoformat()
 
 
@@ -420,6 +455,16 @@ def rebalance(state, last, weights, ts, cfg=CONFIG):
             trade(state, t, qty, price, ts)
 
 
+def accrue_interest(state, day, cfg):
+    """Idle cash earns cfg['cash_yield'] a year (as if parked in a liquid fund)."""
+    prev, state["interest_day"] = state.get("interest_day"), day.isoformat()
+    if cfg.get("cash_yield") and prev and state["cash"] > 0:
+        days = (day - datetime.fromisoformat(prev).date()).days
+        gain = state["cash"] * ((1 + cfg["cash_yield"]) ** (days / 365) - 1)
+        state["cash"] += gain
+        state["interest_earned"] = state.get("interest_earned", 0.0) + gain
+
+
 def step(state, prices, day, ts, cfg, universe_fn):
     """One decision point. `prices` last row = now. Returns True if it acted.
     universe_fn() is only called when the stock list needs rebuilding."""
@@ -432,6 +477,9 @@ def step(state, prices, day, ts, cfg, universe_fn):
     if new_month:
         state["universe"] = universe_fn()
     e = exposure(prices, state["universe"], cfg)
+    old = state.get("exposure")
+    if cfg.get("exposure_step") and old and e > 0 and abs(e - old) < cfg["exposure_step"]:
+        e = old                                    # too small a change to be worth trading on
     if new_month or (was_in_cash and e > 0):
         state["base_weights"] = pick_stocks(prices, state["universe"], cfg, held=list(state["positions"]))
     elif cfg.get("cut_losers") and state["base_weights"]:
@@ -464,6 +512,12 @@ def finish(state, model, prices, ts, demo, names):
         "pct": round((value / state["starting_capital"] - 1) * 100, 3),
         "benchmark_pct": round(bench_pct, 3) if bench_pct is not None else None,
     })
+    # keep every reading for the last 7 days, then one per day, so the file stays small
+    cutoff = (datetime.fromisoformat(ts) - timedelta(days=7)).isoformat()
+    thin = {}
+    for h in state["history"]:
+        thin[h["time"] if h["time"] >= cutoff else h["time"][:10]] = h
+    state["history"] = list(thin.values())
     state["holdings"] = [{
         "ticker": t.replace(".NS", ""), "name": names.get(t.replace(".NS", ""), ""), "qty": p["qty"],
         "bought_at": p.get("bought_at"), "last_buy": p.get("last_buy"),
@@ -530,6 +584,7 @@ def main():
     names = company_names()
     for k, m in MODELS.items():
         st, cfg = states[k], m["config"]
+        accrue_interest(st, now.date(), cfg)
         if step(st, prices, now.date(), ts, cfg, lambda cfg=cfg: choose_universe(prices, volume, cfg)):
             print(f"{m['name']}: rebalanced. Exposure {st['exposure']:.0%} ->",
                   [t.replace('.NS', '') for t in st["positions"]] or "all cash")

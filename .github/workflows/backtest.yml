@@ -1,13 +1,17 @@
 name: backtest
 
+# Run by hand: Actions tab -> backtest -> Run workflow
 on:
-  push:
-    paths: ["backtest.py", "trader.py", ".github/workflows/backtest.yml"]
   workflow_dispatch:
     inputs:
       years:
         description: "Years to test"
         default: "5"
+      mode:
+        description: "backtest = both bots and comparisons; experiments = one change at a time"
+        type: choice
+        options: [backtest, experiments]
+        default: backtest
 
 permissions:
   contents: write
@@ -23,15 +27,23 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
+          cache: pip
       - run: pip install -r requirements.txt
-      - name: Refresh list of NSE shares
+      - name: Refresh lists of NSE shares and index members
         run: python trader.py --refresh-symbols || test -s data/symbols.txt -a -s data/midsmallcap400.txt
-      - run: python backtest.py ${{ inputs.years || '5' }}
+      - id: day
+        run: echo "d=$(date -u +%F)" >> "$GITHUB_OUTPUT"
+      - name: Reuse today's price download
+        uses: actions/cache@v4
+        with:
+          path: .cache
+          key: prices-${{ inputs.years || '5' }}y-${{ steps.day.outputs.d }}
+      - run: python backtest.py ${{ inputs.years || '5' }} ${{ inputs.mode == 'experiments' && '--experiments' || '' }}
       - name: Save results
         run: |
           git config user.name "paper-trader-bot"
           git config user.email "actions@users.noreply.github.com"
-          git add data/ docs/backtest.txt docs/backtest.json
+          git add data/ docs/backtest.txt docs/backtest.json docs/experiments.txt 2>/dev/null || git add data/ docs/
           git diff --cached --quiet || git commit -m "Backtest results $(date -u +%F)"
           git pull --rebase
           git push

@@ -2,10 +2,10 @@ name: paper-trade
 
 on:
   schedule:
-    # Every 30 min, Mon–Fri, 09:15–15:30 IST (03:45–10:00 UTC)
-    - cron: "45,15 4-9 * * 1-5"
-    - cron: "45 3 * * 1-5"
-    - cron: "0 10 * * 1-5"
+    # Hourly, Mon–Fri, 10:00–15:00 IST (04:30–09:30 UTC), plus once after the 15:30 close.
+    # The first run is at 10:00, not the 9:15 open, because opening prices are the jumpiest.
+    - cron: "30 4-9 * * 1-5"
+    - cron: "5 10 * * 1-5"
   workflow_dispatch:
     inputs:
       reset:
@@ -26,6 +26,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
+          cache: pip
       - run: pip install -r requirements.txt
       - run: python trader.py ${{ inputs.reset && '--reset' || '' }}
       - name: Commit state
