@@ -1,0 +1,1978 @@
+{
+ "period": "2021-11-15 to 2026-11-13",
+ "demo": false,
+ "config": {
+  "universe_skip": 100,
+  "universe_size": 400,
+  "min_price": 20,
+  "top_n": 20,
+  "lookback": 126,
+  "skip": 21,
+  "trend_sma": 50,
+  "select": "mom",
+  "weighting": "equal",
+  "buffer": 2.0,
+  "exposure": [
+   "regime"
+  ],
+  "vol_target": 0.15,
+  "rebalance": "monthly",
+  "risk_check": "weekly",
+  "drift": 0.25
+ },
+ "description": "The bot builds its own list of 400 mid- and small-cap NSE stocks each month (ranked by trading activity, skipping the 100 largest). From those in an uptrend it holds the 20 with the highest 6-month return. Stocks are re-picked monthly. It moves fully to cash when the Nifty 50 is below its 200-day average (checked weekly). 0.2% cost per trade. Prices from Yahoo Finance (may be delayed ~15 min).",
+ "table": {
+  "Nifty 50": {
+   "per yr %": 6.8,
+   "swing %": 13.93,
+   "sharpe": 0.55,
+   "worst fall %": -16.47,
+   "up months %": 55.0,
+   "worst month %": -11.31,
+   "worst 6m %": -12.7,
+   "6m windows up %": 68.65,
+   "worst yr %": -4.14,
+   "1st half /yr": 9.2,
+   "2nd half /yr": 4.7,
+   "last 6m %": 7.4,
+   "2021": -4.14,
+   "2022": 4.33,
+   "2023": 20.03,
+   "2024": 8.8,
+   "2025": 10.51,
+   "2026": -3.77,
+   "trades/yr": null,
+   "fees %/yr": null
+  },
+  "ALL 400 LISTED (no costs)": {
+   "per yr %": 16.36,
+   "swing %": 19.1,
+   "sharpe": 0.91,
+   "worst fall %": -25.23,
+   "up months %": 61.67,
+   "worst month %": -13.03,
+   "worst 6m %": -23.36,
+   "6m windows up %": 70.09,
+   "worst yr %": -2.26,
+   "1st half /yr": 26.84,
+   "2nd half /yr": 7.33,
+   "last 6m %": 6.39,
+   "2021": -2.26,
+   "2022": 2.73,
+   "2023": 56.25,
+   "2024": 27.27,
+   "2025": -0.24,
+   "2026": 6.98,
+   "trades/yr": null,
+   "fees %/yr": null
+  },
+  "mom, always invested": {
+   "per yr %": 16.49,
+   "swing %": 25.97,
+   "sharpe": 0.75,
+   "worst fall %": -37.71,
+   "up months %": 61.67,
+   "worst month %": -15.78,
+   "worst 6m %": -27.48,
+   "6m windows up %": 61.35,
+   "worst yr %": -20.34,
+   "1st half /yr": 31.03,
+   "2nd half /yr": 4.13,
+   "last 6m %": 29.77,
+   "2021": 6.18,
+   "2022": -9.77,
+   "2023": 77.56,
+   "2024": 23.84,
+   "2025": -20.34,
+   "2026": 27.69,
+   "trades/yr": 252.71,
+   "fees %/yr": 3.4
+  },
+  "mom +regime monthly": {
+   "per yr %": 10.5,
+   "swing %": 20.14,
+   "sharpe": 0.64,
+   "worst fall %": -30.14,
+   "up months %": 38.33,
+   "worst month %": -12.83,
+   "worst 6m %": -21.95,
+   "6m windows up %": 58.65,
+   "worst yr %": -15.88,
+   "1st half /yr": 21.24,
+   "2nd half /yr": 1.08,
+   "last 6m %": 0.0,
+   "2021": 6.18,
+   "2022": -15.88,
+   "2023": 57.53,
+   "2024": 23.05,
+   "2025": 9.88,
+   "2026": -13.45,
+   "trades/yr": 182.83,
+   "fees %/yr": 2.29
+  },
+  "mom +regime": {
+   "per yr %": 11.65,
+   "swing %": 20.48,
+   "sharpe": 0.68,
+   "worst fall %": -23.58,
+   "up months %": 45.0,
+   "worst month %": -13.92,
+   "worst 6m %": -17.13,
+   "6m windows up %": 55.32,
+   "worst yr %": -12.29,
+   "1st half /yr": 28.98,
+   "2nd half /yr": -2.96,
+   "last 6m %": 0.94,
+   "2021": 6.79,
+   "2022": -8.11,
+   "2023": 65.29,
+   "2024": 23.33,
+   "2025": -1.18,
+   "2026": -12.29,
+   "trades/yr": 231.49,
+   "fees %/yr": 3.09
+  },
+  "mom +breadth": {
+   "per yr %": 15.29,
+   "swing %": 23.01,
+   "sharpe": 0.77,
+   "worst fall %": -32.31,
+   "up months %": 58.33,
+   "worst month %": -12.65,
+   "worst 6m %": -22.18,
+   "6m windows up %": 60.27,
+   "worst yr %": -17.81,
+   "1st half /yr": 30.05,
+   "2nd half /yr": 2.73,
+   "last 6m %": 25.63,
+   "2021": 6.79,
+   "2022": -10.8,
+   "2023": 74.07,
+   "2024": 24.51,
+   "2025": -17.81,
+   "2026": 19.92,
+   "trades/yr": 339.62,
+   "fees %/yr": 3.38
+  },
+  "mom +voltarget": {
+   "per yr %": 11.53,
+   "swing %": 20.9,
+   "sharpe": 0.66,
+   "worst fall %": -31.14,
+   "up months %": 56.67,
+   "worst month %": -11.14,
+   "worst 6m %": -23.13,
+   "6m windows up %": 55.77,
+   "worst yr %": -14.22,
+   "1st half /yr": 25.83,
+   "2nd half /yr": -0.75,
+   "last 6m %": 24.23,
+   "2021": 4.67,
+   "2022": -13.35,
+   "2023": 71.37,
+   "2024": 14.9,
+   "2025": -14.22,
+   "2026": 12.57,
+   "trades/yr": 374.26,
+   "fees %/yr": 2.99
+  },
+  "mom +regime+voltarget": {
+   "per yr %": 7.6,
+   "swing %": 17.79,
+   "sharpe": 0.53,
+   "worst fall %": -24.47,
+   "up months %": 45.0,
+   "worst month %": -10.46,
+   "worst 6m %": -16.88,
+   "6m windows up %": 46.4,
+   "worst yr %": -11.51,
+   "1st half /yr": 23.51,
+   "2nd half /yr": -6.01,
+   "last 6m %": 0.63,
+   "2021": 4.67,
+   "2022": -10.98,
+   "2023": 59.11,
+   "2024": 13.86,
+   "2025": -3.49,
+   "2026": -11.51,
+   "trades/yr": 300.77,
+   "fees %/yr": 2.64
+  },
+  "mom +breadth+voltarget": {
+   "per yr %": 11.02,
+   "swing %": 19.64,
+   "sharpe": 0.66,
+   "worst fall %": -28.6,
+   "up months %": 60.0,
+   "worst month %": -10.66,
+   "worst 6m %": -22.17,
+   "6m windows up %": 54.77,
+   "worst yr %": -15.67,
+   "1st half /yr": 23.63,
+   "2nd half /yr": 0.08,
+   "last 6m %": 22.16,
+   "2021": 4.67,
+   "2022": -15.67,
+   "2023": 68.14,
+   "2024": 15.34,
+   "2025": -11.32,
+   "2026": 11.05,
+   "trades/yr": 424.52,
+   "fees %/yr": 2.84
+  },
+  "mom/vol +breadth": {
+   "per yr %": 18.72,
+   "swing %": 21.1,
+   "sharpe": 0.95,
+   "worst fall %": -30.65,
+   "up months %": 65.0,
+   "worst month %": -14.18,
+   "worst 6m %": -26.07,
+   "6m windows up %": 64.59,
+   "worst yr %": -16.39,
+   "1st half /yr": 36.59,
+   "2nd half /yr": 3.83,
+   "last 6m %": 31.83,
+   "2021": 7.74,
+   "2022": -2.28,
+   "2023": 78.03,
+   "2024": 18.02,
+   "2025": -16.39,
+   "2026": 27.36,
+   "trades/yr": 326.0,
+   "fees %/yr": 3.54
+  },
+  "lowvol, always invested": {
+   "per yr %": 22.41,
+   "swing %": 20.87,
+   "sharpe": 1.1,
+   "worst fall %": -27.83,
+   "up months %": 73.33,
+   "worst month %": -14.5,
+   "worst 6m %": -25.05,
+   "6m windows up %": 71.8,
+   "worst yr %": -2.22,
+   "1st half /yr": 39.5,
+   "2nd half /yr": 8.2,
+   "last 6m %": 25.6,
+   "2021": 4.3,
+   "2022": 7.23,
+   "2023": 64.35,
+   "2024": 33.1,
+   "2025": -2.22,
+   "2026": 14.75,
+   "trades/yr": 264.73,
+   "fees %/yr": 4.36
+  },
+  "lowvol +regime": {
+   "per yr %": 19.8,
+   "swing %": 16.84,
+   "sharpe": 1.18,
+   "worst fall %": -19.05,
+   "up months %": 55.0,
+   "worst month %": -11.24,
+   "worst 6m %": -15.4,
+   "6m windows up %": 66.76,
+   "worst yr %": -7.68,
+   "1st half /yr": 41.26,
+   "2nd half /yr": 2.26,
+   "last 6m %": 1.85,
+   "2021": 4.3,
+   "2022": 10.04,
+   "2023": 65.64,
+   "2024": 32.87,
+   "2025": 5.68,
+   "2026": -7.68,
+   "trades/yr": 227.68,
+   "fees %/yr": 3.8
+  },
+  "lowvol +breadth": {
+   "per yr %": 19.63,
+   "swing %": 18.77,
+   "sharpe": 1.07,
+   "worst fall %": -23.43,
+   "up months %": 66.67,
+   "worst month %": -9.92,
+   "worst 6m %": -21.04,
+   "6m windows up %": 68.83,
+   "worst yr %": -3.26,
+   "1st half /yr": 35.88,
+   "2nd half /yr": 6.0,
+   "last 6m %": 21.33,
+   "2021": 4.3,
+   "2022": 2.32,
+   "2023": 61.93,
+   "2024": 32.68,
+   "2025": -3.26,
+   "2026": 10.32,
+   "trades/yr": 344.02,
+   "fees %/yr": 4.08
+  },
+  "lowvol +voltarget": {
+   "per yr %": 17.33,
+   "swing %": 16.82,
+   "sharpe": 1.06,
+   "worst fall %": -21.77,
+   "up months %": 68.33,
+   "worst month %": -9.62,
+   "worst 6m %": -18.09,
+   "6m windows up %": 67.48,
+   "worst yr %": -0.99,
+   "1st half /yr": 33.13,
+   "2nd half /yr": 4.0,
+   "last 6m %": 20.14,
+   "2021": 3.08,
+   "2022": 5.98,
+   "2023": 57.54,
+   "2024": 20.27,
+   "2025": -0.99,
+   "2026": 8.38,
+   "trades/yr": 381.27,
+   "fees %/yr": 3.72
+  },
+  "lowvol +breadth+voltarget": {
+   "per yr %": 15.77,
+   "swing %": 15.82,
+   "sharpe": 1.03,
+   "worst fall %": -20.04,
+   "up months %": 66.67,
+   "worst month %": -9.03,
+   "worst 6m %": -16.91,
+   "6m windows up %": 65.68,
+   "worst yr %": -1.02,
+   "1st half /yr": 30.34,
+   "2nd half /yr": 3.38,
+   "last 6m %": 17.81,
+   "2021": 3.08,
+   "2022": 1.03,
+   "2023": 57.04,
+   "2024": 20.37,
+   "2025": -1.02,
+   "2026": 6.63,
+   "trades/yr": 427.13,
+   "fees %/yr": 3.46
+  },
+  "lowvol +regime+voltarget": {
+   "per yr %": 15.85,
+   "swing %": 14.48,
+   "sharpe": 1.11,
+   "worst fall %": -14.97,
+   "up months %": 53.33,
+   "worst month %": -9.19,
+   "worst 6m %": -14.25,
+   "6m windows up %": 65.23,
+   "worst yr %": -7.59,
+   "1st half /yr": 35.43,
+   "2nd half /yr": -0.37,
+   "last 6m %": 1.26,
+   "2021": 3.08,
+   "2022": 9.8,
+   "2023": 58.48,
+   "2024": 20.28,
+   "2025": 4.56,
+   "2026": -7.59,
+   "trades/yr": 297.17,
+   "fees %/yr": 3.29
+  },
+  "lowvol invvol +breadth": {
+   "per yr %": 18.87,
+   "swing %": 18.32,
+   "sharpe": 1.06,
+   "worst fall %": -23.43,
+   "up months %": 68.33,
+   "worst month %": -10.38,
+   "worst 6m %": -21.72,
+   "6m windows up %": 69.28,
+   "worst yr %": -4.31,
+   "1st half /yr": 34.43,
+   "2nd half /yr": 5.77,
+   "last 6m %": 22.23,
+   "2021": 4.0,
+   "2022": 2.38,
+   "2023": 57.29,
+   "2024": 31.09,
+   "2025": -4.31,
+   "2026": 12.87,
+   "trades/yr": 356.24,
+   "fees %/yr": 4.06
+  },
+  "lowvol top10 +breadth": {
+   "per yr %": 16.91,
+   "swing %": 19.84,
+   "sharpe": 0.91,
+   "worst fall %": -33.99,
+   "up months %": 65.0,
+   "worst month %": -11.19,
+   "worst 6m %": -32.77,
+   "6m windows up %": 77.84,
+   "worst yr %": -4.52,
+   "1st half /yr": 41.26,
+   "2nd half /yr": -2.69,
+   "last 6m %": 13.33,
+   "2021": 4.57,
+   "2022": 17.4,
+   "2023": 54.01,
+   "2024": 12.18,
+   "2025": -4.52,
+   "2026": 7.73,
+   "trades/yr": 185.63,
+   "fees %/yr": 4.41
+  },
+  "lowvol top30 +breadth": {
+   "per yr %": 20.97,
+   "swing %": 18.29,
+   "sharpe": 1.16,
+   "worst fall %": -21.71,
+   "up months %": 68.33,
+   "worst month %": -11.62,
+   "worst 6m %": -19.45,
+   "6m windows up %": 75.32,
+   "worst yr %": -8.16,
+   "1st half /yr": 35.75,
+   "2nd half /yr": 8.54,
+   "last 6m %": 21.55,
+   "2021": 2.48,
+   "2022": 3.69,
+   "2023": 62.01,
+   "2024": 41.29,
+   "2025": -8.16,
+   "2026": 15.8,
+   "trades/yr": 483.6,
+   "fees %/yr": 3.85
+  },
+  "lowvol 12m +breadth": {
+   "per yr %": 15.46,
+   "swing %": 18.73,
+   "sharpe": 0.88,
+   "worst fall %": -26.57,
+   "up months %": 63.33,
+   "worst month %": -12.31,
+   "worst 6m %": -24.71,
+   "6m windows up %": 66.49,
+   "worst yr %": -7.81,
+   "1st half /yr": 25.18,
+   "2nd half /yr": 7.05,
+   "last 6m %": 17.58,
+   "2021": 5.24,
+   "2022": -7.81,
+   "2023": 51.94,
+   "2024": 32.25,
+   "2025": -5.56,
+   "2026": 11.35,
+   "trades/yr": 330.21,
+   "fees %/yr": 3.26
+  },
+  "LIVE CONFIG": {
+   "per yr %": 11.65,
+   "swing %": 20.48,
+   "sharpe": 0.68,
+   "worst fall %": -23.58,
+   "up months %": 45.0,
+   "worst month %": -13.92,
+   "worst 6m %": -17.13,
+   "6m windows up %": 55.32,
+   "worst yr %": -12.29,
+   "1st half /yr": 28.98,
+   "2nd half /yr": -2.96,
+   "last 6m %": 0.94,
+   "2021": 6.79,
+   "2022": -8.11,
+   "2023": 65.29,
+   "2024": 23.33,
+   "2025": -1.18,
+   "2026": -12.29,
+   "trades/yr": 231.49,
+   "fees %/yr": 3.09
+  }
+ },
+ "curve": [
+  {
+   "date": "2021-11-15",
+   "live": -2.78,
+   "nifty50": 0.04,
+   "all_listed": -0.67
+  },
+  {
+   "date": "2021-11-23",
+   "live": -2.95,
+   "nifty50": -3.31,
+   "all_listed": -3.68
+  },
+  {
+   "date": "2021-11-30",
+   "live": -4.69,
+   "nifty50": -6.18,
+   "all_listed": -6.18
+  },
+  {
+   "date": "2021-12-07",
+   "live": -1.2,
+   "nifty50": -5.12,
+   "all_listed": -4.3
+  },
+  {
+   "date": "2021-12-14",
+   "live": 6.65,
+   "nifty50": -4.3,
+   "all_listed": -1.27
+  },
+  {
+   "date": "2021-12-21",
+   "live": 0.2,
+   "nifty50": -7.36,
+   "all_listed": -6.9
+  },
+  {
+   "date": "2021-12-28",
+   "live": 4.4,
+   "nifty50": -4.8,
+   "all_listed": -3.67
+  },
+  {
+   "date": "2022-01-04",
+   "live": 10.02,
+   "nifty50": -1.64,
+   "all_listed": -0.3
+  },
+  {
+   "date": "2022-01-11",
+   "live": 13.89,
+   "nifty50": -0.26,
+   "all_listed": 1.6
+  },
+  {
+   "date": "2022-01-18",
+   "live": 11.08,
+   "nifty50": 0.06,
+   "all_listed": 2.38
+  },
+  {
+   "date": "2022-01-25",
+   "live": 4.06,
+   "nifty50": -4.56,
+   "all_listed": -2.69
+  },
+  {
+   "date": "2022-02-02",
+   "live": 8.85,
+   "nifty50": -1.78,
+   "all_listed": 0.73
+  },
+  {
+   "date": "2022-02-09",
+   "live": 3.32,
+   "nifty50": -3.53,
+   "all_listed": -1.71
+  },
+  {
+   "date": "2022-02-16",
+   "live": 0.56,
+   "nifty50": -4.31,
+   "all_listed": -5.0
+  },
+  {
+   "date": "2022-02-23",
+   "live": -4.73,
+   "nifty50": -5.74,
+   "all_listed": -8.86
+  },
+  {
+   "date": "2022-03-03",
+   "live": -9.38,
+   "nifty50": -8.86,
+   "all_listed": -9.97
+  },
+  {
+   "date": "2022-03-10",
+   "live": -9.38,
+   "nifty50": -8.33,
+   "all_listed": -9.09
+  },
+  {
+   "date": "2022-03-17",
+   "live": -9.38,
+   "nifty50": -4.51,
+   "all_listed": -6.42
+  },
+  {
+   "date": "2022-03-25",
+   "live": -8.09,
+   "nifty50": -5.25,
+   "all_listed": -6.71
+  },
+  {
+   "date": "2022-04-01",
+   "live": -5.3,
+   "nifty50": -2.39,
+   "all_listed": -3.43
+  },
+  {
+   "date": "2022-04-08",
+   "live": -0.78,
+   "nifty50": -1.76,
+   "all_listed": 1.05
+  },
+  {
+   "date": "2022-04-19",
+   "live": -2.08,
+   "nifty50": -6.32,
+   "all_listed": -1.19
+  },
+  {
+   "date": "2022-04-26",
+   "live": -2.48,
+   "nifty50": -4.98,
+   "all_listed": -0.66
+  },
+  {
+   "date": "2022-05-04",
+   "live": -2.48,
+   "nifty50": -7.87,
+   "all_listed": -4.73
+  },
+  {
+   "date": "2022-05-11",
+   "live": -2.48,
+   "nifty50": -10.69,
+   "all_listed": -12.42
+  },
+  {
+   "date": "2022-05-18",
+   "live": -2.48,
+   "nifty50": -10.29,
+   "all_listed": -9.09
+  },
+  {
+   "date": "2022-05-25",
+   "live": -2.48,
+   "nifty50": -11.47,
+   "all_listed": -13.46
+  },
+  {
+   "date": "2022-06-01",
+   "live": -2.48,
+   "nifty50": -8.73,
+   "all_listed": -8.42
+  },
+  {
+   "date": "2022-06-08",
+   "live": -2.48,
+   "nifty50": -9.65,
+   "all_listed": -9.95
+  },
+  {
+   "date": "2022-06-15",
+   "live": -2.48,
+   "nifty50": -13.32,
+   "all_listed": -13.26
+  },
+  {
+   "date": "2022-06-22",
+   "live": -2.48,
+   "nifty50": -14.86,
+   "all_listed": -17.44
+  },
+  {
+   "date": "2022-06-29",
+   "live": -2.48,
+   "nifty50": -12.73,
+   "all_listed": -13.6
+  },
+  {
+   "date": "2022-07-06",
+   "live": -2.48,
+   "nifty50": -11.67,
+   "all_listed": -12.09
+  },
+  {
+   "date": "2022-07-13",
+   "live": -2.48,
+   "nifty50": -11.8,
+   "all_listed": -9.8
+  },
+  {
+   "date": "2022-07-20",
+   "live": -2.48,
+   "nifty50": -8.74,
+   "all_listed": -7.37
+  },
+  {
+   "date": "2022-07-27",
+   "live": -2.48,
+   "nifty50": -8.07,
+   "all_listed": -7.44
+  },
+  {
+   "date": "2022-08-03",
+   "live": -2.54,
+   "nifty50": -3.95,
+   "all_listed": -4.19
+  },
+  {
+   "date": "2022-08-11",
+   "live": 0.14,
+   "nifty50": -2.45,
+   "all_listed": -3.49
+  },
+  {
+   "date": "2022-08-19",
+   "live": 1.53,
+   "nifty50": -1.9,
+   "all_listed": -2.02
+  },
+  {
+   "date": "2022-08-26",
+   "live": 1.94,
+   "nifty50": -3.0,
+   "all_listed": -0.77
+  },
+  {
+   "date": "2022-09-05",
+   "live": 1.71,
+   "nifty50": -2.41,
+   "all_listed": 1.23
+  },
+  {
+   "date": "2022-09-12",
+   "live": 3.12,
+   "nifty50": -0.92,
+   "all_listed": 3.71
+  },
+  {
+   "date": "2022-09-19",
+   "live": 2.52,
+   "nifty50": -2.65,
+   "all_listed": 1.81
+  },
+  {
+   "date": "2022-09-26",
+   "live": -6.01,
+   "nifty50": -6.0,
+   "all_listed": -3.0
+  },
+  {
+   "date": "2022-10-03",
+   "live": -4.58,
+   "nifty50": -6.71,
+   "all_listed": -1.93
+  },
+  {
+   "date": "2022-10-11",
+   "live": -1.13,
+   "nifty50": -6.18,
+   "all_listed": -1.05
+  },
+  {
+   "date": "2022-10-18",
+   "live": 1.18,
+   "nifty50": -3.4,
+   "all_listed": -0.53
+  },
+  {
+   "date": "2022-10-25",
+   "live": 0.5,
+   "nifty50": -2.47,
+   "all_listed": -0.75
+  },
+  {
+   "date": "2022-11-02",
+   "live": -1.94,
+   "nifty50": -0.11,
+   "all_listed": 0.17
+  },
+  {
+   "date": "2022-11-10",
+   "live": -1.59,
+   "nifty50": -0.41,
+   "all_listed": -0.19
+  },
+  {
+   "date": "2022-11-17",
+   "live": 0.21,
+   "nifty50": 1.33,
+   "all_listed": -0.23
+  },
+  {
+   "date": "2022-11-24",
+   "live": 0.38,
+   "nifty50": 2.11,
+   "all_listed": 0.56
+  },
+  {
+   "date": "2022-12-01",
+   "live": 3.03,
+   "nifty50": 3.92,
+   "all_listed": 3.28
+  },
+  {
+   "date": "2022-12-08",
+   "live": 3.21,
+   "nifty50": 2.8,
+   "all_listed": 3.84
+  },
+  {
+   "date": "2022-12-15",
+   "live": 4.09,
+   "nifty50": 1.72,
+   "all_listed": 3.37
+  },
+  {
+   "date": "2022-12-22",
+   "live": -3.29,
+   "nifty50": 0.14,
+   "all_listed": -1.28
+  },
+  {
+   "date": "2022-12-29",
+   "live": -2.53,
+   "nifty50": 0.49,
+   "all_listed": -0.24
+  },
+  {
+   "date": "2023-01-05",
+   "live": -0.94,
+   "nifty50": -0.61,
+   "all_listed": 0.72
+  },
+  {
+   "date": "2023-01-12",
+   "live": -2.76,
+   "nifty50": -1.35,
+   "all_listed": 0.17
+  },
+  {
+   "date": "2023-01-19",
+   "live": -2.86,
+   "nifty50": 0.03,
+   "all_listed": 0.18
+  },
+  {
+   "date": "2023-01-27",
+   "live": -9.4,
+   "nifty50": -2.75,
+   "all_listed": -4.23
+  },
+  {
+   "date": "2023-02-03",
+   "live": -8.4,
+   "nifty50": -1.37,
+   "all_listed": -3.79
+  },
+  {
+   "date": "2023-02-10",
+   "live": -7.74,
+   "nifty50": -1.36,
+   "all_listed": -2.23
+  },
+  {
+   "date": "2023-02-17",
+   "live": -8.73,
+   "nifty50": -0.88,
+   "all_listed": -2.82
+  },
+  {
+   "date": "2023-02-24",
+   "live": -10.72,
+   "nifty50": -3.52,
+   "all_listed": -4.62
+  },
+  {
+   "date": "2023-03-03",
+   "live": -11.51,
+   "nifty50": -2.81,
+   "all_listed": -3.42
+  },
+  {
+   "date": "2023-03-13",
+   "live": -9.6,
+   "nifty50": -5.24,
+   "all_listed": -4.9
+  },
+  {
+   "date": "2023-03-20",
+   "live": -9.6,
+   "nifty50": -6.16,
+   "all_listed": -6.5
+  },
+  {
+   "date": "2023-03-27",
+   "live": -9.6,
+   "nifty50": -6.17,
+   "all_listed": -8.43
+  },
+  {
+   "date": "2023-04-05",
+   "live": -9.6,
+   "nifty50": -3.01,
+   "all_listed": -3.81
+  },
+  {
+   "date": "2023-04-13",
+   "live": -9.74,
+   "nifty50": -1.52,
+   "all_listed": -1.48
+  },
+  {
+   "date": "2023-04-21",
+   "live": -9.43,
+   "nifty50": -2.64,
+   "all_listed": -0.87
+  },
+  {
+   "date": "2023-04-28",
+   "live": -5.45,
+   "nifty50": -0.21,
+   "all_listed": 1.98
+  },
+  {
+   "date": "2023-05-08",
+   "live": -3.98,
+   "nifty50": 0.89,
+   "all_listed": 4.21
+  },
+  {
+   "date": "2023-05-15",
+   "live": -3.67,
+   "nifty50": 1.64,
+   "all_listed": 5.23
+  },
+  {
+   "date": "2023-05-22",
+   "live": -3.47,
+   "nifty50": 1.17,
+   "all_listed": 5.64
+  },
+  {
+   "date": "2023-05-29",
+   "live": -2.93,
+   "nifty50": 2.74,
+   "all_listed": 7.07
+  },
+  {
+   "date": "2023-06-05",
+   "live": 1.35,
+   "nifty50": 2.71,
+   "all_listed": 9.83
+  },
+  {
+   "date": "2023-06-12",
+   "live": 5.24,
+   "nifty50": 2.76,
+   "all_listed": 11.42
+  },
+  {
+   "date": "2023-06-19",
+   "live": 8.65,
+   "nifty50": 3.61,
+   "all_listed": 14.18
+  },
+  {
+   "date": "2023-06-26",
+   "live": 8.78,
+   "nifty50": 3.25,
+   "all_listed": 13.95
+  },
+  {
+   "date": "2023-07-04",
+   "live": 14.99,
+   "nifty50": 7.11,
+   "all_listed": 16.11
+  },
+  {
+   "date": "2023-07-11",
+   "live": 17.63,
+   "nifty50": 7.38,
+   "all_listed": 18.34
+  },
+  {
+   "date": "2023-07-18",
+   "live": 23.33,
+   "nifty50": 9.1,
+   "all_listed": 20.23
+  },
+  {
+   "date": "2023-07-25",
+   "live": 28.37,
+   "nifty50": 8.72,
+   "all_listed": 22.3
+  },
+  {
+   "date": "2023-08-01",
+   "live": 30.23,
+   "nifty50": 9.01,
+   "all_listed": 25.61
+  },
+  {
+   "date": "2023-08-08",
+   "live": 32.16,
+   "nifty50": 8.11,
+   "all_listed": 26.05
+  },
+  {
+   "date": "2023-08-16",
+   "live": 38.03,
+   "nifty50": 7.53,
+   "all_listed": 26.25
+  },
+  {
+   "date": "2023-08-23",
+   "live": 41.36,
+   "nifty50": 7.41,
+   "all_listed": 29.03
+  },
+  {
+   "date": "2023-08-30",
+   "live": 45.32,
+   "nifty50": 6.88,
+   "all_listed": 31.35
+  },
+  {
+   "date": "2023-09-06",
+   "live": 46.79,
+   "nifty50": 8.33,
+   "all_listed": 35.8
+  },
+  {
+   "date": "2023-09-13",
+   "live": 41.02,
+   "nifty50": 10.87,
+   "all_listed": 34.32
+  },
+  {
+   "date": "2023-09-21",
+   "live": 42.15,
+   "nifty50": 9.06,
+   "all_listed": 33.58
+  },
+  {
+   "date": "2023-09-28",
+   "live": 44.84,
+   "nifty50": 7.85,
+   "all_listed": 34.63
+  },
+  {
+   "date": "2023-10-06",
+   "live": 47.56,
+   "nifty50": 8.57,
+   "all_listed": 36.45
+  },
+  {
+   "date": "2023-10-13",
+   "live": 50.86,
+   "nifty50": 9.11,
+   "all_listed": 37.84
+  },
+  {
+   "date": "2023-10-20",
+   "live": 49.7,
+   "nifty50": 7.95,
+   "all_listed": 37.31
+  },
+  {
+   "date": "2023-10-30",
+   "live": 45.67,
+   "nifty50": 5.73,
+   "all_listed": 33.12
+  },
+  {
+   "date": "2023-11-06",
+   "live": 49.69,
+   "nifty50": 7.23,
+   "all_listed": 36.99
+  },
+  {
+   "date": "2023-11-13",
+   "live": 54.8,
+   "nifty50": 7.41,
+   "all_listed": 39.76
+  },
+  {
+   "date": "2023-11-21",
+   "live": 59.18,
+   "nifty50": 9.28,
+   "all_listed": 43.37
+  },
+  {
+   "date": "2023-11-29",
+   "live": 57.87,
+   "nifty50": 11.01,
+   "all_listed": 44.79
+  },
+  {
+   "date": "2023-12-06",
+   "live": 61.94,
+   "nifty50": 15.66,
+   "all_listed": 50.18
+  },
+  {
+   "date": "2023-12-13",
+   "live": 61.1,
+   "nifty50": 15.6,
+   "all_listed": 52.26
+  },
+  {
+   "date": "2023-12-20",
+   "live": 55.62,
+   "nifty50": 16.83,
+   "all_listed": 49.48
+  },
+  {
+   "date": "2023-12-28",
+   "live": 61.14,
+   "nifty50": 20.31,
+   "all_listed": 55.66
+  },
+  {
+   "date": "2024-01-04",
+   "live": 65.62,
+   "nifty50": 19.64,
+   "all_listed": 61.12
+  },
+  {
+   "date": "2024-01-11",
+   "live": 67.07,
+   "nifty50": 19.58,
+   "all_listed": 63.54
+  },
+  {
+   "date": "2024-01-18",
+   "live": 67.32,
+   "nifty50": 18.56,
+   "all_listed": 62.28
+  },
+  {
+   "date": "2024-01-29",
+   "live": 82.75,
+   "nifty50": 20.08,
+   "all_listed": 67.15
+  },
+  {
+   "date": "2024-02-05",
+   "live": 92.29,
+   "nifty50": 20.27,
+   "all_listed": 70.85
+  },
+  {
+   "date": "2024-02-12",
+   "live": 76.24,
+   "nifty50": 19.41,
+   "all_listed": 65.02
+  },
+  {
+   "date": "2024-02-19",
+   "live": 88.23,
+   "nifty50": 22.2,
+   "all_listed": 73.0
+  },
+  {
+   "date": "2024-02-26",
+   "live": 90.57,
+   "nifty50": 22.2,
+   "all_listed": 72.91
+  },
+  {
+   "date": "2024-03-04",
+   "live": 87.03,
+   "nifty50": 23.77,
+   "all_listed": 71.66
+  },
+  {
+   "date": "2024-03-12",
+   "live": 72.31,
+   "nifty50": 23.38,
+   "all_listed": 62.36
+  },
+  {
+   "date": "2024-03-19",
+   "live": 64.5,
+   "nifty50": 20.52,
+   "all_listed": 56.95
+  },
+  {
+   "date": "2024-03-27",
+   "live": 69.78,
+   "nifty50": 22.21,
+   "all_listed": 62.87
+  },
+  {
+   "date": "2024-04-04",
+   "live": 77.97,
+   "nifty50": 24.37,
+   "all_listed": 72.73
+  },
+  {
+   "date": "2024-04-12",
+   "live": 76.18,
+   "nifty50": 24.4,
+   "all_listed": 73.1
+  },
+  {
+   "date": "2024-04-22",
+   "live": 77.55,
+   "nifty50": 23.39,
+   "all_listed": 72.83
+  },
+  {
+   "date": "2024-04-29",
+   "live": 83.96,
+   "nifty50": 25.08,
+   "all_listed": 78.3
+  },
+  {
+   "date": "2024-05-07",
+   "live": 78.25,
+   "nifty50": 23.2,
+   "all_listed": 73.29
+  },
+  {
+   "date": "2024-05-14",
+   "live": 78.91,
+   "nifty50": 22.73,
+   "all_listed": 74.21
+  },
+  {
+   "date": "2024-05-22",
+   "live": 87.31,
+   "nifty50": 24.83,
+   "all_listed": 80.43
+  },
+  {
+   "date": "2024-05-29",
+   "live": 83.1,
+   "nifty50": 25.42,
+   "all_listed": 78.69
+  },
+  {
+   "date": "2024-06-05",
+   "live": 71.49,
+   "nifty50": 24.96,
+   "all_listed": 73.98
+  },
+  {
+   "date": "2024-06-12",
+   "live": 88.13,
+   "nifty50": 28.84,
+   "all_listed": 88.76
+  },
+  {
+   "date": "2024-06-20",
+   "live": 90.84,
+   "nifty50": 30.18,
+   "all_listed": 94.41
+  },
+  {
+   "date": "2024-06-27",
+   "live": 89.23,
+   "nifty50": 32.82,
+   "all_listed": 93.43
+  },
+  {
+   "date": "2024-07-04",
+   "live": 97.18,
+   "nifty50": 34.25,
+   "all_listed": 99.53
+  },
+  {
+   "date": "2024-07-11",
+   "live": 93.44,
+   "nifty50": 34.32,
+   "all_listed": 100.7
+  },
+  {
+   "date": "2024-07-19",
+   "live": 82.37,
+   "nifty50": 35.51,
+   "all_listed": 96.08
+  },
+  {
+   "date": "2024-07-26",
+   "live": 88.83,
+   "nifty50": 37.19,
+   "all_listed": 103.37
+  },
+  {
+   "date": "2024-08-02",
+   "live": 85.04,
+   "nifty50": 36.54,
+   "all_listed": 104.1
+  },
+  {
+   "date": "2024-08-09",
+   "live": 81.03,
+   "nifty50": 34.61,
+   "all_listed": 99.94
+  },
+  {
+   "date": "2024-08-19",
+   "live": 88.9,
+   "nifty50": 35.74,
+   "all_listed": 102.41
+  },
+  {
+   "date": "2024-08-26",
+   "live": 88.64,
+   "nifty50": 38.16,
+   "all_listed": 107.1
+  },
+  {
+   "date": "2024-09-02",
+   "live": 87.74,
+   "nifty50": 39.64,
+   "all_listed": 107.86
+  },
+  {
+   "date": "2024-09-09",
+   "live": 86.56,
+   "nifty50": 37.75,
+   "all_listed": 106.61
+  },
+  {
+   "date": "2024-09-16",
+   "live": 95.52,
+   "nifty50": 40.22,
+   "all_listed": 111.77
+  },
+  {
+   "date": "2024-09-23",
+   "live": 95.71,
+   "nifty50": 43.29,
+   "all_listed": 113.08
+  },
+  {
+   "date": "2024-09-30",
+   "live": 95.68,
+   "nifty50": 42.58,
+   "all_listed": 111.55
+  },
+  {
+   "date": "2024-10-08",
+   "live": 89.35,
+   "nifty50": 38.17,
+   "all_listed": 104.12
+  },
+  {
+   "date": "2024-10-15",
+   "live": 104.57,
+   "nifty50": 38.42,
+   "all_listed": 109.54
+  },
+  {
+   "date": "2024-10-22",
+   "live": 89.08,
+   "nifty50": 35.18,
+   "all_listed": 95.83
+  },
+  {
+   "date": "2024-10-29",
+   "live": 87.39,
+   "nifty50": 35.16,
+   "all_listed": 95.15
+  },
+  {
+   "date": "2024-11-05",
+   "live": 94.71,
+   "nifty50": 33.75,
+   "all_listed": 99.23
+  },
+  {
+   "date": "2024-11-12",
+   "live": 89.59,
+   "nifty50": 31.93,
+   "all_listed": 94.58
+  },
+  {
+   "date": "2024-11-21",
+   "live": 85.17,
+   "nifty50": 28.99,
+   "all_listed": 88.32
+  },
+  {
+   "date": "2024-11-28",
+   "live": 93.02,
+   "nifty50": 32.1,
+   "all_listed": 98.57
+  },
+  {
+   "date": "2024-12-05",
+   "live": 99.16,
+   "nifty50": 36.49,
+   "all_listed": 105.38
+  },
+  {
+   "date": "2024-12-12",
+   "live": 99.12,
+   "nifty50": 35.61,
+   "all_listed": 106.85
+  },
+  {
+   "date": "2024-12-19",
+   "live": 103.48,
+   "nifty50": 32.31,
+   "all_listed": 103.36
+  },
+  {
+   "date": "2024-12-27",
+   "live": 100.03,
+   "nifty50": 31.55,
+   "all_listed": 99.33
+  },
+  {
+   "date": "2025-01-03",
+   "live": 100.03,
+   "nifty50": 32.6,
+   "all_listed": 103.46
+  },
+  {
+   "date": "2025-01-10",
+   "live": 87.33,
+   "nifty50": 29.44,
+   "all_listed": 91.18
+  },
+  {
+   "date": "2025-01-17",
+   "live": 83.67,
+   "nifty50": 28.17,
+   "all_listed": 90.73
+  },
+  {
+   "date": "2025-01-24",
+   "live": 83.67,
+   "nifty50": 27.56,
+   "all_listed": 83.3
+  },
+  {
+   "date": "2025-01-31",
+   "live": 83.67,
+   "nifty50": 29.86,
+   "all_listed": 84.35
+  },
+  {
+   "date": "2025-02-06",
+   "live": 83.67,
+   "nifty50": 30.39,
+   "all_listed": 85.74
+  },
+  {
+   "date": "2025-02-13",
+   "live": 83.67,
+   "nifty50": 27.23,
+   "all_listed": 73.52
+  },
+  {
+   "date": "2025-02-20",
+   "live": 83.67,
+   "nifty50": 26.57,
+   "all_listed": 71.54
+  },
+  {
+   "date": "2025-02-28",
+   "live": 83.67,
+   "nifty50": 22.22,
+   "all_listed": 60.33
+  },
+  {
+   "date": "2025-03-07",
+   "live": 83.67,
+   "nifty50": 24.58,
+   "all_listed": 69.5
+  },
+  {
+   "date": "2025-03-17",
+   "live": 83.67,
+   "nifty50": 24.34,
+   "all_listed": 63.8
+  },
+  {
+   "date": "2025-03-24",
+   "live": 83.67,
+   "nifty50": 30.69,
+   "all_listed": 79.04
+  },
+  {
+   "date": "2025-04-01",
+   "live": 83.67,
+   "nifty50": 27.97,
+   "all_listed": 74.75
+  },
+  {
+   "date": "2025-04-08",
+   "live": 83.67,
+   "nifty50": 24.49,
+   "all_listed": 68.57
+  },
+  {
+   "date": "2025-04-17",
+   "live": 83.67,
+   "nifty50": 31.76,
+   "all_listed": 80.22
+  },
+  {
+   "date": "2025-04-25",
+   "live": 83.67,
+   "nifty50": 32.79,
+   "all_listed": 80.86
+  },
+  {
+   "date": "2025-05-05",
+   "live": 85.87,
+   "nifty50": 35.12,
+   "all_listed": 81.7
+  },
+  {
+   "date": "2025-05-12",
+   "live": 87.51,
+   "nifty50": 37.68,
+   "all_listed": 84.17
+  },
+  {
+   "date": "2025-05-19",
+   "live": 92.53,
+   "nifty50": 37.8,
+   "all_listed": 94.29
+  },
+  {
+   "date": "2025-05-26",
+   "live": 91.18,
+   "nifty50": 38.11,
+   "all_listed": 95.53
+  },
+  {
+   "date": "2025-06-02",
+   "live": 92.24,
+   "nifty50": 36.54,
+   "all_listed": 97.81
+  },
+  {
+   "date": "2025-06-09",
+   "live": 98.4,
+   "nifty50": 38.67,
+   "all_listed": 103.34
+  },
+  {
+   "date": "2025-06-16",
+   "live": 102.06,
+   "nifty50": 37.81,
+   "all_listed": 100.79
+  },
+  {
+   "date": "2025-06-23",
+   "live": 98.55,
+   "nifty50": 37.95,
+   "all_listed": 96.99
+  },
+  {
+   "date": "2025-06-30",
+   "live": 107.6,
+   "nifty50": 40.96,
+   "all_listed": 104.59
+  },
+  {
+   "date": "2025-07-07",
+   "live": 101.12,
+   "nifty50": 40.65,
+   "all_listed": 103.78
+  },
+  {
+   "date": "2025-07-14",
+   "live": 101.12,
+   "nifty50": 38.56,
+   "all_listed": 104.56
+  },
+  {
+   "date": "2025-07-21",
+   "live": 103.04,
+   "nifty50": 38.6,
+   "all_listed": 106.31
+  },
+  {
+   "date": "2025-07-28",
+   "live": 94.29,
+   "nifty50": 36.34,
+   "all_listed": 98.62
+  },
+  {
+   "date": "2025-08-04",
+   "live": 95.02,
+   "nifty50": 36.57,
+   "all_listed": 98.27
+  },
+  {
+   "date": "2025-08-11",
+   "live": 95.66,
+   "nifty50": 35.81,
+   "all_listed": 94.64
+  },
+  {
+   "date": "2025-08-19",
+   "live": 102.65,
+   "nifty50": 37.99,
+   "all_listed": 99.5
+  },
+  {
+   "date": "2025-08-26",
+   "live": 99.72,
+   "nifty50": 36.51,
+   "all_listed": 96.65
+  },
+  {
+   "date": "2025-09-03",
+   "live": 101.55,
+   "nifty50": 36.53,
+   "all_listed": 100.49
+  },
+  {
+   "date": "2025-09-10",
+   "live": 101.48,
+   "nifty50": 37.95,
+   "all_listed": 102.02
+  },
+  {
+   "date": "2025-09-17",
+   "live": 103.35,
+   "nifty50": 39.92,
+   "all_listed": 106.06
+  },
+  {
+   "date": "2025-09-24",
+   "live": 103.08,
+   "nifty50": 38.41,
+   "all_listed": 103.39
+  },
+  {
+   "date": "2025-10-01",
+   "live": 100.56,
+   "nifty50": 37.2,
+   "all_listed": 99.99
+  },
+  {
+   "date": "2025-10-09",
+   "live": 105.65,
+   "nifty50": 39.1,
+   "all_listed": 102.17
+  },
+  {
+   "date": "2025-10-16",
+   "live": 104.43,
+   "nifty50": 41.33,
+   "all_listed": 103.13
+  },
+  {
+   "date": "2025-10-24",
+   "live": 101.89,
+   "nifty50": 42.49,
+   "all_listed": 104.0
+  },
+  {
+   "date": "2025-10-31",
+   "live": 105.09,
+   "nifty50": 42.09,
+   "all_listed": 105.66
+  },
+  {
+   "date": "2025-11-10",
+   "live": 103.27,
+   "nifty50": 41.27,
+   "all_listed": 102.07
+  },
+  {
+   "date": "2025-11-17",
+   "live": 105.72,
+   "nifty50": 43.7,
+   "all_listed": 104.75
+  },
+  {
+   "date": "2025-11-24",
+   "live": 95.42,
+   "nifty50": 43.4,
+   "all_listed": 97.69
+  },
+  {
+   "date": "2025-12-01",
+   "live": 97.78,
+   "nifty50": 44.6,
+   "all_listed": 99.23
+  },
+  {
+   "date": "2025-12-08",
+   "live": 90.05,
+   "nifty50": 43.41,
+   "all_listed": 91.48
+  },
+  {
+   "date": "2025-12-15",
+   "live": 95.01,
+   "nifty50": 43.78,
+   "all_listed": 96.17
+  },
+  {
+   "date": "2025-12-22",
+   "live": 97.78,
+   "nifty50": 44.58,
+   "all_listed": 97.81
+  },
+  {
+   "date": "2025-12-30",
+   "live": 93.8,
+   "nifty50": 43.29,
+   "all_listed": 96.8
+  },
+  {
+   "date": "2026-01-06",
+   "live": 98.8,
+   "nifty50": 44.61,
+   "all_listed": 100.47
+  },
+  {
+   "date": "2026-01-13",
+   "live": 90.5,
+   "nifty50": 42.15,
+   "all_listed": 92.94
+  },
+  {
+   "date": "2026-01-20",
+   "live": 80.32,
+   "nifty50": 39.38,
+   "all_listed": 84.95
+  },
+  {
+   "date": "2026-01-28",
+   "live": 76.54,
+   "nifty50": 39.99,
+   "all_listed": 85.51
+  },
+  {
+   "date": "2026-02-04",
+   "live": 76.54,
+   "nifty50": 42.39,
+   "all_listed": 92.42
+  },
+  {
+   "date": "2026-02-11",
+   "live": 83.7,
+   "nifty50": 43.37,
+   "all_listed": 95.76
+  },
+  {
+   "date": "2026-02-18",
+   "live": 85.15,
+   "nifty50": 42.63,
+   "all_listed": 94.05
+  },
+  {
+   "date": "2026-02-25",
+   "live": 82.94,
+   "nifty50": 40.77,
+   "all_listed": 90.92
+  },
+  {
+   "date": "2026-03-05",
+   "live": 71.76,
+   "nifty50": 36.81,
+   "all_listed": 83.68
+  },
+  {
+   "date": "2026-03-12",
+   "live": 71.76,
+   "nifty50": 30.58,
+   "all_listed": 81.07
+  },
+  {
+   "date": "2026-03-19",
+   "live": 71.76,
+   "nifty50": 27.06,
+   "all_listed": 74.94
+  },
+  {
+   "date": "2026-03-27",
+   "live": 71.76,
+   "nifty50": 26.06,
+   "all_listed": 73.49
+  },
+  {
+   "date": "2026-04-07",
+   "live": 71.76,
+   "nifty50": 27.74,
+   "all_listed": 77.62
+  },
+  {
+   "date": "2026-04-15",
+   "live": 71.76,
+   "nifty50": 33.85,
+   "all_listed": 92.88
+  },
+  {
+   "date": "2026-04-22",
+   "live": 71.76,
+   "nifty50": 34.67,
+   "all_listed": 100.26
+  },
+  {
+   "date": "2026-04-29",
+   "live": 71.76,
+   "nifty50": 33.56,
+   "all_listed": 101.48
+  },
+  {
+   "date": "2026-05-07",
+   "live": 71.76,
+   "nifty50": 34.38,
+   "all_listed": 108.22
+  },
+  {
+   "date": "2026-05-14",
+   "live": 71.76,
+   "nifty50": 30.86,
+   "all_listed": 100.72
+  },
+  {
+   "date": "2026-05-21",
+   "live": 71.76,
+   "nifty50": 30.67,
+   "all_listed": 100.61
+  },
+  {
+   "date": "2026-05-29",
+   "live": 71.76,
+   "nifty50": 30.08,
+   "all_listed": 103.08
+  },
+  {
+   "date": "2026-06-05",
+   "live": 71.76,
+   "nifty50": 29.08,
+   "all_listed": 103.76
+  },
+  {
+   "date": "2026-06-12",
+   "live": 71.76,
+   "nifty50": 30.49,
+   "all_listed": 103.88
+  },
+  {
+   "date": "2026-06-19",
+   "live": 71.76,
+   "nifty50": 32.65,
+   "all_listed": 111.55
+  },
+  {
+   "date": "2026-06-29",
+   "live": 71.76,
+   "nifty50": 32.28,
+   "all_listed": 109.8
+  },
+  {
+   "date": "2026-07-06",
+   "live": 71.76,
+   "nifty50": 34.95,
+   "all_listed": 114.64
+  },
+  {
+   "date": "2026-07-13",
+   "live": 71.76,
+   "nifty50": 33.74,
+   "all_listed": 116.06
+  },
+  {
+   "date": "2026-07-20",
+   "live": 71.76,
+   "nifty50": 33.89,
+   "all_listed": 114.7
+  },
+  {
+   "date": "2026-07-27",
+   "live": 71.76,
+   "nifty50": 32.55,
+   "all_listed": 113.62
+  },
+  {
+   "date": "2026-08-03",
+   "live": 71.76,
+   "nifty50": 36.85,
+   "all_listed": 117.68
+  },
+  {
+   "date": "2026-08-10",
+   "live": 71.76,
+   "nifty50": 35.8,
+   "all_listed": 118.34
+  },
+  {
+   "date": "2026-08-17",
+   "live": 71.76,
+   "nifty50": 34.17,
+   "all_listed": 117.95
+  },
+  {
+   "date": "2026-08-24",
+   "live": 71.76,
+   "nifty50": 33.79,
+   "all_listed": 118.91
+  },
+  {
+   "date": "2026-08-31",
+   "live": 71.76,
+   "nifty50": 33.02,
+   "all_listed": 118.35
+  },
+  {
+   "date": "2026-09-07",
+   "live": 71.76,
+   "nifty50": 31.36,
+   "all_listed": 118.13
+  },
+  {
+   "date": "2026-09-15",
+   "live": 71.76,
+   "nifty50": 27.71,
+   "all_listed": 110.9
+  },
+  {
+   "date": "2026-09-22",
+   "live": 71.76,
+   "nifty50": 28.87,
+   "all_listed": 116.51
+  },
+  {
+   "date": "2026-09-29",
+   "live": 71.76,
+   "nifty50": 25.48,
+   "all_listed": 111.25
+  },
+  {
+   "date": "2026-10-07",
+   "live": 71.76,
+   "nifty50": 24.86,
+   "all_listed": 111.38
+  },
+  {
+   "date": "2026-10-14",
+   "live": 71.76,
+   "nifty50": 24.97,
+   "all_listed": 110.95
+  },
+  {
+   "date": "2026-10-22",
+   "live": 71.76,
+   "nifty50": 25.33,
+   "all_listed": 99.4
+  },
+  {
+   "date": "2026-10-29",
+   "live": 71.76,
+   "nifty50": 26.7,
+   "all_listed": 101.21
+  },
+  {
+   "date": "2026-11-05",
+   "live": 71.76,
+   "nifty50": 35.54,
+   "all_listed": 109.21
+  },
+  {
+   "date": "2026-11-13",
+   "live": 73.37,
+   "nifty50": 38.9,
+   "all_listed": 113.09
+  }
+ ]
+}
