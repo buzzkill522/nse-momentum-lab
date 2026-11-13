@@ -285,7 +285,7 @@
    "2024": 46.63,
    "2025": -6.49,
    "2026": 26.52,
-   "trades/yr": 130.56,
+   "trades/yr": 130.36,
    "fees %/yr": 5.25
   },
   "winners + rough-market cash [index]": {
@@ -661,6 +661,28 @@
    "2026": -2.08,
    "trades/yr": 199.45,
    "fees %/yr": 2.07
+  },
+  "winners 12m [large]": {
+   "per yr %": 13.02,
+   "swing %": 21.62,
+   "sharpe": 0.69,
+   "worst fall %": -29.51,
+   "up months %": 58.33,
+   "worst month %": -13.59,
+   "worst 6m %": -24.56,
+   "6m windows up %": 62.43,
+   "worst yr %": -9.41,
+   "1st half /yr": 24.03,
+   "2nd half /yr": 3.44,
+   "last 6m %": 1.93,
+   "2021": -7.48,
+   "2022": -9.41,
+   "2023": 51.38,
+   "2024": 49.42,
+   "2025": -3.92,
+   "2026": 1.15,
+   "trades/yr": 197.44,
+   "fees %/yr": 2.37
   },
   "winners near high + cut [large]": {
    "per yr %": 4.9,
