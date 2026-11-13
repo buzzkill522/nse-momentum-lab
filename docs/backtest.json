@@ -9,18 +9,18 @@
   "lookback": 126,
   "skip": 21,
   "trend_sma": 50,
-  "select": "mom",
+  "select": "lowvol",
   "weighting": "equal",
   "buffer": 2.0,
   "exposure": [
-   "regime"
+   "voltarget"
   ],
   "vol_target": 0.15,
   "rebalance": "monthly",
   "risk_check": "weekly",
   "drift": 0.25
  },
- "description": "The bot builds its own list of 400 mid- and small-cap NSE stocks each month (ranked by trading activity, skipping the 100 largest). From those in an uptrend it holds the 20 with the highest 6-month return. Stocks are re-picked monthly. It moves fully to cash when the Nifty 50 is below its 200-day average (checked weekly). 0.2% cost per trade. Prices from Yahoo Finance (may be delayed ~15 min).",
+ "description": "The bot builds its own list of 400 mid- and small-cap NSE stocks each month (ranked by trading activity, skipping the 100 largest). From those in an uptrend it holds the 20 calmest stocks among the top third by 6-month return. Stocks are re-picked monthly. It invests less when the market is unusually jumpy (checked weekly). 0.2% cost per trade. Prices from Yahoo Finance (may be delayed ~15 min).",
  "table": {
   "Nifty 50": {
    "per yr %": 6.8,
@@ -305,7 +305,7 @@
    "2024": 32.68,
    "2025": -3.26,
    "2026": 10.32,
-   "trades/yr": 344.02,
+   "trades/yr": 344.22,
    "fees %/yr": 4.08
   },
   "lowvol +voltarget": {
@@ -463,32 +463,32 @@
    "fees %/yr": 3.26
   },
   "LIVE CONFIG": {
-   "per yr %": 11.65,
-   "swing %": 20.48,
-   "sharpe": 0.68,
-   "worst fall %": -23.58,
-   "up months %": 45.0,
-   "worst month %": -13.92,
-   "worst 6m %": -17.13,
-   "6m windows up %": 55.32,
-   "worst yr %": -12.29,
-   "1st half /yr": 28.98,
-   "2nd half /yr": -2.96,
-   "last 6m %": 0.94,
-   "2021": 6.79,
-   "2022": -8.11,
-   "2023": 65.29,
-   "2024": 23.33,
-   "2025": -1.18,
-   "2026": -12.29,
-   "trades/yr": 231.49,
-   "fees %/yr": 3.09
+   "per yr %": 17.33,
+   "swing %": 16.82,
+   "sharpe": 1.06,
+   "worst fall %": -21.77,
+   "up months %": 68.33,
+   "worst month %": -9.62,
+   "worst 6m %": -18.09,
+   "6m windows up %": 67.48,
+   "worst yr %": -0.99,
+   "1st half /yr": 33.13,
+   "2nd half /yr": 4.0,
+   "last 6m %": 20.14,
+   "2021": 3.08,
+   "2022": 5.98,
+   "2023": 57.54,
+   "2024": 20.27,
+   "2025": -0.99,
+   "2026": 8.38,
+   "trades/yr": 381.27,
+   "fees %/yr": 3.72
   }
  },
  "curve": [
   {
    "date": "2021-11-15",
-   "live": -2.78,
+   "live": -0.21,
    "nifty50": 0.04,
    "all_listed": -0.67
   },
@@ -500,1477 +500,1477 @@
   },
   {
    "date": "2021-11-30",
-   "live": -4.69,
+   "live": -4.34,
    "nifty50": -6.18,
    "all_listed": -6.18
   },
   {
    "date": "2021-12-07",
-   "live": -1.2,
+   "live": -3.0,
    "nifty50": -5.12,
    "all_listed": -4.3
   },
   {
    "date": "2021-12-14",
-   "live": 6.65,
+   "live": 0.14,
    "nifty50": -4.3,
    "all_listed": -1.27
   },
   {
    "date": "2021-12-21",
-   "live": 0.2,
+   "live": -3.26,
    "nifty50": -7.36,
    "all_listed": -6.9
   },
   {
    "date": "2021-12-28",
-   "live": 4.4,
+   "live": 1.36,
    "nifty50": -4.8,
    "all_listed": -3.67
   },
   {
    "date": "2022-01-04",
-   "live": 10.02,
+   "live": 4.01,
    "nifty50": -1.64,
    "all_listed": -0.3
   },
   {
    "date": "2022-01-11",
-   "live": 13.89,
+   "live": 4.99,
    "nifty50": -0.26,
    "all_listed": 1.6
   },
   {
    "date": "2022-01-18",
-   "live": 11.08,
+   "live": 5.64,
    "nifty50": 0.06,
    "all_listed": 2.38
   },
   {
    "date": "2022-01-25",
-   "live": 4.06,
+   "live": 0.39,
    "nifty50": -4.56,
    "all_listed": -2.69
   },
   {
    "date": "2022-02-02",
-   "live": 8.85,
+   "live": 2.7,
    "nifty50": -1.78,
    "all_listed": 0.73
   },
   {
    "date": "2022-02-09",
-   "live": 3.32,
+   "live": -0.79,
    "nifty50": -3.53,
    "all_listed": -1.71
   },
   {
    "date": "2022-02-16",
-   "live": 0.56,
+   "live": -2.78,
    "nifty50": -4.31,
    "all_listed": -5.0
   },
   {
    "date": "2022-02-23",
-   "live": -4.73,
+   "live": -4.57,
    "nifty50": -5.74,
    "all_listed": -8.86
   },
   {
    "date": "2022-03-03",
-   "live": -9.38,
+   "live": -5.54,
    "nifty50": -8.86,
    "all_listed": -9.97
   },
   {
    "date": "2022-03-10",
-   "live": -9.38,
+   "live": -6.0,
    "nifty50": -8.33,
    "all_listed": -9.09
   },
   {
    "date": "2022-03-17",
-   "live": -9.38,
+   "live": -4.22,
    "nifty50": -4.51,
    "all_listed": -6.42
   },
   {
    "date": "2022-03-25",
-   "live": -8.09,
+   "live": -4.34,
    "nifty50": -5.25,
    "all_listed": -6.71
   },
   {
    "date": "2022-04-01",
-   "live": -5.3,
+   "live": -3.41,
    "nifty50": -2.39,
    "all_listed": -3.43
   },
   {
    "date": "2022-04-08",
-   "live": -0.78,
+   "live": -0.2,
    "nifty50": -1.76,
    "all_listed": 1.05
   },
   {
    "date": "2022-04-19",
-   "live": -2.08,
+   "live": 0.5,
    "nifty50": -6.32,
    "all_listed": -1.19
   },
   {
    "date": "2022-04-26",
-   "live": -2.48,
+   "live": 0.63,
    "nifty50": -4.98,
    "all_listed": -0.66
   },
   {
    "date": "2022-05-04",
-   "live": -2.48,
+   "live": -3.17,
    "nifty50": -7.87,
    "all_listed": -4.73
   },
   {
    "date": "2022-05-11",
-   "live": -2.48,
+   "live": -10.96,
    "nifty50": -10.69,
    "all_listed": -12.42
   },
   {
    "date": "2022-05-18",
-   "live": -2.48,
+   "live": -8.51,
    "nifty50": -10.29,
    "all_listed": -9.09
   },
   {
    "date": "2022-05-25",
-   "live": -2.48,
+   "live": -12.37,
    "nifty50": -11.47,
    "all_listed": -13.46
   },
   {
    "date": "2022-06-01",
-   "live": -2.48,
+   "live": -8.62,
    "nifty50": -8.73,
    "all_listed": -8.42
   },
   {
    "date": "2022-06-08",
-   "live": -2.48,
+   "live": -9.55,
    "nifty50": -9.65,
    "all_listed": -9.95
   },
   {
    "date": "2022-06-15",
-   "live": -2.48,
+   "live": -11.41,
    "nifty50": -13.32,
    "all_listed": -13.26
   },
   {
    "date": "2022-06-22",
-   "live": -2.48,
+   "live": -13.99,
    "nifty50": -14.86,
    "all_listed": -17.44
   },
   {
    "date": "2022-06-29",
-   "live": -2.48,
+   "live": -12.42,
    "nifty50": -12.73,
    "all_listed": -13.6
   },
   {
    "date": "2022-07-06",
-   "live": -2.48,
+   "live": -11.14,
    "nifty50": -11.67,
    "all_listed": -12.09
   },
   {
    "date": "2022-07-13",
-   "live": -2.48,
+   "live": -10.05,
    "nifty50": -11.8,
    "all_listed": -9.8
   },
   {
    "date": "2022-07-20",
-   "live": -2.48,
+   "live": -7.66,
    "nifty50": -8.74,
    "all_listed": -7.37
   },
   {
    "date": "2022-07-27",
-   "live": -2.48,
+   "live": -6.19,
    "nifty50": -8.07,
    "all_listed": -7.44
   },
   {
    "date": "2022-08-03",
-   "live": -2.54,
+   "live": -2.18,
    "nifty50": -3.95,
    "all_listed": -4.19
   },
   {
    "date": "2022-08-11",
-   "live": 0.14,
+   "live": 1.16,
    "nifty50": -2.45,
    "all_listed": -3.49
   },
   {
    "date": "2022-08-19",
-   "live": 1.53,
+   "live": 1.64,
    "nifty50": -1.9,
    "all_listed": -2.02
   },
   {
    "date": "2022-08-26",
-   "live": 1.94,
+   "live": 3.18,
    "nifty50": -3.0,
    "all_listed": -0.77
   },
   {
    "date": "2022-09-05",
-   "live": 1.71,
+   "live": 5.25,
    "nifty50": -2.41,
    "all_listed": 1.23
   },
   {
    "date": "2022-09-12",
-   "live": 3.12,
+   "live": 8.04,
    "nifty50": -0.92,
    "all_listed": 3.71
   },
   {
    "date": "2022-09-19",
-   "live": 2.52,
+   "live": 8.02,
    "nifty50": -2.65,
    "all_listed": 1.81
   },
   {
    "date": "2022-09-26",
-   "live": -6.01,
+   "live": 3.53,
    "nifty50": -6.0,
    "all_listed": -3.0
   },
   {
    "date": "2022-10-03",
-   "live": -4.58,
+   "live": 5.41,
    "nifty50": -6.71,
    "all_listed": -1.93
   },
   {
    "date": "2022-10-11",
-   "live": -1.13,
+   "live": 6.53,
    "nifty50": -6.18,
    "all_listed": -1.05
   },
   {
    "date": "2022-10-18",
-   "live": 1.18,
+   "live": 7.57,
    "nifty50": -3.4,
    "all_listed": -0.53
   },
   {
    "date": "2022-10-25",
-   "live": 0.5,
+   "live": 7.37,
    "nifty50": -2.47,
    "all_listed": -0.75
   },
   {
    "date": "2022-11-02",
-   "live": -1.94,
+   "live": 6.92,
    "nifty50": -0.11,
    "all_listed": 0.17
   },
   {
    "date": "2022-11-10",
-   "live": -1.59,
+   "live": 7.45,
    "nifty50": -0.41,
    "all_listed": -0.19
   },
   {
    "date": "2022-11-17",
-   "live": 0.21,
+   "live": 7.17,
    "nifty50": 1.33,
    "all_listed": -0.23
   },
   {
    "date": "2022-11-24",
-   "live": 0.38,
+   "live": 8.49,
    "nifty50": 2.11,
    "all_listed": 0.56
   },
   {
    "date": "2022-12-01",
-   "live": 3.03,
+   "live": 11.82,
    "nifty50": 3.92,
    "all_listed": 3.28
   },
   {
    "date": "2022-12-08",
-   "live": 3.21,
+   "live": 15.49,
    "nifty50": 2.8,
    "all_listed": 3.84
   },
   {
    "date": "2022-12-15",
-   "live": 4.09,
+   "live": 15.63,
    "nifty50": 1.72,
    "all_listed": 3.37
   },
   {
    "date": "2022-12-22",
-   "live": -3.29,
+   "live": 8.31,
    "nifty50": 0.14,
    "all_listed": -1.28
   },
   {
    "date": "2022-12-29",
-   "live": -2.53,
+   "live": 8.21,
    "nifty50": 0.49,
    "all_listed": -0.24
   },
   {
    "date": "2023-01-05",
-   "live": -0.94,
+   "live": 9.31,
    "nifty50": -0.61,
    "all_listed": 0.72
   },
   {
    "date": "2023-01-12",
-   "live": -2.76,
+   "live": 7.97,
    "nifty50": -1.35,
    "all_listed": 0.17
   },
   {
    "date": "2023-01-19",
-   "live": -2.86,
+   "live": 8.14,
    "nifty50": 0.03,
    "all_listed": 0.18
   },
   {
    "date": "2023-01-27",
-   "live": -9.4,
+   "live": 2.61,
    "nifty50": -2.75,
    "all_listed": -4.23
   },
   {
    "date": "2023-02-03",
-   "live": -8.4,
+   "live": 3.4,
    "nifty50": -1.37,
    "all_listed": -3.79
   },
   {
    "date": "2023-02-10",
-   "live": -7.74,
+   "live": 3.98,
    "nifty50": -1.36,
    "all_listed": -2.23
   },
   {
    "date": "2023-02-17",
-   "live": -8.73,
+   "live": 4.3,
    "nifty50": -0.88,
    "all_listed": -2.82
   },
   {
    "date": "2023-02-24",
-   "live": -10.72,
+   "live": 2.78,
    "nifty50": -3.52,
    "all_listed": -4.62
   },
   {
    "date": "2023-03-03",
-   "live": -11.51,
+   "live": 3.45,
    "nifty50": -2.81,
    "all_listed": -3.42
   },
   {
    "date": "2023-03-13",
-   "live": -9.6,
+   "live": 3.21,
    "nifty50": -5.24,
    "all_listed": -4.9
   },
   {
    "date": "2023-03-20",
-   "live": -9.6,
+   "live": 1.2,
    "nifty50": -6.16,
    "all_listed": -6.5
   },
   {
    "date": "2023-03-27",
-   "live": -9.6,
+   "live": -0.64,
    "nifty50": -6.17,
    "all_listed": -8.43
   },
   {
    "date": "2023-04-05",
-   "live": -9.6,
+   "live": 2.62,
    "nifty50": -3.01,
    "all_listed": -3.81
   },
   {
    "date": "2023-04-13",
-   "live": -9.74,
+   "live": 2.81,
    "nifty50": -1.52,
    "all_listed": -1.48
   },
   {
    "date": "2023-04-21",
-   "live": -9.43,
+   "live": 3.09,
    "nifty50": -2.64,
    "all_listed": -0.87
   },
   {
    "date": "2023-04-28",
-   "live": -5.45,
+   "live": 5.37,
    "nifty50": -0.21,
    "all_listed": 1.98
   },
   {
    "date": "2023-05-08",
-   "live": -3.98,
+   "live": 6.67,
    "nifty50": 0.89,
    "all_listed": 4.21
   },
   {
    "date": "2023-05-15",
-   "live": -3.67,
+   "live": 5.88,
    "nifty50": 1.64,
    "all_listed": 5.23
   },
   {
    "date": "2023-05-22",
-   "live": -3.47,
+   "live": 5.73,
    "nifty50": 1.17,
    "all_listed": 5.64
   },
   {
    "date": "2023-05-29",
-   "live": -2.93,
+   "live": 8.39,
    "nifty50": 2.74,
    "all_listed": 7.07
   },
   {
    "date": "2023-06-05",
-   "live": 1.35,
+   "live": 12.41,
    "nifty50": 2.71,
    "all_listed": 9.83
   },
   {
    "date": "2023-06-12",
-   "live": 5.24,
+   "live": 14.59,
    "nifty50": 2.76,
    "all_listed": 11.42
   },
   {
    "date": "2023-06-19",
-   "live": 8.65,
+   "live": 17.59,
    "nifty50": 3.61,
    "all_listed": 14.18
   },
   {
    "date": "2023-06-26",
-   "live": 8.78,
+   "live": 17.6,
    "nifty50": 3.25,
    "all_listed": 13.95
   },
   {
    "date": "2023-07-04",
-   "live": 14.99,
+   "live": 19.17,
    "nifty50": 7.11,
    "all_listed": 16.11
   },
   {
    "date": "2023-07-11",
-   "live": 17.63,
+   "live": 23.81,
    "nifty50": 7.38,
    "all_listed": 18.34
   },
   {
    "date": "2023-07-18",
-   "live": 23.33,
+   "live": 28.43,
    "nifty50": 9.1,
    "all_listed": 20.23
   },
   {
    "date": "2023-07-25",
-   "live": 28.37,
+   "live": 32.87,
    "nifty50": 8.72,
    "all_listed": 22.3
   },
   {
    "date": "2023-08-01",
-   "live": 30.23,
+   "live": 37.3,
    "nifty50": 9.01,
    "all_listed": 25.61
   },
   {
    "date": "2023-08-08",
-   "live": 32.16,
+   "live": 40.96,
    "nifty50": 8.11,
    "all_listed": 26.05
   },
   {
    "date": "2023-08-16",
-   "live": 38.03,
+   "live": 42.57,
    "nifty50": 7.53,
    "all_listed": 26.25
   },
   {
    "date": "2023-08-23",
-   "live": 41.36,
+   "live": 43.57,
    "nifty50": 7.41,
    "all_listed": 29.03
   },
   {
    "date": "2023-08-30",
-   "live": 45.32,
+   "live": 44.68,
    "nifty50": 6.88,
    "all_listed": 31.35
   },
   {
    "date": "2023-09-06",
-   "live": 46.79,
+   "live": 50.46,
    "nifty50": 8.33,
    "all_listed": 35.8
   },
   {
    "date": "2023-09-13",
-   "live": 41.02,
+   "live": 47.38,
    "nifty50": 10.87,
    "all_listed": 34.32
   },
   {
    "date": "2023-09-21",
-   "live": 42.15,
+   "live": 45.46,
    "nifty50": 9.06,
    "all_listed": 33.58
   },
   {
    "date": "2023-09-28",
-   "live": 44.84,
+   "live": 47.5,
    "nifty50": 7.85,
    "all_listed": 34.63
   },
   {
    "date": "2023-10-06",
-   "live": 47.56,
+   "live": 49.2,
    "nifty50": 8.57,
    "all_listed": 36.45
   },
   {
    "date": "2023-10-13",
-   "live": 50.86,
+   "live": 52.12,
    "nifty50": 9.11,
    "all_listed": 37.84
   },
   {
    "date": "2023-10-20",
-   "live": 49.7,
+   "live": 50.09,
    "nifty50": 7.95,
    "all_listed": 37.31
   },
   {
    "date": "2023-10-30",
-   "live": 45.67,
+   "live": 45.86,
    "nifty50": 5.73,
    "all_listed": 33.12
   },
   {
    "date": "2023-11-06",
-   "live": 49.69,
+   "live": 49.06,
    "nifty50": 7.23,
    "all_listed": 36.99
   },
   {
    "date": "2023-11-13",
-   "live": 54.8,
+   "live": 54.93,
    "nifty50": 7.41,
    "all_listed": 39.76
   },
   {
    "date": "2023-11-21",
-   "live": 59.18,
+   "live": 57.51,
    "nifty50": 9.28,
    "all_listed": 43.37
   },
   {
    "date": "2023-11-29",
-   "live": 57.87,
+   "live": 58.06,
    "nifty50": 11.01,
    "all_listed": 44.79
   },
   {
    "date": "2023-12-06",
-   "live": 61.94,
+   "live": 63.95,
    "nifty50": 15.66,
    "all_listed": 50.18
   },
   {
    "date": "2023-12-13",
-   "live": 61.1,
+   "live": 65.62,
    "nifty50": 15.6,
    "all_listed": 52.26
   },
   {
    "date": "2023-12-20",
-   "live": 55.62,
+   "live": 64.0,
    "nifty50": 16.83,
    "all_listed": 49.48
   },
   {
    "date": "2023-12-28",
-   "live": 61.14,
+   "live": 70.84,
    "nifty50": 20.31,
    "all_listed": 55.66
   },
   {
    "date": "2024-01-04",
-   "live": 65.62,
+   "live": 68.43,
    "nifty50": 19.64,
    "all_listed": 61.12
   },
   {
    "date": "2024-01-11",
-   "live": 67.07,
+   "live": 75.26,
    "nifty50": 19.58,
    "all_listed": 63.54
   },
   {
    "date": "2024-01-18",
-   "live": 67.32,
+   "live": 74.51,
    "nifty50": 18.56,
    "all_listed": 62.28
   },
   {
    "date": "2024-01-29",
-   "live": 82.75,
+   "live": 78.19,
    "nifty50": 20.08,
    "all_listed": 67.15
   },
   {
    "date": "2024-02-05",
-   "live": 92.29,
+   "live": 81.19,
    "nifty50": 20.27,
    "all_listed": 70.85
   },
   {
    "date": "2024-02-12",
-   "live": 76.24,
+   "live": 77.55,
    "nifty50": 19.41,
    "all_listed": 65.02
   },
   {
    "date": "2024-02-19",
-   "live": 88.23,
+   "live": 91.43,
    "nifty50": 22.2,
    "all_listed": 73.0
   },
   {
    "date": "2024-02-26",
-   "live": 90.57,
+   "live": 89.99,
    "nifty50": 22.2,
    "all_listed": 72.91
   },
   {
    "date": "2024-03-04",
-   "live": 87.03,
+   "live": 90.16,
    "nifty50": 23.77,
    "all_listed": 71.66
   },
   {
    "date": "2024-03-12",
-   "live": 72.31,
+   "live": 83.62,
    "nifty50": 23.38,
    "all_listed": 62.36
   },
   {
    "date": "2024-03-19",
-   "live": 64.5,
+   "live": 81.08,
    "nifty50": 20.52,
    "all_listed": 56.95
   },
   {
    "date": "2024-03-27",
-   "live": 69.78,
+   "live": 85.65,
    "nifty50": 22.21,
    "all_listed": 62.87
   },
   {
    "date": "2024-04-04",
-   "live": 77.97,
+   "live": 89.05,
    "nifty50": 24.37,
    "all_listed": 72.73
   },
   {
    "date": "2024-04-12",
-   "live": 76.18,
+   "live": 90.55,
    "nifty50": 24.4,
    "all_listed": 73.1
   },
   {
    "date": "2024-04-22",
-   "live": 77.55,
+   "live": 91.17,
    "nifty50": 23.39,
    "all_listed": 72.83
   },
   {
    "date": "2024-04-29",
-   "live": 83.96,
+   "live": 96.17,
    "nifty50": 25.08,
    "all_listed": 78.3
   },
   {
    "date": "2024-05-07",
-   "live": 78.25,
+   "live": 92.45,
    "nifty50": 23.2,
    "all_listed": 73.29
   },
   {
    "date": "2024-05-14",
-   "live": 78.91,
+   "live": 94.38,
    "nifty50": 22.73,
    "all_listed": 74.21
   },
   {
    "date": "2024-05-22",
-   "live": 87.31,
+   "live": 103.86,
    "nifty50": 24.83,
    "all_listed": 80.43
   },
   {
    "date": "2024-05-29",
-   "live": 83.1,
+   "live": 101.55,
    "nifty50": 25.42,
    "all_listed": 78.69
   },
   {
    "date": "2024-06-05",
-   "live": 71.49,
+   "live": 100.08,
    "nifty50": 24.96,
    "all_listed": 73.98
   },
   {
    "date": "2024-06-12",
-   "live": 88.13,
+   "live": 108.74,
    "nifty50": 28.84,
    "all_listed": 88.76
   },
   {
    "date": "2024-06-20",
-   "live": 90.84,
+   "live": 110.46,
    "nifty50": 30.18,
    "all_listed": 94.41
   },
   {
    "date": "2024-06-27",
-   "live": 89.23,
+   "live": 111.08,
    "nifty50": 32.82,
    "all_listed": 93.43
   },
   {
    "date": "2024-07-04",
-   "live": 97.18,
+   "live": 112.3,
    "nifty50": 34.25,
    "all_listed": 99.53
   },
   {
    "date": "2024-07-11",
-   "live": 93.44,
+   "live": 110.34,
    "nifty50": 34.32,
    "all_listed": 100.7
   },
   {
    "date": "2024-07-19",
-   "live": 82.37,
+   "live": 101.46,
    "nifty50": 35.51,
    "all_listed": 96.08
   },
   {
    "date": "2024-07-26",
-   "live": 88.83,
+   "live": 108.34,
    "nifty50": 37.19,
    "all_listed": 103.37
   },
   {
    "date": "2024-08-02",
-   "live": 85.04,
+   "live": 108.2,
    "nifty50": 36.54,
    "all_listed": 104.1
   },
   {
    "date": "2024-08-09",
-   "live": 81.03,
+   "live": 105.66,
    "nifty50": 34.61,
    "all_listed": 99.94
   },
   {
    "date": "2024-08-19",
-   "live": 88.9,
+   "live": 111.4,
    "nifty50": 35.74,
    "all_listed": 102.41
   },
   {
    "date": "2024-08-26",
-   "live": 88.64,
+   "live": 113.6,
    "nifty50": 38.16,
    "all_listed": 107.1
   },
   {
    "date": "2024-09-02",
-   "live": 87.74,
+   "live": 113.3,
    "nifty50": 39.64,
    "all_listed": 107.86
   },
   {
    "date": "2024-09-09",
-   "live": 86.56,
+   "live": 112.2,
    "nifty50": 37.75,
    "all_listed": 106.61
   },
   {
    "date": "2024-09-16",
-   "live": 95.52,
+   "live": 114.16,
    "nifty50": 40.22,
    "all_listed": 111.77
   },
   {
    "date": "2024-09-23",
-   "live": 95.71,
+   "live": 118.35,
    "nifty50": 43.29,
    "all_listed": 113.08
   },
   {
    "date": "2024-09-30",
-   "live": 95.68,
+   "live": 115.41,
    "nifty50": 42.58,
    "all_listed": 111.55
   },
   {
    "date": "2024-10-08",
-   "live": 89.35,
+   "live": 111.72,
    "nifty50": 38.17,
    "all_listed": 104.12
   },
   {
    "date": "2024-10-15",
-   "live": 104.57,
+   "live": 116.93,
    "nifty50": 38.42,
    "all_listed": 109.54
   },
   {
    "date": "2024-10-22",
-   "live": 89.08,
+   "live": 108.69,
    "nifty50": 35.18,
    "all_listed": 95.83
   },
   {
    "date": "2024-10-29",
-   "live": 87.39,
+   "live": 110.29,
    "nifty50": 35.16,
    "all_listed": 95.15
   },
   {
    "date": "2024-11-05",
-   "live": 94.71,
+   "live": 111.27,
    "nifty50": 33.75,
    "all_listed": 99.23
   },
   {
    "date": "2024-11-12",
-   "live": 89.59,
+   "live": 107.59,
    "nifty50": 31.93,
    "all_listed": 94.58
   },
   {
    "date": "2024-11-21",
-   "live": 85.17,
+   "live": 104.62,
    "nifty50": 28.99,
    "all_listed": 88.32
   },
   {
    "date": "2024-11-28",
-   "live": 93.02,
+   "live": 110.09,
    "nifty50": 32.1,
    "all_listed": 98.57
   },
   {
    "date": "2024-12-05",
-   "live": 99.16,
+   "live": 114.82,
    "nifty50": 36.49,
    "all_listed": 105.38
   },
   {
    "date": "2024-12-12",
-   "live": 99.12,
+   "live": 110.03,
    "nifty50": 35.61,
    "all_listed": 106.85
   },
   {
    "date": "2024-12-19",
-   "live": 103.48,
+   "live": 108.16,
    "nifty50": 32.31,
    "all_listed": 103.36
   },
   {
    "date": "2024-12-27",
-   "live": 100.03,
+   "live": 106.1,
    "nifty50": 31.55,
    "all_listed": 99.33
   },
   {
    "date": "2025-01-03",
-   "live": 100.03,
+   "live": 111.37,
    "nifty50": 32.6,
    "all_listed": 103.46
   },
   {
    "date": "2025-01-10",
-   "live": 87.33,
+   "live": 97.91,
    "nifty50": 29.44,
    "all_listed": 91.18
   },
   {
    "date": "2025-01-17",
-   "live": 83.67,
+   "live": 94.53,
    "nifty50": 28.17,
    "all_listed": 90.73
   },
   {
    "date": "2025-01-24",
-   "live": 83.67,
+   "live": 88.36,
    "nifty50": 27.56,
    "all_listed": 83.3
   },
   {
    "date": "2025-01-31",
-   "live": 83.67,
+   "live": 88.54,
    "nifty50": 29.86,
    "all_listed": 84.35
   },
   {
    "date": "2025-02-06",
-   "live": 83.67,
+   "live": 90.64,
    "nifty50": 30.39,
    "all_listed": 85.74
   },
   {
    "date": "2025-02-13",
-   "live": 83.67,
+   "live": 86.94,
    "nifty50": 27.23,
    "all_listed": 73.52
   },
   {
    "date": "2025-02-20",
-   "live": 83.67,
+   "live": 85.67,
    "nifty50": 26.57,
    "all_listed": 71.54
   },
   {
    "date": "2025-02-28",
-   "live": 83.67,
+   "live": 80.12,
    "nifty50": 22.22,
    "all_listed": 60.33
   },
   {
    "date": "2025-03-07",
-   "live": 83.67,
+   "live": 80.84,
    "nifty50": 24.58,
    "all_listed": 69.5
   },
   {
    "date": "2025-03-17",
-   "live": 83.67,
+   "live": 81.16,
    "nifty50": 24.34,
    "all_listed": 63.8
   },
   {
    "date": "2025-03-24",
-   "live": 83.67,
+   "live": 84.16,
    "nifty50": 30.69,
    "all_listed": 79.04
   },
   {
    "date": "2025-04-01",
-   "live": 83.67,
+   "live": 82.09,
    "nifty50": 27.97,
    "all_listed": 74.75
   },
   {
    "date": "2025-04-08",
-   "live": 83.67,
+   "live": 75.73,
    "nifty50": 24.49,
    "all_listed": 68.57
   },
   {
    "date": "2025-04-17",
-   "live": 83.67,
+   "live": 79.41,
    "nifty50": 31.76,
    "all_listed": 80.22
   },
   {
    "date": "2025-04-25",
-   "live": 83.67,
+   "live": 80.08,
    "nifty50": 32.79,
    "all_listed": 80.86
   },
   {
    "date": "2025-05-05",
-   "live": 85.87,
+   "live": 80.19,
    "nifty50": 35.12,
    "all_listed": 81.7
   },
   {
    "date": "2025-05-12",
-   "live": 87.51,
+   "live": 80.98,
    "nifty50": 37.68,
    "all_listed": 84.17
   },
   {
    "date": "2025-05-19",
-   "live": 92.53,
+   "live": 82.11,
    "nifty50": 37.8,
    "all_listed": 94.29
   },
   {
    "date": "2025-05-26",
-   "live": 91.18,
+   "live": 80.57,
    "nifty50": 38.11,
    "all_listed": 95.53
   },
   {
    "date": "2025-06-02",
-   "live": 92.24,
+   "live": 80.59,
    "nifty50": 36.54,
    "all_listed": 97.81
   },
   {
    "date": "2025-06-09",
-   "live": 98.4,
+   "live": 86.95,
    "nifty50": 38.67,
    "all_listed": 103.34
   },
   {
    "date": "2025-06-16",
-   "live": 102.06,
+   "live": 87.14,
    "nifty50": 37.81,
    "all_listed": 100.79
   },
   {
    "date": "2025-06-23",
-   "live": 98.55,
+   "live": 84.79,
    "nifty50": 37.95,
    "all_listed": 96.99
   },
   {
    "date": "2025-06-30",
-   "live": 107.6,
+   "live": 93.22,
    "nifty50": 40.96,
    "all_listed": 104.59
   },
   {
    "date": "2025-07-07",
-   "live": 101.12,
+   "live": 89.14,
    "nifty50": 40.65,
    "all_listed": 103.78
   },
   {
    "date": "2025-07-14",
-   "live": 101.12,
+   "live": 89.6,
    "nifty50": 38.56,
    "all_listed": 104.56
   },
   {
    "date": "2025-07-21",
-   "live": 103.04,
+   "live": 87.97,
    "nifty50": 38.6,
    "all_listed": 106.31
   },
   {
    "date": "2025-07-28",
-   "live": 94.29,
+   "live": 82.3,
    "nifty50": 36.34,
    "all_listed": 98.62
   },
   {
    "date": "2025-08-04",
-   "live": 95.02,
+   "live": 81.02,
    "nifty50": 36.57,
    "all_listed": 98.27
   },
   {
    "date": "2025-08-11",
-   "live": 95.66,
+   "live": 78.99,
    "nifty50": 35.81,
    "all_listed": 94.64
   },
   {
    "date": "2025-08-19",
-   "live": 102.65,
+   "live": 87.75,
    "nifty50": 37.99,
    "all_listed": 99.5
   },
   {
    "date": "2025-08-26",
-   "live": 99.72,
+   "live": 83.28,
    "nifty50": 36.51,
    "all_listed": 96.65
   },
   {
    "date": "2025-09-03",
-   "live": 101.55,
+   "live": 85.29,
    "nifty50": 36.53,
    "all_listed": 100.49
   },
   {
    "date": "2025-09-10",
-   "live": 101.48,
+   "live": 85.66,
    "nifty50": 37.95,
    "all_listed": 102.02
   },
   {
    "date": "2025-09-17",
-   "live": 103.35,
+   "live": 88.57,
    "nifty50": 39.92,
    "all_listed": 106.06
   },
   {
    "date": "2025-09-24",
-   "live": 103.08,
+   "live": 86.73,
    "nifty50": 38.41,
    "all_listed": 103.39
   },
   {
    "date": "2025-10-01",
-   "live": 100.56,
+   "live": 83.81,
    "nifty50": 37.2,
    "all_listed": 99.99
   },
   {
    "date": "2025-10-09",
-   "live": 105.65,
+   "live": 90.06,
    "nifty50": 39.1,
    "all_listed": 102.17
   },
   {
    "date": "2025-10-16",
-   "live": 104.43,
+   "live": 92.88,
    "nifty50": 41.33,
    "all_listed": 103.13
   },
   {
    "date": "2025-10-24",
-   "live": 101.89,
+   "live": 91.38,
    "nifty50": 42.49,
    "all_listed": 104.0
   },
   {
    "date": "2025-10-31",
-   "live": 105.09,
+   "live": 92.56,
    "nifty50": 42.09,
    "all_listed": 105.66
   },
   {
    "date": "2025-11-10",
-   "live": 103.27,
+   "live": 98.09,
    "nifty50": 41.27,
    "all_listed": 102.07
   },
   {
    "date": "2025-11-17",
-   "live": 105.72,
+   "live": 101.85,
    "nifty50": 43.7,
    "all_listed": 104.75
   },
   {
    "date": "2025-11-24",
-   "live": 95.42,
+   "live": 96.5,
    "nifty50": 43.4,
    "all_listed": 97.69
   },
   {
    "date": "2025-12-01",
-   "live": 97.78,
+   "live": 98.63,
    "nifty50": 44.6,
    "all_listed": 99.23
   },
   {
    "date": "2025-12-08",
-   "live": 90.05,
+   "live": 91.7,
    "nifty50": 43.41,
    "all_listed": 91.48
   },
   {
    "date": "2025-12-15",
-   "live": 95.01,
+   "live": 96.41,
    "nifty50": 43.78,
    "all_listed": 96.17
   },
   {
    "date": "2025-12-22",
-   "live": 97.78,
+   "live": 101.44,
    "nifty50": 44.58,
    "all_listed": 97.81
   },
   {
    "date": "2025-12-30",
-   "live": 93.8,
+   "live": 104.07,
    "nifty50": 43.29,
    "all_listed": 96.8
   },
   {
    "date": "2026-01-06",
-   "live": 98.8,
+   "live": 104.47,
    "nifty50": 44.61,
    "all_listed": 100.47
   },
   {
    "date": "2026-01-13",
-   "live": 90.5,
+   "live": 97.72,
    "nifty50": 42.15,
    "all_listed": 92.94
   },
   {
    "date": "2026-01-20",
-   "live": 80.32,
+   "live": 91.91,
    "nifty50": 39.38,
    "all_listed": 84.95
   },
   {
    "date": "2026-01-28",
-   "live": 76.54,
+   "live": 92.75,
    "nifty50": 39.99,
    "all_listed": 85.51
   },
   {
    "date": "2026-02-04",
-   "live": 76.54,
+   "live": 94.35,
    "nifty50": 42.39,
    "all_listed": 92.42
   },
   {
    "date": "2026-02-11",
-   "live": 83.7,
+   "live": 97.22,
    "nifty50": 43.37,
    "all_listed": 95.76
   },
   {
    "date": "2026-02-18",
-   "live": 85.15,
+   "live": 97.96,
    "nifty50": 42.63,
    "all_listed": 94.05
   },
   {
    "date": "2026-02-25",
-   "live": 82.94,
+   "live": 100.07,
    "nifty50": 40.77,
    "all_listed": 90.92
   },
   {
    "date": "2026-03-05",
-   "live": 71.76,
+   "live": 94.08,
    "nifty50": 36.81,
    "all_listed": 83.68
   },
   {
    "date": "2026-03-12",
-   "live": 71.76,
+   "live": 89.5,
    "nifty50": 30.58,
    "all_listed": 81.07
   },
   {
    "date": "2026-03-19",
-   "live": 71.76,
+   "live": 82.93,
    "nifty50": 27.06,
    "all_listed": 74.94
   },
   {
    "date": "2026-03-27",
-   "live": 71.76,
+   "live": 82.81,
    "nifty50": 26.06,
    "all_listed": 73.49
   },
   {
    "date": "2026-04-07",
-   "live": 71.76,
+   "live": 81.94,
    "nifty50": 27.74,
    "all_listed": 77.62
   },
   {
    "date": "2026-04-15",
-   "live": 71.76,
+   "live": 86.04,
    "nifty50": 33.85,
    "all_listed": 92.88
   },
   {
    "date": "2026-04-22",
-   "live": 71.76,
+   "live": 88.36,
    "nifty50": 34.67,
    "all_listed": 100.26
   },
   {
    "date": "2026-04-29",
-   "live": 71.76,
+   "live": 89.4,
    "nifty50": 33.56,
    "all_listed": 101.48
   },
   {
    "date": "2026-05-07",
-   "live": 71.76,
+   "live": 88.87,
    "nifty50": 34.38,
    "all_listed": 108.22
   },
   {
    "date": "2026-05-14",
-   "live": 71.76,
+   "live": 84.81,
    "nifty50": 30.86,
    "all_listed": 100.72
   },
   {
    "date": "2026-05-21",
-   "live": 71.76,
+   "live": 90.3,
    "nifty50": 30.67,
    "all_listed": 100.61
   },
   {
    "date": "2026-05-29",
-   "live": 71.76,
+   "live": 90.42,
    "nifty50": 30.08,
    "all_listed": 103.08
   },
   {
    "date": "2026-06-05",
-   "live": 71.76,
+   "live": 91.56,
    "nifty50": 29.08,
    "all_listed": 103.76
   },
   {
    "date": "2026-06-12",
-   "live": 71.76,
+   "live": 91.87,
    "nifty50": 30.49,
    "all_listed": 103.88
   },
   {
    "date": "2026-06-19",
-   "live": 71.76,
+   "live": 97.6,
    "nifty50": 32.65,
    "all_listed": 111.55
   },
   {
    "date": "2026-06-29",
-   "live": 71.76,
+   "live": 100.81,
    "nifty50": 32.28,
    "all_listed": 109.8
   },
   {
    "date": "2026-07-06",
-   "live": 71.76,
+   "live": 101.6,
    "nifty50": 34.95,
    "all_listed": 114.64
   },
   {
    "date": "2026-07-13",
-   "live": 71.76,
+   "live": 103.58,
    "nifty50": 33.74,
    "all_listed": 116.06
   },
   {
    "date": "2026-07-20",
-   "live": 71.76,
+   "live": 105.8,
    "nifty50": 33.89,
    "all_listed": 114.7
   },
   {
    "date": "2026-07-27",
-   "live": 71.76,
+   "live": 107.01,
    "nifty50": 32.55,
    "all_listed": 113.62
   },
   {
    "date": "2026-08-03",
-   "live": 71.76,
+   "live": 110.07,
    "nifty50": 36.85,
    "all_listed": 117.68
   },
   {
    "date": "2026-08-10",
-   "live": 71.76,
+   "live": 113.59,
    "nifty50": 35.8,
    "all_listed": 118.34
   },
   {
    "date": "2026-08-17",
-   "live": 71.76,
+   "live": 114.49,
    "nifty50": 34.17,
    "all_listed": 117.95
   },
   {
    "date": "2026-08-24",
-   "live": 71.76,
+   "live": 117.64,
    "nifty50": 33.79,
    "all_listed": 118.91
   },
   {
    "date": "2026-08-31",
-   "live": 71.76,
+   "live": 120.84,
    "nifty50": 33.02,
    "all_listed": 118.35
   },
   {
    "date": "2026-09-07",
-   "live": 71.76,
+   "live": 120.19,
    "nifty50": 31.36,
    "all_listed": 118.13
   },
   {
    "date": "2026-09-15",
-   "live": 71.76,
+   "live": 115.04,
    "nifty50": 27.71,
    "all_listed": 110.9
   },
   {
    "date": "2026-09-22",
-   "live": 71.76,
+   "live": 124.58,
    "nifty50": 28.87,
    "all_listed": 116.51
   },
   {
    "date": "2026-09-29",
-   "live": 71.76,
+   "live": 123.01,
    "nifty50": 25.48,
    "all_listed": 111.25
   },
   {
    "date": "2026-10-07",
-   "live": 71.76,
+   "live": 124.53,
    "nifty50": 24.86,
    "all_listed": 111.38
   },
   {
    "date": "2026-10-14",
-   "live": 71.76,
+   "live": 122.52,
    "nifty50": 24.97,
    "all_listed": 110.95
   },
   {
    "date": "2026-10-22",
-   "live": 71.76,
+   "live": 106.94,
    "nifty50": 25.33,
    "all_listed": 99.4
   },
   {
    "date": "2026-10-29",
-   "live": 71.76,
+   "live": 115.74,
    "nifty50": 26.7,
    "all_listed": 101.21
   },
   {
    "date": "2026-11-05",
-   "live": 71.76,
+   "live": 116.41,
    "nifty50": 35.54,
    "all_listed": 109.21
   },
   {
    "date": "2026-11-13",
-   "live": 73.37,
+   "live": 122.11,
    "nifty50": 38.9,
    "all_listed": 113.09
   }
