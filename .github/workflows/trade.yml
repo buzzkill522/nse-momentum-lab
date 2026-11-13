@@ -1,0 +1,37 @@
+name: paper-trade
+
+on:
+  schedule:
+    # Every 30 min, Mon–Fri, 09:15–15:30 IST (03:45–10:00 UTC)
+    - cron: "45,15 4-9 * * 1-5"
+    - cron: "45 3 * * 1-5"
+    - cron: "0 10 * * 1-5"
+  workflow_dispatch:
+    inputs:
+      reset:
+        description: "Reset portfolio to fresh capital"
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+concurrency: trade
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install -r requirements.txt
+      - run: python trader.py ${{ inputs.reset && '--reset' || '' }}
+      - name: Commit state
+        run: |
+          git config user.name "paper-trader-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add docs/state.json
+          git diff --cached --quiet || git commit -m "Update portfolio $(date -u +%FT%TZ)"
+          git push

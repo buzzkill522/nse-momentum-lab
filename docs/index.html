@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NSE Momentum Lab</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  :root { --bg:#f7f7f5; --card:#fff; --fg:#1a1a1a; --muted:#6b6b6b; --line:#e4e4e0;
+          --up:#0a8a4a; --down:#c4322b; --accent:#2f5bd3; }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg:#121212; --card:#1c1c1c; --fg:#ececec; --muted:#9a9a9a; --line:#2c2c2c;
+            --up:#3ccf7f; --down:#ff6b61; --accent:#7ea2ff; }
+  }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--fg);
+         font:15px/1.5 system-ui, -apple-system, Segoe UI, sans-serif; }
+  main { max-width:1000px; margin:0 auto; padding:24px 16px 48px; }
+  h1 { font-size:22px; margin:0 0 4px; }
+  .sub { color:var(--muted); font-size:13px; margin-bottom:20px; }
+  .tiles { display:grid; grid-template-columns:repeat(auto-fit,minmax(170px,1fr)); gap:12px; }
+  .tile, .card { background:var(--card); border:1px solid var(--line); border-radius:10px; padding:14px 16px; }
+  .tile .k { color:var(--muted); font-size:12px; text-transform:uppercase; letter-spacing:.04em; }
+  .tile .v { font-size:24px; font-weight:600; font-variant-numeric:tabular-nums; }
+  .card { margin-top:16px; }
+  .card h2 { font-size:15px; margin:0 0 10px; }
+  .up { color:var(--up); } .down { color:var(--down); }
+  .scroll { overflow-x:auto; }
+  table { width:100%; border-collapse:collapse; font-variant-numeric:tabular-nums; font-size:14px; }
+  th, td { text-align:right; padding:6px 8px; border-bottom:1px solid var(--line); white-space:nowrap; }
+  th:first-child, td:first-child { text-align:left; }
+  th { color:var(--muted); font-weight:500; font-size:12px; }
+  .chartbox { position:relative; height:300px; }
+  .badge { display:inline-block; background:var(--accent); color:#fff; border-radius:4px; padding:0 6px; font-size:11px; }
+</style>
+</head>
+<body>
+<main>
+  <h1>NSE Momentum Lab <span class="badge">PAPER</span></h1>
+  <div class="sub" id="sub">Loading…</div>
+
+  <div class="tiles">
+    <div class="tile"><div class="k">Portfolio value</div><div class="v" id="value">–</div></div>
+    <div class="tile"><div class="k">Total return</div><div class="v" id="ret">–</div></div>
+    <div class="tile"><div class="k">Nifty 50 (same period)</div><div class="v" id="bench">–</div></div>
+    <div class="tile"><div class="k">Cash</div><div class="v" id="cash">–</div></div>
+  </div>
+
+  <div class="card"><h2>Return vs Nifty 50 (%)</h2><div class="chartbox"><canvas id="chart"></canvas></div></div>
+  <div class="card"><h2>Holdings</h2><div class="scroll"><table id="hold"></table></div></div>
+  <div class="card"><h2>Recent trades</h2><div class="scroll"><table id="trades"></table></div></div>
+  <div class="card sub" id="rules"></div>
+</main>
+<script>
+const inr = v => "₹" + Math.round(v).toLocaleString("en-IN");
+const pct = v => v == null ? "–" : (v >= 0 ? "+" : "") + v.toFixed(2) + "%";
+const cls = v => v == null ? "" : v >= 0 ? "up" : "down";
+const set = (id, txt, c) => { const e = document.getElementById(id); e.textContent = txt; if (c !== undefined) e.className = "v " + c; };
+
+fetch("state.json?t=" + Date.now()).then(r => r.json()).then(s => {
+  const last = s.history.at(-1) || {};
+  document.getElementById("sub").textContent =
+    `Started ${new Date(s.started_at).toLocaleString("en-IN")} with ${inr(s.starting_capital)} fake money · ` +
+    `last update ${new Date(s.updated_at).toLocaleString("en-IN")}` + (s.demo ? " · DEMO DATA" : "");
+  set("value", inr(last.value));
+  set("ret", pct(last.pct), cls(last.pct));
+  set("bench", pct(last.benchmark_pct), cls(last.benchmark_pct));
+  set("cash", inr(s.cash));
+
+  const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+  new Chart(document.getElementById("chart"), {
+    type: "line",
+    data: {
+      labels: s.history.map(h => new Date(h.time).toLocaleString("en-IN", {day:"numeric", month:"short", hour:"2-digit", minute:"2-digit"})),
+      datasets: [
+        { label: "Strategy", data: s.history.map(h => h.pct), borderColor: css("--accent"), pointRadius: 0, tension: .2 },
+        { label: "Nifty 50", data: s.history.map(h => h.benchmark_pct), borderColor: css("--muted"), borderDash: [4,4], pointRadius: 0, tension: .2 },
+      ]
+    },
+    options: { maintainAspectRatio: false, interaction: { mode: "index", intersect: false },
+      scales: { x: { ticks: { color: css("--muted"), maxTicksLimit: 8 }, grid: { color: css("--line") } },
+                y: { ticks: { color: css("--muted"), callback: v => v + "%" }, grid: { color: css("--line") } } },
+      plugins: { legend: { labels: { color: css("--fg") } } } }
+  });
+
+  const H = s.holdings || [];
+  document.getElementById("hold").innerHTML = H.length
+    ? "<tr><th>Stock</th><th>Qty</th><th>Avg</th><th>Price</th><th>Value</th><th>P&L</th></tr>" +
+      H.map(h => `<tr><td>${h.ticker}</td><td>${h.qty}</td><td>${h.avg_price.toFixed(2)}</td><td>${h.price.toFixed(2)}</td><td>${inr(h.value)}</td><td class="${cls(h.pnl_pct)}">${pct(h.pnl_pct)}</td></tr>`).join("")
+    : "<tr><td>All cash — no stock passed the filters.</td></tr>";
+
+  document.getElementById("trades").innerHTML =
+    "<tr><th>Time</th><th>Side</th><th>Stock</th><th>Qty</th><th>Price</th></tr>" +
+    s.trades.slice(-25).reverse().map(t => `<tr><td>${new Date(t.time).toLocaleString("en-IN")}</td><td class="${t.side==="BUY"?"up":"down"}">${t.side}</td><td>${t.ticker}</td><td>${t.qty}</td><td>${t.price.toFixed(2)}</td></tr>`).join("");
+
+  const p = s.params;
+  document.getElementById("rules").textContent =
+    `Strategy: each trading day, hold the top ${p.top_n} of ${p.universe_size} large-cap NSE stocks by ${p.lookback}-day return, ` +
+    `only if trading above their ${p.trend_sma}-day average. Equal weight, ${(p.cost*100).toFixed(1)}% cost per trade. Prices from Yahoo Finance (may be delayed ~15 min).`;
+}).catch(() => { document.getElementById("sub").textContent = "No data yet — the bot hasn't run."; });
+</script>
+</body>
+</html>
