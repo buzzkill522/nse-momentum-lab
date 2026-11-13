@@ -9,8 +9,12 @@ Both pick from the ~400 companies in the Nifty MidSmallcap 400 index, start with
 |---|---|---|
 | Picks | the 20 biggest risers over 12 months | the 20 calmest stocks among the best-rising third over 6 months |
 | Must also be | above its 50-day average | above its 50-day average |
+| Re-picks | a third of its holdings each month (each stock reviewed quarterly) | all holdings monthly |
+| Industry limit | none | at most 4 stocks from one industry |
 | Cash | always fully invested | moves part of the money to cash when the market is jumpy (checked weekly) |
 | Aim | higher returns, bigger drops | smoother ride, smaller gains |
+
+Idle cash is assumed to earn 6% a year, as in a liquid fund. The bots run hourly from 10:00 am IST plus once after the close.
 
 Each bot keeps its own files: `docs/state-growth.json` / `docs/state-steady.json` and a full timestamped trade log in `docs/trades-growth.csv` / `docs/trades-steady.csv`.
 
@@ -18,14 +22,14 @@ Each bot keeps its own files: `docs/state-growth.json` / `docs/state-steady.json
 
 | | Per year | Biggest drop | Worst year |
 |---|---|---|---|
-| Growth bot, today's index members | 35.8% | −35.6% | −12.4% |
-| Growth bot, no hindsight | 24.5% | −34.9% | −14.7% |
-| Steady bot, today's index members | 20.3% | −22.6% | −7.5% |
-| Steady bot, no hindsight | 17.3% | −21.8% | −1.0% |
-| Holding every index stock (no costs) | 23.4% | −22.1% | −1.2% |
-| Nifty 50 | 6.8% | −16.5% | −4.1% |
+| Growth bot, today's index members | 42.7% | −31.0% | −4.2% |
+| Growth bot, no hindsight | 32.7% | −32.3% | −12.9% |
+| Steady bot, today's index members | 22.1% | −20.9% | −0.4% |
+| Steady bot, no hindsight | 19.2% | −21.4% | +1.5% |
+| Holding every index stock (no costs) | 23.5% | −22.1% | −1.2% |
+| Nifty 50 | 6.9% | −16.5% | −4.1% |
 
-"No hindsight" uses a stock list rebuilt each month from past data only; today's index members flatter the results because companies that did badly have since dropped out. Full table: `docs/backtest.txt`. Re-run from the Actions tab → *backtest*.
+"No hindsight" uses a stock list rebuilt each month from past data only; today's index members flatter the results because companies that did badly have since dropped out. Full table: `docs/backtest.txt`. Re-run from the Actions tab → *backtest* → Run workflow. Choosing mode *experiments* tests one rule change at a time and writes `docs/experiments.txt`.
 
 ## Files
 - `trader.py`: runs both bots: fetches prices (Yahoo Finance), re-picks on schedule, and records each portfolio's value on every run.
