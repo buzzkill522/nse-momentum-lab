@@ -77,6 +77,18 @@
   ol.steps { margin:8px 0 0; padding-left:20px; } ol.steps li { margin:6px 0; }
   dl { margin:8px 0 0; } dt { font-weight:600; margin-top:10px; } dd { margin:0; color:var(--muted); }
   .more { display:block; width:100%; margin-top:12px; }
+  .funnel { margin-top:12px; }
+  .funnel .f { margin:0 auto 6px; padding:9px 12px; border-radius:8px; background:var(--chip); text-align:center; min-width:150px; }
+  .funnel .f b { display:block; font-size:18px; }
+  .funnel .f:last-child { background:var(--accent); color:#fff; }
+  .funnel .arrow { text-align:center; color:var(--muted); font-size:12px; margin-bottom:6px; }
+  .rule { padding:14px 0; border-bottom:1px solid var(--line); }
+  .rule:last-child { border-bottom:0; padding-bottom:0; }
+  .rule h3 { font-size:15px; margin:0 0 4px; }
+  .rule p { margin:4px 0; }
+  .rule .why { color:var(--muted); font-size:14px; }
+  code { background:var(--chip); padding:1px 6px; border-radius:5px; font-size:13px; }
+  ul.plain { margin:8px 0 0; padding-left:20px; } ul.plain li { margin:6px 0; }
 </style>
 </head>
 <body>
@@ -94,6 +106,7 @@
     <button data-t="trades">Trade log</button>
     <button data-t="backtest">Past test</button>
     <button data-t="how">How it works</button>
+    <button data-t="model">The model</button>
   </nav>
 
   <section id="overview">
@@ -144,7 +157,7 @@
   </section>
 
   <section id="how">
-    <div class="card"><h2>What the bot does</h2><ol class="steps" id="steps"></ol></div>
+    <div class="card"><h2>What the bot does, in short</h2><ol class="steps" id="steps"></ol></div>
     <div class="card"><h2>What the words mean</h2>
       <dl>
         <dt>Practice money</dt><dd>The bot starts with a pretend ₹10,00,000. No real orders are placed.</dd>
@@ -154,6 +167,20 @@
         <dt>Times</dt><dd>All times are Indian Standard Time. Prices come from Yahoo Finance and can be about 15 minutes behind.</dd>
       </dl>
     </div>
+  </section>
+  <section id="model">
+    <div class="card"><h2>The idea</h2><p id="m_idea" style="margin:6px 0 0"></p></div>
+    <div class="card"><h2>From every NSE share down to a portfolio</h2>
+      <div class="small muted">Each step throws stocks out. Only what survives all of them is bought.</div>
+      <div class="funnel" id="m_funnel"></div></div>
+    <div class="card"><h2>The rules, one by one</h2><div id="m_rules"></div></div>
+    <div class="card"><h2>A worked example</h2><div id="m_example"></div></div>
+    <div class="card"><h2>Why these rules: what the 5-year test showed</h2>
+      <div class="small muted" id="m_evnote"></div>
+      <div class="scroll"><table id="m_ev" class="num" style="margin-top:8px"></table></div>
+      <ul class="plain" id="m_evtext"></ul></div>
+    <div class="card"><h2>What the model does not do</h2><ul class="plain" id="m_limits"></ul></div>
+    <div class="card"><h2>Exact settings</h2><div class="scroll"><table id="m_cfg"></table></div></div>
   </section>
 </main>
 
@@ -342,7 +369,98 @@ function how() {
   if (ex.includes("breadth")) steps.push("<b>Follows the crowd's health.</b> When fewer than half of the stocks are rising, it invests less.");
   if (ex.includes("regime")) steps.push("<b>Steps aside in a weak market.</b> When the Nifty 50 is below its 200-day average, it moves fully to cash.");
   steps.push(`<b>Pays costs.</b> Every pretend trade is charged ${(c.cost ?? 0.002) * 100}% to mimic real brokerage and taxes.`);
-  $("steps").innerHTML = steps.map(s => `<li>${s}</li>`).join("");
+  $("steps").innerHTML = steps.map(s => `<li>${s}</li>`).join("") +
+    '<p style="margin:12px 0 0 -20px"><a class="btn" href="#model">Read the full explanation of the model</a></p>';
+}
+
+/* ---------- the model ---------- */
+function model() {
+  const c = (S && S.params) || (B && B.config);
+  if (!c) { $("m_idea").textContent = "Details appear after the first run."; return; }
+  const n = c.top_n, months = Math.round(c.lookback / 21), ex = c.exposure || [];
+  const listed = c.listed ? c.listed.toLocaleString("en-IN") : "about 2,400";
+  const cost = ((c.cost ?? 0.002) * 100).toFixed(1), vt = Math.round(c.vol_target * 100);
+  const calm = c.select === "lowvol";
+  $("m_idea").innerHTML = (calm
+    ? `<b>Buy steady climbers.</b> The model looks for mid- and small-sized companies whose share price has been rising for about ${months} months, and from those it prefers the ones that rise smoothly over the ones that jump around. `
+    : `<b>Buy what has been rising.</b> The model looks for mid- and small-sized companies whose share price has been rising for about ${months} months. `)
+    + `It spreads the money equally over ${n} of them` + (ex.length ? ", and holds back some cash when the whole market turns rough. " : ". ")
+    + "It only looks at prices and trading volumes. It follows fixed rules, so there is no guessing and no opinion involved.";
+
+  const steps = [[listed, "shares listed on the NSE", 100],
+    [c.universe_size, `mid- and small-sized: skip the ${c.universe_skip} most traded, keep the next ${c.universe_size}`, 82],
+    ["Rising", `up over ${months} months and above their ${c.trend_sma}-day average (the number changes month to month)`, 64]];
+  if (calm) steps.push(["Top third", "the best risers among those", 46]);
+  steps.push([n, calm ? "the calmest of them are bought" : "the strongest of them are bought", 30]);
+  $("m_funnel").innerHTML = steps.map(([b, t, w], i) =>
+    (i ? '<div class="arrow">▼</div>' : "") + `<div class="f" style="width:${w}%"><b>${b}</b><span class="small">${t}</span></div>`).join("");
+
+  const R = (h, body, why) => `<div class="rule"><h3>${h}</h3>${body}<p class="why"><b>Why:</b> ${why}</p></div>`;
+  let r = "";
+  r += R("1. Build the stock list", `<p>Once a month, for every NSE share, the model takes the money traded in it per day (price × shares traded) and finds the middle value over the last 126 trading days. It ranks all shares by that figure, drops the top ${c.universe_skip}, and keeps the next ${c.universe_size}. Shares under ₹${c.min_price} are ignored.</p>`,
+    "Nobody hand-picks the list, so it cannot be biased by knowing which companies did well later. Skipping the most traded shares removes the large caps. Requiring steady trading keeps out shares that would be hard to buy or sell.");
+  r += R("2. Measure the rise", `<p>For each stock: <code>rise = price ${c.skip} days ago ÷ price ${c.lookback + c.skip} days ago − 1</code>. That is about ${months} months of return, leaving out the most recent month. Only stocks with a positive rise continue.</p>`,
+    "Stocks that have risen over several months tend to keep rising for a while. The latest month is left out because very recent jumps often reverse.");
+  r += R("3. Check the trend is still alive", `<p>The current price must be above the stock's average price over the last ${c.trend_sma} trading days. Stocks with any one-day move of 40% or more in the period are dropped as bad data or freak events.</p>`,
+    "A stock can have a good six months and already be falling. This filter avoids buying it on the way down.");
+  if (calm) r += R("4. Prefer the calm ones", `<p>The model keeps the best-rising third of the remaining stocks (at least ${n * 2}). For each it measures how bumpy the ride was: the typical size of its daily price moves over the same period. It then picks the ${n} least bumpy.</p>`,
+    "In the test, simply buying the biggest risers did no better than holding the whole list and fell much harder. Choosing the calm risers gave smaller falls and milder bad years.");
+  else r += R("4. Rank and choose", `<p>The remaining stocks are ranked${c.select === "mom_vol" ? " by rise divided by bumpiness" : " by rise"} and the top ${n} are picked.</p>`, "The strongest trends are expected to continue the longest.");
+  r += R("5. Split the money", `<p>Each stock gets ${c.weighting === "inv_vol" ? "a share of the money that is larger for calmer stocks" : `one ${n}th of the portfolio`}. If fewer than ${n} stocks qualify, the unused shares stay in cash. A holding is only resized when it drifts more than ${Math.round(c.drift * 100)}% from its target size.</p>`,
+    "Equal sizes mean no single stock can sink the portfolio. Not fine-tuning sizes avoids paying trading costs for little benefit.");
+  r += R("6. Keep what still works", `<p>Stocks are re-picked ${c.rebalance}, on the first trading day. A stock already owned is kept as long as it still ranks in the top ${Math.round(n * c.buffer)}, even if it is no longer in the top ${n}.</p>`,
+    "Without this, the model would swap stocks over tiny changes in rank and lose money to trading costs. The first version of this bot traded daily and lost about 15% a year to costs alone.");
+  if (ex.includes("voltarget")) r += R("7. Turn the risk down in rough markets", `<p>Each week the model measures how jumpy the whole stock list has been over the last 20 trading days, as a yearly figure. <code>share invested = ${vt}% ÷ jumpiness</code>, capped at 100%. The rest is held as cash.</p>`,
+    "Big falls usually come when the market is already swinging wildly. Holding less during those spells gives up some gains and softens the falls.");
+  if (ex.includes("breadth")) r += R("7b. Watch how many stocks are rising", "<p>If fewer than half of the stocks on the list are above their 200-day average, the model invests proportionally less.</p>", "When most stocks are falling, even good picks tend to fall with them.");
+  if (ex.includes("regime")) r += R("7c. Step aside in a weak market", "<p>If the Nifty 50 is below its 200-day average, the model sells everything and waits in cash.</p>", "It avoids the worst of long market declines, at the price of missing the start of recoveries.");
+  r += R("8. Count the costs", `<p>Every pretend trade is charged ${cost}% of its value.</p>`, "Real trading has brokerage, taxes and a gap between buying and selling prices. Leaving them out would make the results look better than they could be.");
+  $("m_rules").innerHTML = r;
+
+  $("m_example").innerHTML = `<p style="margin:6px 0">Suppose it is the first trading day of the month and the portfolio is worth ₹10,00,000.</p>
+    <ul class="plain">
+      <li>The model rebuilds its list of ${c.universe_size} stocks. Say 150 of them have risen over ${months} months and are above their ${c.trend_sma}-day average.</li>
+      ${calm ? `<li>It keeps the best-rising third: 50 stocks. From those it picks the ${n} with the smallest daily price swings.</li>` : `<li>It picks the ${n} that have risen the most.</li>`}
+      ${ex.includes("voltarget") ? `<li>The market's jumpiness over the last 20 days works out to 20% a year. Share invested = ${vt}% ÷ 20% = ${Math.round(vt / 20 * 100)}%, so ₹${(vt / 20 * 10).toFixed(1)} lakh goes into stocks and the rest stays in cash.</li>
+      <li>Each stock gets about ₹${Math.round(1000000 * vt / 20 / n).toLocaleString("en-IN")}. A share priced at ₹500 means buying ${Math.floor(1000000 * vt / 20 / n / 500)} shares.</li>`
+      : `<li>Each stock gets about ₹${Math.round(1000000 / n).toLocaleString("en-IN")}. A share priced at ₹500 means buying ${Math.floor(1000000 / n / 500)} shares.</li>`}
+      <li>Next month, a stock that has slipped to rank ${n + 5} is kept. One that has slipped to rank ${Math.round(n * c.buffer) + 10}, or fallen below its ${c.trend_sma}-day average, is sold and replaced.</li>
+    </ul><p class="small muted" style="margin:8px 0 0">The numbers here are made up to show the arithmetic.</p>`;
+
+  const t = B && B.table;
+  if (t && t["LIVE CONFIG"]) {
+    const rows = [["This model", "LIVE CONFIG"], ["Calm risers, always fully invested", "lowvol, always invested"],
+      ["Biggest risers, always fully invested", "mom, always invested"], ["All 400 stocks on the list, no picking", "ALL 400 LISTED (no costs)"], ["Nifty 50", "Nifty 50"]];
+    $("m_evnote").textContent = `${B.period}. Every version used the same no-hindsight stock list.`;
+    $("m_ev").innerHTML = "<tr><th></th><th>Per year</th><th>Biggest drop</th><th>Months up</th><th>Worst year</th></tr>" +
+      rows.filter(([, k]) => t[k]).map(([name, k]) => `<tr><td>${name}</td><td class="${cls(t[k]["per yr %"])}">${pct(t[k]["per yr %"], 1)}</td>
+        <td class="down">${pct(t[k]["worst fall %"], 1)}</td><td>${Math.round(t[k]["up months %"])}%</td><td class="${cls(t[k]["worst yr %"])}">${pct(t[k]["worst yr %"], 1)}</td></tr>`).join("");
+    const me = t["LIVE CONFIG"];
+    $("m_evtext").innerHTML = [
+      "Buying the biggest risers earned about the same as holding the whole list, with much deeper falls. Rising alone was not an edge.",
+      "Buying the calm risers earned more, with milder bad years. That is why the model prefers calm stocks.",
+      "Holding back cash in rough markets lowered the return and made the ride smoother. It was chosen because steadiness is the priority.",
+      `The edge is modest and uneven: the first half of the test made about ${Math.round(me["1st half /yr"])}% a year and the second half about ${Math.round(me["2nd half /yr"])}%.`,
+    ].map(x => `<li>${x}</li>`).join("");
+  } else $("m_evnote").textContent = "Test results are not available yet.";
+
+  $("m_limits").innerHTML = [
+    "It does not read news, company results or valuations. It only sees prices and trading volumes.",
+    "It has no stop-loss. A stock can fall a long way between the monthly re-picks.",
+    "It cannot promise steady gains. In the test it still dropped more than a fifth from its high at one point.",
+    "The test could not include companies that were delisted, so past results look a little better than they should.",
+    "This version was chosen from 19 that were tested, after seeing the results. Expect real performance to be somewhat worse than the test.",
+    "It assumes every order fills at the current price, which is not always true for small companies.",
+  ].map(x => `<li>${x}</li>`).join("");
+
+  const names = { universe_skip: "Most-traded shares skipped", universe_size: "Stocks on the list", min_price: "Minimum share price (₹)",
+    top_n: "Stocks held", lookback: "Rise measured over (trading days)", skip: "Most recent days ignored", trend_sma: "Trend average (days)",
+    select: "How stocks are chosen", weighting: "How money is split", buffer: "Keep-zone (multiple of stocks held)", exposure: "Risk controls",
+    vol_target: "Target yearly jumpiness", rebalance: "Stocks re-picked", risk_check: "Risk re-checked", drift: "Resize when off target by", cost: "Cost per trade" };
+  const val = (k, v) => k === "select" ? { lowvol: "calmest of the best risers", mom: "biggest risers", mom_vol: "rise relative to bumpiness" }[v]
+    : k === "weighting" ? (v === "inv_vol" ? "more to calmer stocks" : "equal") : k === "exposure" ? (v.length ? v.map(x => ({ voltarget: "cut back when jumpy", breadth: "cut back when few stocks rise", regime: "all cash in a weak market" }[x])).join(", ") : "none")
+    : ["vol_target", "drift", "cost"].includes(k) ? (v * 100).toFixed(k === "cost" ? 1 : 0) + "%" : v == null ? "–" : v;
+  $("m_cfg").innerHTML = Object.keys(names).filter(k => k in c).map(k => `<tr><td>${names[k]}</td><td>${esc(val(k, c[k]))}</td></tr>`).join("");
 }
 
 /* ---------- wiring ---------- */
@@ -353,7 +471,7 @@ function tab(name) {
   if (name === "overview") overview();   // charts need a visible canvas
   if (name === "backtest") backtest();
 }
-function render() { hero(); holdings(); trades(); how(); tab(location.hash.slice(1) || "overview"); }
+function render() { hero(); holdings(); trades(); how(); model(); tab(location.hash.slice(1) || "overview"); }
 async function load() { [S, B] = await Promise.all([get("state.json"), get("backtest.json")]); render(); }
 
 $("tabs").onclick = e => { const t = e.target.dataset.t; if (t) location.hash = t; };

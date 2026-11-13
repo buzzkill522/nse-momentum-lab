@@ -408,7 +408,8 @@ def main():
         "value": round(p["qty"] * float(last[t]), 2),
         "pnl_pct": round((float(last[t]) / p["avg_price"] - 1) * 100, 2),
     } for t, p in state["positions"].items()]
-    state["params"] = {**CONFIG, "cost": COST, "description": describe()}
+    state["params"] = {**CONFIG, "cost": COST, "description": describe(),
+                       "listed": len(all_tickers(demo))}
     state["updated_at"] = ts
     state["demo"] = demo
     save_state(state)
