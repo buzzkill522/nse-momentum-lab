@@ -24,30 +24,36 @@ import trader as T
 OUT = Path(__file__).parent / "docs"
 
 
+POOLS = {"index": {"universe": "index"},                                              # today's index members
+         "nohind": {"universe": "traded", "universe_skip": 100, "universe_size": 400},     # rebuilt monthly from past data
+         "large": {"universe": "traded", "universe_skip": 0, "universe_size": 100}}       # 100 most traded
+
+
 def variants():
-    base = {**T.CONFIG, "select": "mom", "weighting": "equal", "exposure": [], "risk_check": None, "top_n": 20}
-    wk = {"risk_check": "weekly"}
-    v = {
-        "mom, always invested": base,
-        "mom +regime monthly": {**base, "exposure": ["regime"]},
-        "mom +regime": {**base, **wk, "exposure": ["regime"]},
-        "mom +breadth": {**base, **wk, "exposure": ["breadth"]},
-        "mom +voltarget": {**base, **wk, "exposure": ["voltarget"]},
-        "mom +regime+voltarget": {**base, **wk, "exposure": ["regime", "voltarget"]},
-        "mom +breadth+voltarget": {**base, **wk, "exposure": ["breadth", "voltarget"]},
-        "mom/vol +breadth": {**base, **wk, "select": "mom_vol", "exposure": ["breadth"]},
-        "lowvol, always invested": {**base, "select": "lowvol"},
-        "lowvol +regime": {**base, **wk, "select": "lowvol", "exposure": ["regime"]},
-        "lowvol +breadth": {**base, **wk, "select": "lowvol", "exposure": ["breadth"]},
-        "lowvol +voltarget": {**base, **wk, "select": "lowvol", "exposure": ["voltarget"]},
-        "lowvol +breadth+voltarget": {**base, **wk, "select": "lowvol", "exposure": ["breadth", "voltarget"]},
-        "lowvol +regime+voltarget": {**base, **wk, "select": "lowvol", "exposure": ["regime", "voltarget"]},
-        "lowvol invvol +breadth": {**base, **wk, "select": "lowvol", "weighting": "inv_vol", "exposure": ["breadth"]},
-        "lowvol top10 +breadth": {**base, **wk, "select": "lowvol", "exposure": ["breadth"], "top_n": 10},
-        "lowvol top30 +breadth": {**base, **wk, "select": "lowvol", "exposure": ["breadth"], "top_n": 30},
-        "lowvol 12m +breadth": {**base, **wk, "select": "lowvol", "exposure": ["breadth"], "lookback": 252},
-        "LIVE CONFIG": dict(T.CONFIG),
+    w = {**T.CONFIG, "select": "mom", "weighting": "equal", "exposure": [], "risk_check": "weekly", "top_n": 20,
+         "lookback": 126, "lookback2": 0, "near_high": 0.0, "cut_losers": False}
+    kinds = {
+        "winners": w,
+        "winners 12m": {**w, "lookback": 252},
+        "winners 6m+12m": {**w, "lookback2": 252},
+        "winners near high": {**w, "near_high": 0.85},
+        "winners cut losers": {**w, "cut_losers": True},
+        "winners near high + cut": {**w, "near_high": 0.85, "cut_losers": True},
+        "winners 6m+12m near high + cut": {**w, "lookback2": 252, "near_high": 0.85, "cut_losers": True},
+        "winners top10": {**w, "top_n": 10},
+        "winners + rough-market cash": {**w, "exposure": ["voltarget"]},
+        "winners near high + cut + cash": {**w, "near_high": 0.85, "cut_losers": True, "exposure": ["voltarget"]},
+        "calm risers (previous bot)": {**w, "select": "lowvol", "exposure": ["voltarget"]},
+        "calm risers, always invested": {**w, "select": "lowvol"},
     }
+    v = {}
+    for pool in ("index", "nohind"):
+        for name, cfg in kinds.items():
+            v[f"{name} [{pool}]"] = {**cfg, **POOLS[pool]}
+    for name in ("winners", "winners near high + cut", "calm risers (previous bot)"):
+        v[f"{name} [large]"] = {**kinds[name], **POOLS["large"]}
+    v["LIVE CONFIG"] = dict(T.CONFIG)
+    v["LIVE CONFIG [nohind]"] = {**T.CONFIG, **POOLS["nohind"]}
     return v
 
 
@@ -58,7 +64,7 @@ class Sim:
         self._universes = {}
 
     def universe(self, d, cfg):
-        key = (d, cfg["universe_skip"], cfg["universe_size"], cfg["min_price"])
+        key = (d, cfg["universe"], cfg["universe_skip"], cfg["universe_size"], cfg["min_price"])
         if key not in self._universes:
             i = self.pos[d]
             self._universes[key] = T.choose_universe(self.close.iloc[max(0, i - 126): i],
@@ -132,18 +138,26 @@ def main():
     demo = "--demo" in sys.argv
     years = next((int(a) for a in sys.argv[1:] if a.isdigit()), 5)
     syms = T.all_tickers(demo) + T.INDEX_SYMBOLS
+    T.CONFIG["_members"] = syms[100:500] if demo else T.index_members()
     opn, close, volume = T.demo_data(syms, 252 * (years + 2), seed=7) if demo else T.download(syms, f"{years + 2}y")
     days = close.index[close.index > close.index[-1] - pd.DateOffset(years=years)]
     cap = T.STARTING_CAPITAL
     sim = Sim(opn, close, volume, days)
     lines = [f"Period: {days[0].date()} to {days[-1].date()}  ({len(days)} trading days)",
              f"NSE shares requested: {len(syms) - len(T.INDEX_SYMBOLS)}, with price data: {close.shape[1] - len(T.INDEX_SYMBOLS)}",
-             f"Stock list size at start / end: {len(sim.universe(days[0], T.CONFIG))} / {len(sim.universe(days[-1], T.CONFIG))}"]
+             "Stock list size at start / end: " + ", ".join(
+                 f"{k} {len(sim.universe(days[0], {**T.CONFIG, **p}))} / {len(sim.universe(days[-1], {**T.CONFIG, **p}))}"
+                 for k, p in POOLS.items())]
 
     rows, curves = {}, {}
     idx = close[T.REGIME_INDEX]
     curves["Nifty 50"] = idx.loc[days] / idx.loc[:days[0]].iloc[-2] * cap
-    curves["ALL 400 LISTED (no costs)"] = sim.hold_universe(T.CONFIG)
+    for sym, name in T.BENCHMARKS.items():
+        if sym in close and sym != T.REGIME_INDEX and close[sym].loc[:days[0]].notna().sum() > 1:
+            curves[name] = close[sym].loc[days] / close[sym].loc[:days[0]].iloc[-2] * cap
+    curves["ALL index members (no costs)"] = sim.hold_universe({**T.CONFIG, **POOLS["index"]})
+    curves["ALL 400 LISTED (no costs)"] = sim.hold_universe({**T.CONFIG, **POOLS["nohind"]})
+    curves["ALL large caps (no costs)"] = sim.hold_universe({**T.CONFIG, **POOLS["large"]})
     for k in list(curves):
         rows[k] = stats(curves[k], cap)
     for name, cfg in variants().items():
@@ -158,11 +172,12 @@ def main():
     print(text)
     OUT.mkdir(exist_ok=True)
     (OUT / "backtest.txt").write_text(text + "\n")
-    weekly = pd.DataFrame({"live": curves["LIVE CONFIG"], "nifty50": curves["Nifty 50"],
+    weekly = pd.DataFrame({"live": curves["LIVE CONFIG"], "live_nohind": curves["LIVE CONFIG [nohind]"],
+                           "nifty50": curves["Nifty 50"], "all_index": curves["ALL index members (no costs)"],
                            "all_listed": curves["ALL 400 LISTED (no costs)"]}).iloc[::5]
     (OUT / "backtest.json").write_text(json.dumps({
         "period": f"{days[0].date()} to {days[-1].date()}", "demo": demo,
-        "config": T.CONFIG, "description": T.describe(),
+        "config": {k: v for k, v in T.CONFIG.items() if not k.startswith("_")}, "description": T.describe(),
         "table": json.loads(table.round(2).to_json(orient="index")),
         "curve": [{"date": d.date().isoformat(), **{k: round((x / cap - 1) * 100, 2) for k, x in r.items()}}
                   for d, r in weekly.iterrows()],

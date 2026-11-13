@@ -38,6 +38,7 @@ ROOT = Path(__file__).parent
 STATE_FILE = ROOT / "docs" / "state.json"
 SYMBOLS_FILE = ROOT / "data" / "symbols.txt"
 NAMES_FILE = ROOT / "data" / "names.json"      # ticker -> company name
+INDEX_FILE = ROOT / "data" / "midsmallcap400.txt"   # current Nifty MidSmallcap 400 members
 TRADES_CSV = ROOT / "docs" / "trades.csv"      # permanent log of every buy and sell
 IST = timezone(timedelta(hours=5, minutes=30))
 
@@ -45,17 +46,23 @@ STARTING_CAPITAL = 1_000_000.0  # ₹10 lakh fake money
 COST = 0.002                    # 0.2% per trade (brokerage + STT + mid/small-cap spreads)
 REGIME_INDEX = "^NSEI"          # Nifty 50, used for the market check
 # First benchmark that Yahoo returns data for is used.
-BENCHMARKS = {"NIFTY_MIDCAP_100.NS": "Nifty Midcap 100", "^NSEI": "Nifty 50"}
+BENCHMARKS = {"NIFTYMIDSML400.NS": "Nifty MidSmallcap 400", "NIFTY_MIDCAP_100.NS": "Nifty Midcap 100",
+              "^NSEI": "Nifty 50"}
 INDEX_SYMBOLS = list(dict.fromkeys(list(BENCHMARKS) + [REGIME_INDEX]))
 
 CONFIG = {
-    # --- stock list (built by the bot, no hand-picking)
-    "universe_skip": 100,   # ignore the N most-traded stocks (large caps)
-    "universe_size": 400,   # then take this many
+    # --- stock list
+    "universe": "index",    # "index"  = members of the Nifty MidSmallcap 400
+                            # "traded" = bot's own list by trading activity (see next two)
+    "universe_skip": 100,   # "traded" only: ignore the N most-traded stocks (large caps)
+    "universe_size": 400,   # "traded" only: then take this many
     "min_price": 20,        # ignore penny stocks
     # --- picking
     "top_n": 20,            # stocks held at once
     "lookback": 126,        # return window in trading days (126 = 6 months)
+    "lookback2": 0,         # optional second window (e.g. 252); stocks are ranked on both
+    "near_high": 0.0,       # e.g. 0.85 = price must be within 15% of its 52-week high
+    "cut_losers": False,    # weekly: sell holdings that fall below their average, buy new winners
     "skip": 21,             # ignore the most recent N days when measuring return
     "trend_sma": 50,        # stock must be above this moving average
     "select": "lowvol",     # "mom"     = highest return
@@ -76,11 +83,51 @@ CONFIG = {
 
 
 # ---------------------------------------------------------------- data
+HDR = {"User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/126 Safari/537.36",
+       "Accept": "text/csv,*/*", "Referer": "https://www.nseindia.com/"}
+
+
+def _index_csv(name):
+    """Symbols in one NSE index constituent file, or [] if it cannot be fetched."""
+    import requests
+    for base in ("https://nsearchives.nseindia.com/content/indices/", "https://archives.nseindia.com/content/indices/",
+                 "https://www.niftyindices.com/IndexConstituent/"):
+        try:
+            r = requests.get(base + name, headers=HDR, timeout=30)
+            r.raise_for_status()
+            rows = [{k.strip(): v.strip() for k, v in row.items()} for row in csv.DictReader(io.StringIO(r.text))]
+            syms = sorted({row["Symbol"] for row in rows if row.get("Symbol")})
+            if syms:
+                print(f"{name}: {len(syms)} symbols from {base}")
+                return syms
+        except Exception as e:  # noqa: BLE001
+            print(f"Could not fetch {base + name}: {e}")
+    return []
+
+
+def refresh_index() -> int:
+    """Download the current Nifty MidSmallcap 400 members."""
+    syms = _index_csv("ind_niftymidsmallcap400list.csv")
+    if len(syms) < 350:   # fall back to its two halves
+        syms = sorted(set(_index_csv("ind_niftymidcap150list.csv")) | set(_index_csv("ind_niftysmallcap250list.csv")))
+    if len(syms) >= 350:
+        INDEX_FILE.parent.mkdir(exist_ok=True)
+        INDEX_FILE.write_text("\n".join(syms) + "\n")
+        print(f"Saved {len(syms)} Nifty MidSmallcap 400 members")
+        return len(syms)
+    return 0
+
+
+def index_members() -> list[str]:
+    if not INDEX_FILE.exists():
+        raise SystemExit("data/midsmallcap400.txt is missing - run: python trader.py --refresh-symbols")
+    return [s + ".NS" for s in INDEX_FILE.read_text().split()]
+
+
 def refresh_symbols() -> int:
     """Download the official list of NSE-listed shares (series EQ)."""
     import requests
-    hdr = {"User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/126 Safari/537.36",
-           "Accept": "text/csv,*/*", "Referer": "https://www.nseindia.com/"}
+    hdr = HDR
     for url in ("https://nsearchives.nseindia.com/content/equities/EQUITY_L.csv",
                 "https://archives.nseindia.com/content/equities/EQUITY_L.csv"):
         try:
@@ -154,11 +201,16 @@ def demo_data(symbols, periods, seed=None):
 
 # ---------------------------------------------------------------- strategy
 def choose_universe(close, volume, cfg=CONFIG) -> list[str]:
-    """The bot's own stock list, from the rows given (use only past data)."""
+    """The stock list the bot may pick from, using the rows given (past data only)."""
     stocks = [c for c in close.columns if c not in INDEX_SYMBOLS]
+    if cfg["universe"] == "index":
+        members = set(cfg.get("_members") or index_members())
+        stocks = [c for c in stocks if c in members]
     c, v = close[stocks].iloc[-126:], volume[stocks].iloc[-126:]
     traded = (c * v).median()
     ok = (c.notna().sum() >= 120) & (c.iloc[-1] >= cfg["min_price"]) & (traded > 0)
+    if cfg["universe"] == "index":
+        return traded[ok].sort_values(ascending=False).index.tolist()
     ranked = traded[ok].sort_values(ascending=False).index.tolist()
     return ranked[cfg["universe_skip"]: cfg["universe_skip"] + cfg["universe_size"]]
 
@@ -189,7 +241,7 @@ def exposure(prices, universe, cfg=CONFIG) -> float:
     return round(e, 3)
 
 
-def pick_stocks(prices, universe, cfg=CONFIG, held=()) -> dict:
+def pick_stocks(prices, universe, cfg=CONFIG, held=(), locked=False) -> dict:
     """Target weights {ticker: fraction of portfolio} before exposure scaling."""
     px = prices[[t for t in universe if t in prices]]
     lb, skip, n = cfg["lookback"], cfg["skip"], cfg["top_n"]
@@ -203,6 +255,13 @@ def pick_stocks(prices, universe, cfg=CONFIG, held=()) -> dict:
     ok = (mom > 0) & (last > px.iloc[-cfg["trend_sma"]:].mean()) & (vol > 0)
     ok &= rets.abs().max() < 0.4                 # drop bad data / freak one-day jumps
     ok &= window.notna().all()
+    if cfg.get("lookback2"):                     # also rank on a second, longer window
+        w2 = px.iloc[max(0, len(px) - 1 - skip - cfg["lookback2"]): len(px) - skip]
+        mom2 = w2.iloc[-1] / w2.iloc[0] - 1
+        ok &= (mom2 > 0) & (len(w2) > cfg["lookback2"])
+        mom = (mom[ok].rank(pct=True) + mom2[ok].rank(pct=True)).reindex(mom.index)
+    if cfg.get("near_high"):
+        ok &= last >= cfg["near_high"] * px.iloc[-252:].max()
     if cfg["select"] == "mom_vol":
         score = (mom / (vol * np.sqrt(lb)))[ok]
     elif cfg["select"] == "lowvol":
@@ -212,7 +271,7 @@ def pick_stocks(prices, universe, cfg=CONFIG, held=()) -> dict:
     else:
         score = mom[ok]
     ranked = score.sort_values(ascending=False).index.tolist()
-    keep = [t for t in held if t in ranked[: int(n * cfg["buffer"])]][:n]
+    keep = [t for t in held if locked or t in ranked[: int(n * cfg["buffer"])]][:n]
     chosen = keep + [t for t in ranked if t not in keep][: n - len(keep)]
     if not chosen:
         return {}
@@ -235,13 +294,18 @@ def period_key(day, freq) -> str:
 
 def describe(cfg=CONFIG) -> str:
     months = round(cfg["lookback"] / 21)
-    how = {"mom": f"the {cfg['top_n']} with the highest {months}-month return",
-           "mom_vol": f"the {cfg['top_n']} with the highest {months}-month return relative to their volatility",
-           "lowvol": f"the {cfg['top_n']} calmest stocks among the top third by {months}-month return"}[cfg["select"]]
-    s = (f"The bot builds its own list of {cfg['universe_size']} mid- and small-cap NSE stocks each month "
-         f"(ranked by trading activity, skipping the {cfg['universe_skip']} largest). From those in an uptrend it holds {how}"
-         + (", giving calmer stocks more money" if cfg["weighting"] == "inv_vol" else "")
-         + f". Stocks are re-picked {cfg['rebalance']}.")
+    rise = f"{months}-month" + (f" and {round(cfg['lookback2'] / 21)}-month" if cfg.get("lookback2") else "")
+    how = {"mom": f"the {cfg['top_n']} with the biggest {rise} rise",
+           "mom_vol": f"the {cfg['top_n']} with the biggest {rise} rise relative to their volatility",
+           "lowvol": f"the {cfg['top_n']} calmest stocks among the top third by {rise} rise"}[cfg["select"]]
+    pool = ("the Nifty MidSmallcap 400 index" if cfg["universe"] == "index" else
+            f"its own list of {cfg['universe_size']} mid- and small-cap NSE stocks (by trading activity)")
+    s = f"The bot picks from {pool}. From the stocks in an uptrend"
+    if cfg.get("near_high"):
+        s += f" and within {round((1 - cfg['near_high']) * 100)}% of their 52-week high"
+    s += f" it holds {how}. Stocks are re-picked {cfg['rebalance']}."
+    if cfg.get("cut_losers"):
+        s += " Each week, holdings that fall below their average price are sold and replaced."
     ex = []
     if "regime" in cfg["exposure"]:
         ex.append("moves fully to cash when the Nifty 50 is below its 200-day average")
@@ -347,6 +411,11 @@ def step(state, prices, day, ts, cfg, universe_fn):
     e = exposure(prices, state["universe"], cfg)
     if new_month or (was_in_cash and e > 0):
         state["base_weights"] = pick_stocks(prices, state["universe"], cfg, held=list(state["positions"]))
+    elif cfg.get("cut_losers") and state["base_weights"]:
+        ok = [t for t in state["base_weights"] if t in prices
+              and prices[t].iloc[-1] > prices[t].iloc[-cfg["trend_sma"]:].mean()]
+        if len(ok) < len(state["base_weights"]):    # replace the fallers, leave the rest alone
+            state["base_weights"] = pick_stocks(prices, state["universe"], cfg, held=ok, locked=True)
     rebalance(state, prices.iloc[-1], {t: w * e for t, w in state["base_weights"].items()}, ts, cfg)
     state.update(last_rebalance=mkey, last_risk=rkey, exposure=e)
     return True
@@ -354,7 +423,8 @@ def step(state, prices, day, ts, cfg, universe_fn):
 
 def main():
     if "--refresh-symbols" in sys.argv:
-        sys.exit(0 if refresh_symbols() else 1)
+        ok = [refresh_symbols(), refresh_index()]
+        sys.exit(0 if all(ok) else 1)
     demo = "--demo" in sys.argv
     state = new_state() if "--reset" in sys.argv else load_state()
     now = datetime.now(IST)
@@ -365,6 +435,7 @@ def main():
     if demo:
         syms = all_tickers(demo=True)[:600] + INDEX_SYMBOLS
         _, prices, volume = demo_data(syms, 420)
+        CONFIG["_members"] = syms[:400]
     else:
         _, prices, volume = download(INDEX_SYMBOLS + held, "5d")
         if prices.index[-1].date() != now.date():
@@ -375,7 +446,8 @@ def main():
         mkey = period_key(now.date(), CONFIG["rebalance"])
         rkey = period_key(now.date(), CONFIG["risk_check"]) if CONFIG["risk_check"] else mkey
         if state["universe"] is None or state["last_rebalance"] != mkey:
-            _, prices, volume = download(all_tickers() + INDEX_SYMBOLS, "2y")     # monthly: everything
+            pool = index_members() if CONFIG["universe"] == "index" else all_tickers()
+            _, prices, volume = download(pool + held + INDEX_SYMBOLS, "2y")       # monthly: whole pool
         elif state["last_risk"] != rkey:
             _, prices, volume = download(state["universe"] + held + INDEX_SYMBOLS, "2y")  # weekly
 
@@ -408,7 +480,7 @@ def main():
         "value": round(p["qty"] * float(last[t]), 2),
         "pnl_pct": round((float(last[t]) / p["avg_price"] - 1) * 100, 2),
     } for t, p in state["positions"].items()]
-    state["params"] = {**CONFIG, "cost": COST, "description": describe(),
+    state["params"] = {**{k: v for k, v in CONFIG.items() if not k.startswith("_")}, "cost": COST, "description": describe(),
                        "listed": len(all_tickers(demo))}
     state["updated_at"] = ts
     state["demo"] = demo
