@@ -59,25 +59,25 @@ CONFIG = {
     "min_price": 20,        # ignore penny stocks
     # --- picking
     "top_n": 20,            # stocks held at once
-    "lookback": 126,        # return window in trading days (126 = 6 months)
+    "lookback": 252,        # return window in trading days (252 = 12 months)
     "lookback2": 0,         # optional second window (e.g. 252); stocks are ranked on both
     "near_high": 0.0,       # e.g. 0.85 = price must be within 15% of its 52-week high
     "cut_losers": False,    # weekly: sell holdings that fall below their average, buy new winners
     "skip": 21,             # ignore the most recent N days when measuring return
     "trend_sma": 50,        # stock must be above this moving average
-    "select": "lowvol",     # "mom"     = highest return
+    "select": "mom",        # "mom"     = highest return
                             # "mom_vol" = highest return per unit of volatility
                             # "lowvol"  = calmest stocks among the top third by return
     "weighting": "equal",   # "equal" or "inv_vol" (calmer stocks get more money)
     "buffer": 2.0,          # keep a held stock while it ranks in top_n x buffer
     # --- how much to invest
-    "exposure": ["voltarget"],  # any of: "regime"    = all cash if Nifty 50 < its 200-day average
+    "exposure": [],         # any of: "regime"    = all cash if Nifty 50 < its 200-day average
                             #         "breadth"   = invest less when under half of stocks are in uptrends
                             #         "voltarget" = invest less when the market is jumpy
     "vol_target": 0.15,     # for "voltarget": aim for this yearly volatility
     # --- timing
     "rebalance": "monthly", # when stocks are re-picked
-    "risk_check": "weekly", # when exposure is re-checked (None = only at rebalance)
+    "risk_check": None,     # when exposure is re-checked (None = only at rebalance)
     "drift": 0.25,          # only resize a holding if it is >25% away from its target size
 }
 
