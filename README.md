@@ -31,7 +31,7 @@ Each bot keeps its own files: `docs/state-growth.json` / `docs/state-steady.json
 - `trader.py`: runs both bots: fetches prices (Yahoo Finance), re-picks on schedule, and records each portfolio's value on every run.
 - `backtest.py`: replays the same rules on 5 years of history for several variants.
 - `data/symbols.txt`: the official list of NSE shares, refreshed by the backtest workflow.
-- `.github/workflows/trade.yml`: runs the bot every 30 min during NSE hours (Mon–Fri) and commits `docs/state.json`.
+- `.github/workflows/trade.yml`: runs both bots every 30 min during NSE hours (Mon–Fri) and commits their state files and trade logs.
 - `docs/index.html`: the dashboard. It shows portfolio value, % return vs the index, holdings and trades.
 
 ## Setup (one time)
