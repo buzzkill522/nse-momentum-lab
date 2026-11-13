@@ -1,12 +1,13 @@
 """
 Backtest: how would different versions of the bot have done historically?
 
-Replays trader.py's exact functions day by day on Yahoo Finance data:
-  - on each rebalance morning, rank stocks using closes up to yesterday plus
-    today's OPEN (the live bot decides shortly after the open)
-  - trade at today's open, pay the same costs
-  - value the portfolio at every day's close
-Nothing from the future is used when making each day's decision.
+No hindsight in the stock list: at each month start the bot builds its list
+from every NSE share using only data up to the previous day (see
+trader.choose_universe). The only remaining gap is companies that have since
+been delisted, which Yahoo Finance no longer carries.
+
+Each rebalance morning the bot sees closes up to yesterday plus today's OPEN,
+trades at the open, and the portfolio is valued at every close.
 
 Usage:  python backtest.py [years]       (default 5)
         python backtest.py --demo        (synthetic prices, offline)
@@ -20,122 +21,146 @@ import pandas as pd
 
 import trader as T
 
-OUT = Path(__file__).parent / "docs" / "backtest.json"
-
-OLD = dict(top_n=8, lookback=20, skip=0, trend_sma=50, rebalance="daily",
-           buffer=1.0, regime=False, vol_adjust=False, resize=True)
+OUT = Path(__file__).parent / "docs"
 
 
 def variants():
-    v = {"old bot (20d, daily)": OLD,
-         "old, monthly": {**OLD, "rebalance": "monthly", "resize": False}}
-    for lb, name in ((126, "6m"), (252, "12m")):
-        for freq in ("weekly", "monthly"):
-            for regime in (False, True):
-                v[f"{name} {freq}{' +mkt' if regime else ''}"] = {
-                    **T.CONFIG, "lookback": lb, "rebalance": freq, "regime": regime, "vol_adjust": False}
-        v[f"{name} monthly +mkt +vol"] = {**T.CONFIG, "lookback": lb, "rebalance": "monthly",
-                                          "regime": True, "vol_adjust": True}
-    for n in (5, 20):
-        v[f"6m monthly +mkt top{n}"] = {**T.CONFIG, "lookback": 126, "rebalance": "monthly",
-                                        "regime": True, "vol_adjust": False, "top_n": n}
-    v["LIVE CONFIG"] = dict(T.CONFIG)
+    base = {**T.CONFIG, "select": "mom", "weighting": "equal", "exposure": [], "risk_check": None, "top_n": 20}
+    wk = {"risk_check": "weekly"}
+    v = {
+        "mom, always invested": base,
+        "mom +regime monthly": {**base, "exposure": ["regime"]},
+        "mom +regime": {**base, **wk, "exposure": ["regime"]},
+        "mom +breadth": {**base, **wk, "exposure": ["breadth"]},
+        "mom +voltarget": {**base, **wk, "exposure": ["voltarget"]},
+        "mom +regime+voltarget": {**base, **wk, "exposure": ["regime", "voltarget"]},
+        "mom +breadth+voltarget": {**base, **wk, "exposure": ["breadth", "voltarget"]},
+        "mom/vol +breadth": {**base, **wk, "select": "mom_vol", "exposure": ["breadth"]},
+        "lowvol, always invested": {**base, "select": "lowvol"},
+        "lowvol +regime": {**base, **wk, "select": "lowvol", "exposure": ["regime"]},
+        "lowvol +breadth": {**base, **wk, "select": "lowvol", "exposure": ["breadth"]},
+        "lowvol +voltarget": {**base, **wk, "select": "lowvol", "exposure": ["voltarget"]},
+        "lowvol +breadth+voltarget": {**base, **wk, "select": "lowvol", "exposure": ["breadth", "voltarget"]},
+        "lowvol +regime+voltarget": {**base, **wk, "select": "lowvol", "exposure": ["regime", "voltarget"]},
+        "lowvol invvol +breadth": {**base, **wk, "select": "lowvol", "weighting": "inv_vol", "exposure": ["breadth"]},
+        "lowvol top10 +breadth": {**base, **wk, "select": "lowvol", "exposure": ["breadth"], "top_n": 10},
+        "lowvol top30 +breadth": {**base, **wk, "select": "lowvol", "exposure": ["breadth"], "top_n": 30},
+        "lowvol 12m +breadth": {**base, **wk, "select": "lowvol", "exposure": ["breadth"], "lookback": 252},
+        "LIVE CONFIG": dict(T.CONFIG),
+    }
     return v
 
 
-def load(demo):
-    if demo:
-        rng = np.random.default_rng(7)
-        idx = pd.bdate_range(end=pd.Timestamp.today().normalize(), periods=1700)
-        n = len(T.ALL_SYMBOLS)
-        rets = rng.normal(rng.normal(0.0004, 0.0008, n), 0.018, (len(idx), n))
-        close = pd.DataFrame(1000 * np.exp(np.cumsum(rets, axis=0)), index=idx, columns=T.ALL_SYMBOLS)
-        opn = close.shift(1).fillna(1000) * (1 + rng.normal(0, 0.004, close.shape))
-        return opn, close
-    import yfinance as yf
-    df = yf.download(T.ALL_SYMBOLS, period="10y", interval="1d", auto_adjust=True, progress=False)
-    close = df["Close"].dropna(how="all").ffill()
-    opn = df["Open"].reindex(close.index)
-    return opn.fillna(close), close           # indices have no reliable open
+class Sim:
+    def __init__(self, opn, close, volume, days):
+        self.opn, self.close, self.volume, self.days = opn, close, volume, days
+        self.pos = {d: i for i, d in enumerate(close.index)}
+        self._universes = {}
+
+    def universe(self, d, cfg):
+        key = (d, cfg["universe_skip"], cfg["universe_size"], cfg["min_price"])
+        if key not in self._universes:
+            i = self.pos[d]
+            self._universes[key] = T.choose_universe(self.close.iloc[max(0, i - 126): i],
+                                                     self.volume.iloc[max(0, i - 126): i], cfg)
+        return self._universes[key]
+
+    def view(self, d, cols):
+        """Prices as the bot sees them on the morning of d."""
+        i = self.pos[d]
+        hist = self.close[cols].iloc[max(0, i - 330): i + 1].copy()
+        hist.iloc[-1] = self.opn.loc[d, cols].fillna(hist.iloc[-2])
+        return hist
+
+    def run(self, cfg):
+        state, values = T.new_state(), []
+        for d in self.days:
+            mkey = T.period_key(d.date(), cfg["rebalance"])
+            rkey = T.period_key(d.date(), cfg["risk_check"]) if cfg["risk_check"] else mkey
+            if state["last_rebalance"] != mkey or state["last_risk"] != rkey:
+                uni = self.universe(d, cfg) if state["last_rebalance"] != mkey else state["universe"]
+                cols = list(dict.fromkeys(uni + list(state["positions"]) + [T.REGIME_INDEX]))
+                T.step(state, self.view(d, cols), d.date(), d.date().isoformat(), cfg, lambda: uni)
+            values.append(T.portfolio_value(state, self.close.loc[d]))
+        return pd.Series(values, index=self.days), state
+
+    def hold_universe(self, cfg):
+        """Equal money in every stock on the bot's list, refreshed monthly, no costs."""
+        rets = self.close.pct_change(fill_method=None)
+        out, uni, last = [], [], None
+        for d in self.days:
+            key = T.period_key(d.date(), "monthly")
+            if key != last:
+                uni, last = self.universe(d, cfg), key
+            r = rets.loc[d, uni]
+            out.append(float(r[r.abs() < 0.4].mean()))
+        return T.STARTING_CAPITAL * (1 + pd.Series(out, index=self.days).fillna(0)).cumprod()
 
 
-def simulate(opn, close, days, cfg):
-    """Returns (daily portfolio value Series, state)."""
-    state, values, last_key = T.new_state(), [], None
-    for d in days:
-        key = T.period_key(d.date(), cfg["rebalance"])
-        if key != last_key:
-            last_key = key
-            hist = close.loc[:d].copy()
-            hist.loc[d] = opn.loc[d].fillna(hist.iloc[-2])      # today's row = open price only
-            targets = T.pick_stocks(hist, cfg, held=list(state["positions"]))
-            T.rebalance(state, hist.iloc[-1], targets, d.date().isoformat(), cfg)
-        values.append(T.portfolio_value(state, close.loc[d]))
-    return pd.Series(values, index=days), state
-
-
-def stats(v, start_value, years, state=None):
-    """v = daily value series."""
-    total = v.iloc[-1] / start_value
+def stats(v, cap, state=None):
+    yrs = (v.index[-1] - v.index[0]).days / 365.25
     daily = v.pct_change().dropna()
-    out = {
-        "total %": (total - 1) * 100,
-        "per yr %": (total ** (1 / years) - 1) * 100,
-        "worst fall %": float((v / v.cummax() - 1).min() * 100),
-        "sharpe": float(daily.mean() / daily.std() * np.sqrt(252)) if daily.std() else 0.0,
-    }
+    m = pd.concat([pd.Series([cap], index=[v.index[0] - pd.Timedelta(days=1)]), v]).resample("ME").last().pct_change().dropna()
+    r6 = v.pct_change(126).dropna()
+    half = len(v) // 2
+    ann = lambda a, b, n: ((b / a) ** (252 / n) - 1) * 100  # noqa: E731
     yr_end = v.groupby(v.index.year).last()
-    prev = start_value
-    for y, val in yr_end.items():
-        out[str(y)] = (val / prev - 1) * 100
-        prev = val
-    for label, n in (("last 12m", 252), ("last 6m", 126)):
-        out[label] = (v.iloc[-1] / v.iloc[-n - 1] - 1) * 100 if len(v) > n else np.nan
+    yr = (yr_end / yr_end.shift(1).fillna(cap) - 1) * 100
+    out = {
+        "per yr %": ((v.iloc[-1] / cap) ** (1 / yrs) - 1) * 100,
+        "swing %": float(daily.std() * np.sqrt(252) * 100),
+        "sharpe": float(daily.mean() / daily.std() * np.sqrt(252)) if daily.std() else 0.0,
+        "worst fall %": float((v / v.cummax() - 1).min() * 100),
+        "up months %": float((m > 0).mean() * 100),
+        "worst month %": float(m.min() * 100),
+        "worst 6m %": float(r6.min() * 100) if len(r6) else np.nan,
+        "6m windows up %": float((r6 > 0).mean() * 100) if len(r6) else np.nan,
+        "worst yr %": float(yr.min()),
+        "1st half /yr": ann(cap, v.iloc[half], half),
+        "2nd half /yr": ann(v.iloc[half], v.iloc[-1], len(v) - half),
+        "last 6m %": (v.iloc[-1] / v.iloc[-127] - 1) * 100 if len(v) > 127 else np.nan,
+    }
+    for y, x in yr.items():
+        out[str(y)] = float(x)
     if state is not None:
-        out["trades/yr"] = len(state["trades"]) / years
-        out["fees %/yr"] = sum(t["fee"] for t in state["trades"]) / start_value * 100 / years
+        out["trades/yr"] = len(state["trades"]) / yrs
+        out["fees %/yr"] = sum(t["fee"] for t in state["trades"]) / cap * 100 / yrs
     return out
 
 
 def main():
     demo = "--demo" in sys.argv
     years = next((int(a) for a in sys.argv[1:] if a.isdigit()), 5)
-    opn, close = load(demo)
-    have = [t for t in T.TICKERS if t in close and close[t].notna().sum() > 0]
-    missing = [t.replace(".NS", "") for t in T.TICKERS if t not in have]
+    syms = T.all_tickers(demo) + T.INDEX_SYMBOLS
+    opn, close, volume = T.demo_data(syms, 252 * (years + 2), seed=7) if demo else T.download(syms, f"{years + 2}y")
     days = close.index[close.index > close.index[-1] - pd.DateOffset(years=years)]
-    yrs = (days[-1] - days[0]).days / 365.25
     cap = T.STARTING_CAPITAL
-    print(f"Period: {days[0].date()} to {days[-1].date()}  ({len(days)} trading days)")
-    print(f"Stocks with data: {len(have)}/{len(T.TICKERS)}   no data: {missing}")
-    at_start = [t for t in have if pd.notna(close.loc[days[0], t])]
-    print(f"Stocks already listed at start: {len(at_start)}")
+    sim = Sim(opn, close, volume, days)
+    lines = [f"Period: {days[0].date()} to {days[-1].date()}  ({len(days)} trading days)",
+             f"NSE shares requested: {len(syms) - len(T.INDEX_SYMBOLS)}, with price data: {close.shape[1] - len(T.INDEX_SYMBOLS)}",
+             f"Stock list size at start / end: {len(sim.universe(days[0], T.CONFIG))} / {len(sim.universe(days[-1], T.CONFIG))}"]
 
     rows, curves = {}, {}
-    # comparison 1: an index
-    bsym = next((s for s in T.BENCHMARKS if s in close and pd.notna(close[s].loc[:days[0]].tail(1)).all()
-                 and close[s].loc[:days[0]].notna().sum() > 1), T.REGIME_INDEX)
-    b = close[bsym].loc[days] / close[bsym].loc[:days[0]].iloc[-2] * cap
-    rows[f"INDEX: {T.BENCHMARKS.get(bsym, bsym)}"] = stats(b, cap, yrs)
-    # comparison 2: buy every stock in the list on day one and hold
-    shares = (cap * (1 - T.COST) / len(at_start)) / opn.loc[days[0], at_start]
-    h = (close.loc[days, at_start] * shares).sum(axis=1)
-    rows["HOLD ALL STOCKS"] = stats(h, cap, yrs)
-    curves["index"], curves["hold_all"] = b, h
-
+    idx = close[T.REGIME_INDEX]
+    curves["Nifty 50"] = idx.loc[days] / idx.loc[:days[0]].iloc[-2] * cap
+    curves["ALL 400 LISTED (no costs)"] = sim.hold_universe(T.CONFIG)
+    for k in list(curves):
+        rows[k] = stats(curves[k], cap)
     for name, cfg in variants().items():
-        v, state = simulate(opn, close, days, cfg)
-        rows[name] = stats(v, cap, yrs, state)
-        curves[name] = v
+        v, state = sim.run(cfg)
+        rows[name], curves[name] = stats(v, cap, state), v
 
     table = pd.DataFrame(rows).T
-    pd.set_option("display.width", 250)
-    print("=== RESULTS (all figures after costs) ===")
-    print(table.round(1).to_string())
-
-    live = curves["LIVE CONFIG"]
-    weekly = pd.DataFrame({"live": live, "index": b, "hold_all": h}).iloc[::5]
-    OUT.write_text(json.dumps({
+    pd.set_option("display.width", 400)
+    pd.set_option("display.max_columns", 50)
+    lines += ["=== RESULTS (bot figures are after costs) ===", table.round(1).to_string()]
+    text = "\n".join(lines)
+    print(text)
+    OUT.mkdir(exist_ok=True)
+    (OUT / "backtest.txt").write_text(text + "\n")
+    weekly = pd.DataFrame({"live": curves["LIVE CONFIG"], "nifty50": curves["Nifty 50"],
+                           "all_listed": curves["ALL 400 LISTED (no costs)"]}).iloc[::5]
+    (OUT / "backtest.json").write_text(json.dumps({
         "period": f"{days[0].date()} to {days[-1].date()}", "demo": demo,
         "config": T.CONFIG, "description": T.describe(),
         "table": json.loads(table.round(2).to_json(orient="index")),

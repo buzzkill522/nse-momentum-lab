@@ -9,17 +9,29 @@ on:
         description: "Years to test"
         default: "5"
 
+permissions:
+  contents: write
+
+concurrency: backtest
+
 jobs:
   run:
     runs-on: ubuntu-latest
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
       - run: pip install -r requirements.txt
+      - name: Refresh list of NSE shares
+        run: python trader.py --refresh-symbols || test -s data/symbols.txt
       - run: python backtest.py ${{ inputs.years || '5' }}
-      - uses: actions/upload-artifact@v4
-        with:
-          name: backtest
-          path: docs/backtest.json
+      - name: Save results
+        run: |
+          git config user.name "paper-trader-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add data/symbols.txt docs/backtest.txt docs/backtest.json
+          git diff --cached --quiet || git commit -m "Backtest results $(date -u +%F)"
+          git pull --rebase
+          git push

@@ -90,13 +90,15 @@ fetch("state.json?t=" + Date.now()).then(r => r.json()).then(s => {
   document.getElementById("hold").innerHTML = H.length
     ? "<tr><th>Stock</th><th>Qty</th><th>Avg</th><th>Price</th><th>Value</th><th>P&L</th></tr>" +
       H.map(h => `<tr><td>${h.ticker}</td><td>${h.qty}</td><td>${h.avg_price.toFixed(2)}</td><td>${h.price.toFixed(2)}</td><td>${inr(h.value)}</td><td class="${cls(h.pnl_pct)}">${pct(h.pnl_pct)}</td></tr>`).join("")
-    : `<tr><td>All cash — ${s.market_healthy === false ? "the market check is off (Nifty 50 below its 200-day average)" : "no stock passed the filters"}.</td></tr>`;
+    : "<tr><td>All cash right now.</td></tr>";
 
   document.getElementById("trades").innerHTML =
     "<tr><th>Time</th><th>Side</th><th>Stock</th><th>Qty</th><th>Price</th></tr>" +
     s.trades.slice(-25).reverse().map(t => `<tr><td>${new Date(t.time).toLocaleString("en-IN")}</td><td class="${t.side==="BUY"?"up":"down"}">${t.side}</td><td>${t.ticker}</td><td>${t.qty}</td><td>${t.price.toFixed(2)}</td></tr>`).join("");
 
-  document.getElementById("rules").textContent = "Strategy: " + s.params.description;
+  document.getElementById("rules").textContent =
+    (s.exposure != null ? `Currently aiming to have ${Math.round(s.exposure * 100)}% of the money invested. ` : "") +
+    "Strategy: " + s.params.description;
 }).catch(() => { document.getElementById("sub").textContent = "No data yet — the bot hasn't run."; });
 </script>
 </body>
