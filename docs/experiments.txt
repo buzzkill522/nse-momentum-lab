@@ -1,0 +1,83 @@
+Period: 2021-11-15 to 2026-11-13  (1236 trading days)
+NSE shares requested: 2391, with price data: 2391
+Stock list size at start / end: index 284 / 388, nohind 400 / 400, large 100 / 100
+=== EXPERIMENTS: one change at a time (after costs) ===
+                                                per yr %  sharpe  worst fall %  worst yr %  worst month %  1st half /yr  2nd half /yr  trades/yr  fees %/yr
+growth | nohind | base                             24.69    1.03        -34.85      -14.59         -14.84         38.00         13.57     227.88       3.77
+growth | nohind | keep-zone 1.5x                   23.54    0.99        -35.26      -16.01         -15.76         37.60         11.78     246.30       3.99
+growth | nohind | keep-zone 3x                     21.29    0.93        -36.23      -16.30         -14.98         34.41         10.22     220.87       3.34
+growth | nohind | re-pick quarterly                29.80    1.18        -31.73      -10.05         -16.29         42.93         19.00     105.53       1.98
+growth | nohind | sector cap 4                     21.13    0.92        -34.60      -14.71         -14.75         31.51         12.36     234.49       3.46
+growth | nohind | sector cap 6                     24.60    1.03        -35.01      -14.77         -14.84         37.56         13.77     229.68       3.77
+growth | nohind | calmer stocks get more money     27.30    1.14        -36.04      -10.83         -15.51         38.60         17.96     231.89       3.83
+growth | nohind | resize only if 50% off           23.42    0.99        -36.46      -16.59         -15.24         37.89         11.31     216.87       3.56
+growth | nohind | hold 15                          25.19    1.02        -36.48      -17.25         -15.52         40.90         12.14     180.22       4.09
+growth | nohind | hold 30                          20.04    0.91        -34.24      -17.55         -14.53         31.36         10.41     333.21       3.27
+growth | nohind | no skip month                    19.80    0.87        -38.37      -22.14         -18.06         32.03          9.42     223.28       3.20
+growth | nohind | trend 100d                       24.08    1.00        -38.63      -22.82         -17.08         45.26          6.82     172.81       2.84
+growth | nohind | trend 200d                       25.86    1.05        -36.25      -17.32         -15.03         48.46          7.60     129.96       2.28
+growth | nohind | cash interest 6%                 24.71    1.03        -34.85      -14.58         -14.84         38.02         13.59     227.28       3.77
+growth | nohind | rise 6m                          16.51    0.75        -37.71      -20.34         -15.78         31.03          4.17     252.71       3.40
+growth | nohind | rise 9m                          21.40    0.91        -35.25      -14.47         -15.82         39.47          6.43     234.49       3.66
+growth | nohind | rough-market cash, step 10       16.84    0.90        -31.62      -13.83         -11.78         30.91          4.87     347.03       3.16
+growth | index  | base                             35.71    1.38        -35.61      -12.39         -16.27         65.14         12.77     198.24       4.46
+growth | index  | keep-zone 1.5x                   36.36    1.40        -35.11      -10.16         -15.95         61.78         16.23     212.86       4.77
+growth | index  | keep-zone 3x                     33.19    1.32        -34.52      -13.45         -15.73         61.38         11.07     194.24       4.19
+growth | index  | re-pick quarterly                41.65    1.54        -33.51        1.01         -17.62         60.91         26.28      93.92       2.30
+growth | index  | sector cap 4                     29.51    1.21        -33.65      -15.45         -16.96         51.41         11.83     203.45       3.97
+growth | index  | sector cap 6                     35.62    1.38        -32.33      -11.98         -15.80         59.05         16.93     200.25       4.36
+growth | index  | calmer stocks get more money     34.65    1.37        -34.93       -9.71         -16.41         60.26         14.37     203.05       4.26
+growth | index  | resize only if 50% off           33.65    1.31        -36.01      -12.50         -16.36         61.73         11.61     184.83       4.08
+growth | index  | hold 15                          41.72    1.52        -33.64       -9.79         -16.12         72.82         17.70     153.39       5.39
+growth | index  | hold 30                          29.47    1.25        -33.62       -9.36         -16.25         49.64         13.08     291.96       3.70
+growth | index  | no skip month                    33.59    1.31        -33.44      -16.19         -18.48         54.81         16.49     192.24       3.99
+growth | index  | trend 100d                       43.63    1.62        -33.97       -6.35         -18.78         67.04         25.13     144.78       3.39
+growth | index  | trend 200d                       42.17    1.57        -34.96      -10.04         -17.44         75.74         16.49     101.12       2.54
+growth | index  | cash interest 6%                 35.71    1.39        -35.60      -12.43         -16.28         65.09         12.81     198.64       4.45
+growth | index  | rise 6m                          34.17    1.33        -31.18       -4.75         -16.32         56.05         16.60     210.66       4.36
+growth | index  | rise 9m                          35.81    1.39        -32.54       -2.52         -15.85         61.37         15.58     200.45       4.41
+growth | index  | rough-market cash, step 10       26.68    1.27        -30.49       -7.22         -11.96         53.93          5.16     307.18       3.74
+steady | nohind | base                             17.31    1.05        -21.77       -0.99          -9.62         33.13          3.97     381.27       3.72
+steady | nohind | keep-zone 1.5x                   16.21    1.00        -22.19       -1.86          -9.72         30.49          4.06     397.69       3.77
+steady | nohind | keep-zone 3x                     17.99    1.09        -21.77       -1.15          -9.64         34.90          3.82     375.06       3.72
+steady | nohind | re-pick quarterly                13.63    0.89        -23.27       -7.30          -9.73         27.57          1.69     252.71       1.94
+steady | nohind | sector cap 4                     18.01    1.09        -21.77        0.23          -8.97         32.53          5.72     379.87       3.68
+steady | nohind | sector cap 6                     17.46    1.06        -21.77       -1.79          -8.91         33.13          4.24     380.47       3.71
+steady | nohind | calmer stocks get more money     16.03    1.00        -21.38       -1.92          -9.14         32.23          2.37     393.89       3.74
+steady | nohind | resize only if 50% off           17.02    1.05        -21.62        0.21         -10.00         32.59          3.87     294.56       3.34
+steady | nohind | hold 15                          20.16    1.17        -22.13        2.91          -9.17         36.45          6.52     287.35       3.96
+steady | nohind | hold 30                          17.54    1.10        -20.51       -6.76         -10.71         33.81          3.85     545.67       3.51
+steady | nohind | no skip month                    15.36    0.96        -20.23        1.44          -8.46         25.21          6.83     371.26       3.34
+steady | nohind | trend 100d                       20.14    1.21        -23.87       -7.91         -11.10         44.28          0.70     346.03       3.81
+steady | nohind | trend 200d                       15.77    0.99        -23.49       -8.73          -8.69         33.97          0.58     336.21       3.20
+steady | nohind | cash interest 6%                 18.36    1.11        -21.39        0.12          -9.53         34.26          4.98     381.07       3.82
+steady | nohind | rise 9m                          17.96    1.08        -24.02       -0.41          -8.99         30.39          7.35     359.24       3.25
+steady | nohind | rise 12m                         11.34    0.74        -24.27       -5.41         -11.14         22.02          1.99     372.26       2.93
+steady | nohind | cash step 10                     17.17    1.04        -22.18       -1.41         -10.09         32.82          3.96     380.87       3.73
+steady | nohind | cash step 20                     16.56    1.00        -24.57       -1.16         -11.27         32.75          2.92     365.05       3.63
+steady | nohind | cash checked monthly             18.04    1.07        -20.98       -0.86         -10.86         32.92          5.46     303.37       3.51
+steady | nohind | target swing 12%                 15.15    1.04        -19.75        0.69          -8.14         28.79          3.47     432.73       3.38
+steady | nohind | target swing 20%                 19.60    1.05        -25.84       -3.92         -12.56         37.26          4.89     328.40       4.13
+steady | nohind | cash step 10 + interest 6%       18.60    1.12        -21.19       -0.10          -9.98         34.44          5.28     381.27       3.87
+steady | index  | base                             20.34    1.23        -22.55       -7.53         -13.27         36.47          6.83     352.43       3.86
+steady | index  | keep-zone 1.5x                   18.54    1.14        -21.99       -6.59         -13.19         34.34          5.24     363.85       3.87
+steady | index  | keep-zone 3x                     20.50    1.21        -22.61       -7.50         -13.24         38.66          5.43     345.63       3.78
+steady | index  | re-pick quarterly                17.95    1.13        -23.39       -8.99         -13.45         32.70          5.47     236.29       2.03
+steady | index  | sector cap 4                     20.99    1.25        -21.54       -1.70         -11.93         38.00          6.81     355.04       4.01
+steady | index  | sector cap 6                     21.10    1.27        -23.13       -1.47         -13.35         35.53          8.96     354.24       3.87
+steady | index  | calmer stocks get more money     19.74    1.22        -22.69       -6.49         -12.71         36.02          6.09     363.25       3.90
+steady | index  | resize only if 50% off           20.29    1.24        -21.60       -7.68         -13.24         35.32          7.65     275.74       3.47
+steady | index  | hold 15                          16.94    1.05        -22.23       -4.32         -11.98         34.24          2.45     266.53       3.71
+steady | index  | hold 30                          17.01    1.08        -19.36       -6.03         -10.20         32.48          3.93     506.82       3.40
+steady | index  | no skip month                    17.04    1.05        -19.44       -4.48          -9.90         29.97          5.99     347.23       3.50
+steady | index  | trend 100d                       22.88    1.35        -19.55       -4.93          -9.31         41.17          7.77     314.39       3.56
+steady | index  | trend 200d                       20.69    1.27        -20.16       -4.42         -10.07         39.17          5.38     300.17       3.29
+steady | index  | cash interest 6%                 21.38    1.28        -22.02       -6.64         -13.18         37.68          7.76     352.83       3.96
+steady | index  | rise 9m                          16.73    1.03        -24.62        0.41         -12.56         28.63          6.53     343.82       3.09
+steady | index  | rise 12m                         19.23    1.12        -22.12        1.40         -12.19         29.26         10.69     338.62       3.26
+steady | index  | cash step 10                     20.30    1.22        -22.97       -7.64         -13.43         36.71          6.57     349.03       3.89
+steady | index  | cash step 20                     20.87    1.24        -24.35       -9.06         -13.47         39.26          5.64     334.81       4.02
+steady | index  | cash checked monthly             20.21    1.20        -23.53       -8.38         -16.47         34.86          7.87     285.15       3.55
+steady | index  | target swing 12%                 16.83    1.16        -19.81       -5.99         -12.29         30.17          5.45     407.10       3.38
+steady | index  | target swing 20%                 22.50    1.20        -26.09      -10.36         -15.65         39.99          7.99     304.17       4.24
+steady | index  | cash step 10 + interest 6%       21.49    1.28        -22.10       -6.56         -13.32         37.86          7.83     349.63       4.00
