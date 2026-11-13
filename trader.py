@@ -81,6 +81,8 @@ CONFIG = {
     "cash_yield": 0.0,      # yearly interest assumed on idle cash (e.g. 0.06 for a liquid fund)
     # --- timing
     "rebalance": "monthly", # when stocks are re-picked: "monthly" or "quarterly"
+    "tranches": 1,          # 3 = re-pick a third of the holdings each month, so each stock is
+                            # reviewed once a quarter without betting on one particular month
     "risk_check": None,     # when exposure is re-checked (None = only at rebalance)
     "drift": 0.25,          # only resize a holding if it is >25% away from its target size
 }
@@ -90,8 +92,8 @@ CONFIG = {
 MODELS = {
     "growth": {
         "name": "Growth bot",
-        "tagline": "Buys the 20 biggest 12-month winners and re-picks every quarter. Aims for higher returns and accepts bigger drops.",
-        "config": {**CONFIG, "rebalance": "quarterly", "cash_yield": 0.06},
+        "tagline": "Buys the 20 biggest 12-month winners and reviews a third of them each month. Aims for higher returns and accepts bigger drops.",
+        "config": {**CONFIG, "tranches": 3, "cash_yield": 0.06},
     },
     "steady": {
         "name": "Steady bot",
@@ -365,7 +367,9 @@ def describe(cfg=CONFIG) -> str:
     s = f"The bot picks from {pool}. From the stocks in an uptrend"
     if cfg.get("near_high"):
         s += f" and within {round((1 - cfg['near_high']) * 100)}% of their 52-week high"
-    s += f" it holds {how}. Stocks are re-picked {cfg['rebalance']}."
+    s += f" it holds {how}. " + (
+        f"A third of the holdings is reviewed each month, so every stock is re-checked once a quarter."
+        if cfg.get("tranches", 1) == 3 else f"Stocks are re-picked {cfg['rebalance']}.")
     if cfg.get("sector_cap"):
         s += f" At most {cfg['sector_cap']} stocks may come from one industry."
     if cfg.get("cut_losers"):
@@ -390,7 +394,7 @@ def new_state() -> dict:
     return {
         "started_at": now, "starting_capital": STARTING_CAPITAL,
         "cash": STARTING_CAPITAL, "positions": {}, "trades": [], "history": [],
-        "last_rebalance": None, "last_risk": None, "universe": None, "base_weights": {},
+        "last_rebalance": None, "last_risk": None, "universe": None, "base_weights": {}, "tranche": {},
         "exposure": None, "benchmark_start": None, "benchmark": None, "benchmark_name": None,
     }
 
@@ -487,8 +491,23 @@ def step(state, prices, day, ts, cfg, universe_fn):
     old = state.get("exposure")
     if cfg.get("exposure_step") and old and e > 0 and abs(e - old) < cfg["exposure_step"]:
         e = old                                    # too small a change to be worth trading on
-    if new_month or (was_in_cash and e > 0):
+    parts, n = cfg.get("tranches", 1), cfg["top_n"]
+    if new_month and parts > 1 and state["base_weights"] and state.get("tranche"):
+        # only this month's group is reviewed; the other groups are left alone
+        k = (day.year * 12 + day.month) % parts
+        tr = state["tranche"]
+        others = [t for t in state["base_weights"] if tr.get(t) != k]
+        mine = [t for t in state["base_weights"] if tr.get(t) == k]
+        slots = n - len(others)
+        picks = {}
+        if slots > 0:
+            sub = {**cfg, "top_n": slots, "buffer": cfg["buffer"] * n / slots}   # same keep-zone as the whole bot
+            picks = pick_stocks(prices, [u for u in state["universe"] if u not in others], sub, held=mine)
+        state["base_weights"] = {t: 1 / n for t in others + list(picks)}
+        state["tranche"] = {**{t: tr[t] for t in others}, **{t: k for t in picks}}
+    elif new_month or (was_in_cash and e > 0):
         state["base_weights"] = pick_stocks(prices, state["universe"], cfg, held=list(state["positions"]))
+        state["tranche"] = {t: i % parts for i, t in enumerate(state["base_weights"])}
     elif cfg.get("cut_losers") and state["base_weights"]:
         ok = [t for t in state["base_weights"] if t in prices
               and prices[t].iloc[-1] > prices[t].iloc[-cfg["trend_sma"]:].mean()]

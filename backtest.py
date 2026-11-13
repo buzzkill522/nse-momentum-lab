@@ -55,10 +55,11 @@ def variants():
     # robustness: do the adopted changes hold up when varied?
     g, s = T.MODELS["growth"]["config"], T.MODELS["steady"]["config"]
     for pool in ("index", "nohind"):
-        v[f"CHECK growth monthly [{pool}]"] = {**g, **POOLS[pool], "rebalance": "monthly"}
-        for off in (1, 2):
-            v[f"CHECK growth quarterly, start month +{off} [{pool}]"] = {**g, **POOLS[pool], "rebalance_offset": off}
-        v[f"CHECK growth, no cash interest [{pool}]"] = {**g, **POOLS[pool], "cash_yield": 0.0}
+        one = {**g, **POOLS[pool], "tranches": 1}
+        v[f"CHECK growth all monthly [{pool}]"] = one
+        for off in (0, 1, 2):
+            v[f"CHECK growth all quarterly, start month +{off} [{pool}]"] = {**one, "rebalance": "quarterly", "rebalance_offset": off}
+        v[f"CHECK steady, thirds [{pool}]"] = {**s, **POOLS[pool], "tranches": 3}
         v[f"CHECK steady, no sector cap [{pool}]"] = {**s, **POOLS[pool], "sector_cap": 0}
         v[f"CHECK steady, no cash interest [{pool}]"] = {**s, **POOLS[pool], "cash_yield": 0.0}
     for mid, m in T.MODELS.items():
