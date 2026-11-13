@@ -1,0 +1,25 @@
+name: nse-data
+
+# Run by hand: Actions tab -> nse-data -> Run workflow
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "probe = check which NSE files are reachable"
+        type: choice
+        options: [probe]
+        default: probe
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - run: pip install -r requirements.txt
+      - if: inputs.mode == 'probe'
+        run: python tools/probe_nse.py
