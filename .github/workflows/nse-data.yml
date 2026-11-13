@@ -7,7 +7,7 @@ on:
       mode:
         description: "probe = check which NSE files are reachable"
         type: choice
-        options: [probe]
+        options: [probe, probe-mcap]
         default: probe
 
 jobs:
@@ -23,3 +23,5 @@ jobs:
       - run: pip install -r requirements.txt
       - if: inputs.mode == 'probe'
         run: python tools/probe_nse.py
+      - if: inputs.mode == 'probe-mcap'
+        run: python tools/probe_mcap.py
