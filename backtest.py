@@ -50,7 +50,7 @@ def variants():
     for pool in ("index", "nohind"):
         for name, cfg in kinds.items():
             v[f"{name} [{pool}]"] = {**cfg, **POOLS[pool]}
-    for name in ("winners", "winners near high + cut", "calm risers (previous bot)"):
+    for name in ("winners", "winners 12m", "winners near high + cut", "calm risers (previous bot)"):
         v[f"{name} [large]"] = {**kinds[name], **POOLS["large"]}
     v["LIVE CONFIG"] = dict(T.CONFIG)
     v["LIVE CONFIG [nohind]"] = {**T.CONFIG, **POOLS["nohind"]}
