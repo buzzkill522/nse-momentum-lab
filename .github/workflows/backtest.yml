@@ -5,9 +5,9 @@ on:
     paths: ["backtest.py", "trader.py", ".github/workflows/backtest.yml"]
   workflow_dispatch:
     inputs:
-      months:
-        description: "Months to test"
-        default: "6"
+      years:
+        description: "Years to test"
+        default: "5"
 
 jobs:
   run:
@@ -18,7 +18,7 @@ jobs:
         with:
           python-version: "3.11"
       - run: pip install -r requirements.txt
-      - run: python backtest.py ${{ inputs.months || '6' }}
+      - run: python backtest.py ${{ inputs.years || '5' }}
       - uses: actions/upload-artifact@v4
         with:
           name: backtest
