@@ -198,7 +198,7 @@
 <script>
 const BOTS = {
   growth: { name: "Growth bot", color: "--growth", short: "Bigger gains, bigger drops",
-            tagline: "Buys the 20 biggest 12-month winners. Aims for higher returns and accepts bigger drops." },
+            tagline: "Buys the 20 biggest 12-month winners and re-picks every quarter. Aims for higher returns and accepts bigger drops." },
   steady: { name: "Steady bot", color: "--steady", short: "Smoother ride, smaller gains",
             tagline: "Buys 20 calm, steadily rising stocks and holds back cash when the market gets rough. Aims for smoother returns and accepts lower gains." },
 };
@@ -504,6 +504,8 @@ function model() {
         "In the test, choosing calm risers gave smaller drops and much milder bad years than choosing the biggest risers.")
     : R(`${k++}. Back the biggest winners`, `<p>The remaining stocks are ranked by how much they rose and the top ${n} are bought.</p>`,
         `In the test, ranking on the ${months}-month rise was the only winner-focused version that clearly beat holding every index stock, including on a list built without hindsight.`);
+  if (c.sector_cap) r += R(`${k++}. Don't crowd into one industry`, `<p>No more than ${c.sector_cap} of the ${n} stocks may come from the same industry. When an industry is full, the next-best stock from another industry is taken.</p>`,
+    "Stocks in one industry tend to fall together. In the test the cap made the worst year milder without costing return.");
   r += R(`${k++}. Split the money`, `<p>Each stock gets one ${n}th of the portfolio. If fewer than ${n} qualify, the unused share stays in cash. A holding is only resized when it drifts more than ${Math.round(c.drift * 100)}% from its target.</p>`,
     "Equal sizes mean no single stock can sink the portfolio. Not fine-tuning avoids paying trading costs for little benefit.");
   r += R(`${k++}. Keep what still works`, `<p>Stocks are re-picked ${c.rebalance}, on the first trading day. A stock already owned is kept while it ranks in the top ${Math.round(n * c.buffer)}, even if it has left the top ${n}.</p>`,
@@ -511,15 +513,17 @@ function model() {
   if (ex.includes("voltarget")) r += R(`${k++}. Turn the risk down in rough markets`, `<p>Each week the bot measures how jumpy the whole stock list has been over the last 20 trading days, as a yearly figure. <code>share invested = ${vt}% ÷ jumpiness</code>, capped at 100%. The rest is held as cash.</p>`,
     "Big falls usually come when the market is already swinging wildly. Holding less then gives up some gains and softens the drops.");
   r += R(`${k++}. Count the costs`, `<p>Every pretend trade is charged ${cost}% of its value.</p>`, "Real trading has brokerage, taxes and a gap between buying and selling prices.");
+  if (c.cash_yield) r += R(`${k++}. Put idle cash to work`, `<p>Money not in stocks is assumed to earn ${Math.round(c.cash_yield * 100)}% a year, as it would in a liquid fund.</p>`,
+    "Cash sitting in a trading account earns nothing. This is an assumption about where the spare cash is parked, not a trading skill, and it only matters when the bot is holding cash.");
   $("m_rules").innerHTML = r;
 
   const per = ex.includes("voltarget") ? 1000000 * vt / 20 / n : 1000000 / n;
-  $("m_example").innerHTML = `<p style="margin:6px 0">Suppose it is the first trading day of the month and the portfolio is worth ₹10,00,000.</p><ul class="plain">
+  $("m_example").innerHTML = `<p style="margin:6px 0">Suppose it is a re-pick day and the portfolio is worth ₹10,00,000.</p><ul class="plain">
       <li>The bot takes the ${c.universe === "index" ? "roughly 400 stocks in the index" : `list of ${c.universe_size} stocks`}. Say 150 of them have risen over ${months} months and are above their ${c.trend_sma}-day average.</li>
       ${calm ? `<li>It keeps the best-rising third, 50 stocks, and picks the ${n} with the smallest daily price swings.</li>` : `<li>It picks the ${n} that rose the most.</li>`}
       ${ex.includes("voltarget") ? `<li>The market's jumpiness over the last 20 days works out to 20% a year. Share invested = ${vt}% ÷ 20% = ${Math.round(vt / 20 * 100)}%, so ₹${(vt / 20 * 10).toFixed(1)} lakh goes into stocks and the rest stays in cash.</li>` : ""}
       <li>Each stock gets about ₹${Math.round(per).toLocaleString("en-IN")}. A share priced at ₹500 means buying ${Math.floor(per / 500)} shares.</li>
-      <li>Next month, a stock that has slipped to rank ${n + 5} is kept. One that has slipped to rank ${Math.round(n * c.buffer) + 10}, or fallen below its ${c.trend_sma}-day average, is sold and replaced.</li>
+      <li>At the next re-pick, a stock that has slipped to rank ${n + 5} is kept. One that has slipped to rank ${Math.round(n * c.buffer) + 10}, or fallen below its ${c.trend_sma}-day average, is sold and replaced.</li>
     </ul><p class="small muted" style="margin:8px 0 0">The numbers here are made up to show the arithmetic.</p>`;
 
   if (B) {
@@ -546,7 +550,7 @@ function model() {
 
   $("m_limits").innerHTML = [
     "It does not read news, company results or valuations. It only sees prices and trading volumes.",
-    "It has no stop-loss. A stock can fall a long way between the monthly re-picks.",
+    `It has no stop-loss. A stock can fall a long way between the ${c.rebalance} re-picks.`,
     calm ? "Smoother does not mean safe. In the test it still dropped more than a fifth from its high at one point."
          : "It is aggressive: in the test it once fell more than a third from its high, and it lost money in 2025.",
     "The test could not include companies that were delisted, so past results look a little better than they should.",
@@ -556,14 +560,16 @@ function model() {
 
   const names = { universe: "Stock pool", top_n: "Stocks held", lookback: "Rise measured over (trading days)", skip: "Most recent days ignored",
     trend_sma: "Trend average (days)", select: "How stocks are chosen", weighting: "How money is split", buffer: "Keep-zone (multiple of stocks held)",
-    exposure: "Risk controls", vol_target: "Target yearly jumpiness", rebalance: "Stocks re-picked", risk_check: "Risk re-checked",
+    sector_cap: "Most stocks from one industry", cash_yield: "Interest assumed on idle cash", exposure: "Risk controls", vol_target: "Target yearly jumpiness", rebalance: "Stocks re-picked", risk_check: "Risk re-checked",
     drift: "Resize when off target by", min_price: "Minimum share price (₹)", cost: "Cost per trade" };
   const val = (key, v) => key === "universe" ? (v === "index" ? "Nifty MidSmallcap 400" : "own list by trading activity")
     : key === "select" ? { lowvol: "calmest of the best risers", mom: "biggest risers", mom_vol: "rise relative to bumpiness" }[v]
     : key === "weighting" ? (v === "inv_vol" ? "more to calmer stocks" : "equal")
     : key === "exposure" ? (v.length ? v.map(x => ({ voltarget: "cut back when jumpy", breadth: "cut back when few stocks rise", regime: "all cash in a weak market" }[x])).join(", ") : "none, always fully invested")
-    : ["vol_target", "drift", "cost"].includes(key) ? (v * 100).toFixed(key === "cost" ? 1 : 0) + "%" : v == null ? "–" : v;
-  const hide = new Set([...(ex.includes("voltarget") ? [] : ["vol_target"]), ...(ex.length ? [] : ["risk_check"])]);
+    : ["vol_target", "drift", "cost", "cash_yield"].includes(key) ? (v * 100).toFixed(key === "cost" ? 1 : 0) + "%" + (key === "cash_yield" ? " a year" : "")
+    : key === "sector_cap" ? (v || "no limit") : v == null ? "–" : v;
+  const hide = new Set([...(ex.includes("voltarget") ? [] : ["vol_target"]), ...(ex.length ? [] : ["risk_check"]),
+    ...(c.sector_cap ? [] : ["sector_cap"]), ...(c.cash_yield ? [] : ["cash_yield"])]);
   $("m_cfg").innerHTML = Object.keys(names).filter(x => x in c && !hide.has(x)).map(x => `<tr><td>${names[x]}</td><td>${esc(val(x, c[x]))}</td></tr>`).join("");
 }
 
