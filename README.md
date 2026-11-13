@@ -1,8 +1,8 @@
 # NSE Momentum Lab
 
-A simple quant bot that paper-trades (fake money) large-cap NSE stocks, plus a live dashboard.
+A simple quant bot that paper-trades (fake money) mid- and small-cap NSE stocks, plus a live dashboard.
 
-**Strategy:** every trading day it holds the top 5 of 30 large-cap NSE stocks ranked by 20-day return. A stock only qualifies if it trades above its 50-day moving average. Positions are equal weight, and each trade is charged a 0.1% cost. It starts with ₹10,00,000 and is compared against the Nifty 50.
+**Strategy:** every trading day it holds the top 8 of 40 mid- and small-cap NSE stocks ranked by 20-day return. A stock only qualifies if it trades above its 50-day moving average. Positions are equal weight, and each trade is charged a 0.2% cost (mid/small caps have wider spreads). It starts with ₹10,00,000 and is compared against the Nifty Midcap 100 (falls back to Nifty 50 if Yahoo has no data for it).
 
 ## How it runs
 - `trader.py`: fetches prices (Yahoo Finance), rebalances once a day, and records portfolio value on every run.

@@ -1,7 +1,7 @@
 """
 NSE Momentum Paper Trader
 -------------------------
-A simple cross-sectional momentum strategy on large-cap NSE stocks, traded
+A simple cross-sectional momentum strategy on mid- and small-cap NSE stocks, traded
 with FAKE money. Each run:
   1. Downloads recent daily prices (Yahoo Finance, ".NS" tickers).
   2. Once per trading day, rebalances: buys the TOP_N stocks with the best
@@ -27,18 +27,23 @@ STATE_FILE = Path(__file__).parent / "docs" / "state.json"
 IST = timezone(timedelta(hours=5, minutes=30))
 
 STARTING_CAPITAL = 1_000_000.0  # ₹10 lakh fake money
-TOP_N = 5                        # stocks held at once
+TOP_N = 8                        # stocks held at once (more names = less single-stock risk)
 LOOKBACK = 20                    # momentum window (trading days)
 TREND_SMA = 50                   # trend filter window
-COST = 0.001                     # 0.1% per trade (brokerage + STT + slippage, rough)
-BENCHMARK = "^NSEI"              # Nifty 50 index
+COST = 0.002                     # 0.2% per trade (brokerage + STT + wider mid/small-cap spreads)
+# First benchmark that Yahoo returns data for is used.
+BENCHMARKS = {"NIFTY_MIDCAP_100.NS": "Nifty Midcap 100", "^NSEI": "Nifty 50"}
 
 UNIVERSE = [
-    "RELIANCE", "TCS", "HDFCBANK", "ICICIBANK", "INFY", "BHARTIARTL", "ITC",
-    "SBIN", "LT", "HINDUNILVR", "KOTAKBANK", "AXISBANK", "BAJFINANCE", "MARUTI",
-    "SUNPHARMA", "TITAN", "ULTRACEMCO", "ASIANPAINT", "NTPC", "POWERGRID",
-    "M&M", "TATASTEEL", "HCLTECH", "WIPRO", "ONGC", "ADANIPORTS", "COALINDIA",
-    "JSWSTEEL", "NESTLEIND", "TECHM",
+    # Mid caps
+    "PERSISTENT", "DIXON", "POLYCAB", "COFORGE", "MPHASIS", "CUMMINSIND",
+    "FEDERALBNK", "IDFCFIRSTB", "AUBANK", "PIIND", "LUPIN", "AUROPHARMA",
+    "ASHOKLEY", "TATACOMM", "VOLTAS", "MAXHEALTH", "KPITTECH", "SUPREMEIND",
+    "ASTRAL", "PHOENIXLTD", "BHARATFORG", "OBEROIRLTY", "JUBLFOOD", "NMDC",
+    # Small caps
+    "CDSL", "ANGELONE", "KEI", "BSOFT", "CYIENT", "AMBER", "RADICO", "CAMS",
+    "IEX", "KAYNES", "NATIONALUM", "CROMPTON", "BLUESTARCO", "SONACOMS",
+    "MANAPPURAM", "GLENMARK",
 ]
 TICKERS = [t + ".NS" for t in UNIVERSE]
 
@@ -46,7 +51,7 @@ TICKERS = [t + ".NS" for t in UNIVERSE]
 # ---------------------------------------------------------------- data
 def fetch_prices(demo: bool) -> pd.DataFrame:
     """Daily close prices, columns = tickers + benchmark. Last row = latest price."""
-    cols = TICKERS + [BENCHMARK]
+    cols = TICKERS + list(BENCHMARKS)
     if demo:
         rng = np.random.default_rng(int(datetime.now().timestamp()) // 600)
         idx = pd.bdate_range(end=datetime.now(IST).date(), periods=120)
@@ -62,7 +67,8 @@ def fetch_prices(demo: bool) -> pd.DataFrame:
 
 # ---------------------------------------------------------------- strategy
 def pick_stocks(prices: pd.DataFrame) -> list[str]:
-    px = prices[TICKERS].dropna(axis=1)
+    px = prices[TICKERS].dropna(axis=1, thresh=TREND_SMA + 1).ffill()
+    px = px.loc[:, px.iloc[-1].notna()]
     momentum = px.iloc[-1] / px.iloc[-LOOKBACK - 1] - 1
     above_trend = px.iloc[-1] > px.rolling(TREND_SMA).mean().iloc[-1]
     candidates = momentum[above_trend & (momentum > 0)]
@@ -76,6 +82,7 @@ def new_state() -> dict:
         "started_at": now, "starting_capital": STARTING_CAPITAL,
         "cash": STARTING_CAPITAL, "positions": {}, "trades": [],
         "history": [], "last_rebalance": None, "benchmark_start": None,
+        "benchmark": None, "benchmark_name": None,
         "params": {"top_n": TOP_N, "lookback": LOOKBACK, "trend_sma": TREND_SMA,
                    "cost": COST, "universe_size": len(UNIVERSE)},
     }
@@ -148,8 +155,12 @@ def main():
     ts = now.isoformat(timespec="seconds")
     today = now.date().isoformat()
 
-    if state["benchmark_start"] is None and pd.notna(last.get(BENCHMARK)):
-        state["benchmark_start"] = float(last[BENCHMARK])
+    if state.get("benchmark") is None:
+        for sym, name in BENCHMARKS.items():
+            if pd.notna(last.get(sym)):
+                state.update(benchmark=sym, benchmark_name=name, benchmark_start=float(last[sym]))
+                break
+    bsym = state.get("benchmark")
 
     if state["last_rebalance"] != today:
         targets = pick_stocks(prices)
@@ -159,7 +170,7 @@ def main():
         print("Rebalanced ->", state["last_signal"])
 
     value = portfolio_value(state, last)
-    bench = float(last[BENCHMARK]) if pd.notna(last.get(BENCHMARK)) else None
+    bench = float(last[bsym]) if bsym and pd.notna(last.get(bsym)) else None
     bench_pct = (bench / state["benchmark_start"] - 1) * 100 if bench and state["benchmark_start"] else None
     state["history"].append({
         "time": ts, "value": round(value, 2),

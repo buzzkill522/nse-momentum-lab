@@ -42,11 +42,11 @@
   <div class="tiles">
     <div class="tile"><div class="k">Portfolio value</div><div class="v" id="value">–</div></div>
     <div class="tile"><div class="k">Total return</div><div class="v" id="ret">–</div></div>
-    <div class="tile"><div class="k">Nifty 50 (same period)</div><div class="v" id="bench">–</div></div>
+    <div class="tile"><div class="k" id="benchk">Benchmark (same period)</div><div class="v" id="bench">–</div></div>
     <div class="tile"><div class="k">Cash</div><div class="v" id="cash">–</div></div>
   </div>
 
-  <div class="card"><h2>Return vs Nifty 50 (%)</h2><div class="chartbox"><canvas id="chart"></canvas></div></div>
+  <div class="card"><h2 id="charth">Return vs benchmark (%)</h2><div class="chartbox"><canvas id="chart"></canvas></div></div>
   <div class="card"><h2>Holdings</h2><div class="scroll"><table id="hold"></table></div></div>
   <div class="card"><h2>Recent trades</h2><div class="scroll"><table id="trades"></table></div></div>
   <div class="card sub" id="rules"></div>
@@ -66,6 +66,9 @@ fetch("state.json?t=" + Date.now()).then(r => r.json()).then(s => {
   set("ret", pct(last.pct), cls(last.pct));
   set("bench", pct(last.benchmark_pct), cls(last.benchmark_pct));
   set("cash", inr(s.cash));
+  const bname = s.benchmark_name || "Benchmark";
+  document.getElementById("benchk").textContent = bname + " (same period)";
+  document.getElementById("charth").textContent = "Return vs " + bname + " (%)";
 
   const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
   new Chart(document.getElementById("chart"), {
@@ -74,7 +77,7 @@ fetch("state.json?t=" + Date.now()).then(r => r.json()).then(s => {
       labels: s.history.map(h => new Date(h.time).toLocaleString("en-IN", {day:"numeric", month:"short", hour:"2-digit", minute:"2-digit"})),
       datasets: [
         { label: "Strategy", data: s.history.map(h => h.pct), borderColor: css("--accent"), pointRadius: 0, tension: .2 },
-        { label: "Nifty 50", data: s.history.map(h => h.benchmark_pct), borderColor: css("--muted"), borderDash: [4,4], pointRadius: 0, tension: .2 },
+        { label: bname, data: s.history.map(h => h.benchmark_pct), borderColor: css("--muted"), borderDash: [4,4], pointRadius: 0, tension: .2 },
       ]
     },
     options: { maintainAspectRatio: false, interaction: { mode: "index", intersect: false },
@@ -95,7 +98,7 @@ fetch("state.json?t=" + Date.now()).then(r => r.json()).then(s => {
 
   const p = s.params;
   document.getElementById("rules").textContent =
-    `Strategy: each trading day, hold the top ${p.top_n} of ${p.universe_size} large-cap NSE stocks by ${p.lookback}-day return, ` +
+    `Strategy: each trading day, hold the top ${p.top_n} of ${p.universe_size} mid- and small-cap NSE stocks by ${p.lookback}-day return, ` +
     `only if trading above their ${p.trend_sma}-day average. Equal weight, ${(p.cost*100).toFixed(1)}% cost per trade. Prices from Yahoo Finance (may be delayed ~15 min).`;
 }).catch(() => { document.getElementById("sub").textContent = "No data yet — the bot hasn't run."; });
 </script>
