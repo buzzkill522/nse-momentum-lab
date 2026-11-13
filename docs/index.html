@@ -8,27 +8,36 @@
 <style>
   :root { --bg:#f6f6f3; --card:#fff; --fg:#191919; --muted:#6a6a6a; --line:#e5e5e0;
           --up:#0a8a4a; --down:#c4322b; --upbg:#e6f4ec; --downbg:#fbe9e7;
-          --accent:#2f5bd3; --alt:#b7791f; --chip:#ecece7; }
+          --growth:#2f5bd3; --steady:#0f8a7e; --alt:#b7791f; --chip:#ecece7; }
   @media (prefers-color-scheme: dark) {
     :root { --bg:#111; --card:#1b1b1b; --fg:#ededed; --muted:#9c9c9c; --line:#2d2d2d;
             --up:#3ccf7f; --down:#ff6b61; --upbg:#143524; --downbg:#3f1b18;
-            --accent:#7ea2ff; --alt:#e0b050; --chip:#262626; }
+            --growth:#7ea2ff; --steady:#4fd1c0; --alt:#e0b050; --chip:#262626; }
   }
   * { box-sizing:border-box; }
-  body { margin:0; background:var(--bg); color:var(--fg);
-         font:16px/1.5 system-ui, -apple-system, Segoe UI, sans-serif; }
+  body { margin:0; background:var(--bg); color:var(--fg); font:16px/1.5 system-ui, -apple-system, Segoe UI, sans-serif; }
   main { max-width:920px; margin:0 auto; padding:20px 16px 56px; }
   header { display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap; }
   h1 { font-size:18px; margin:0; }
   h2 { font-size:16px; margin:0 0 4px; }
+  h3 { font-size:15px; margin:0 0 4px; }
   .muted { color:var(--muted); } .small { font-size:13px; }
   .up { color:var(--up); } .down { color:var(--down); }
   .num { font-variant-numeric:tabular-nums; }
-  .pill { display:inline-flex; align-items:center; gap:6px; font-size:13px; padding:3px 10px;
-          border-radius:99px; background:var(--chip); color:var(--muted); }
+  .pill { display:inline-flex; align-items:center; gap:6px; font-size:13px; padding:3px 10px; border-radius:99px; background:var(--chip); color:var(--muted); }
   .pill i { width:8px; height:8px; border-radius:50%; background:var(--muted); }
   .pill.open i { background:var(--up); }
   .card { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:16px; margin-top:14px; }
+
+  /* bot picker */
+  .bots { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:14px; }
+  .bot { text-align:left; font:inherit; color:inherit; background:var(--card); border:2px solid var(--line); border-radius:12px; padding:12px 14px; cursor:pointer; }
+  .bot .nm { display:flex; align-items:center; gap:8px; font-weight:650; }
+  .bot .nm i { width:10px; height:10px; border-radius:50%; }
+  .bot .vv { font-size:20px; font-weight:650; margin-top:2px; }
+  .bot .tg { font-size:13px; color:var(--muted); }
+  .bot.on.growth { border-color:var(--growth); } .bot.on.steady { border-color:var(--steady); }
+  .bot:not(.on) { opacity:.75; }
 
   /* headline */
   .hero .label { font-size:13px; color:var(--muted); }
@@ -36,23 +45,20 @@
   .hero .line { margin-top:6px; }
   .tag { display:inline-block; padding:1px 8px; border-radius:6px; font-weight:600; }
   .tag.up { background:var(--upbg); } .tag.down { background:var(--downbg); }
-  .facts { display:grid; grid-template-columns:repeat(auto-fit,minmax(130px,1fr)); gap:12px;
-           margin-top:14px; padding-top:14px; border-top:1px solid var(--line); }
+  .facts { display:grid; grid-template-columns:repeat(auto-fit,minmax(130px,1fr)); gap:12px; margin-top:14px; padding-top:14px; border-top:1px solid var(--line); }
   .facts .k { font-size:12px; color:var(--muted); }
   .facts .v { font-size:17px; font-weight:600; }
 
   /* tabs */
   nav { display:flex; gap:4px; margin-top:18px; overflow-x:auto; border-bottom:1px solid var(--line); }
-  nav button { font:inherit; font-size:15px; padding:10px 14px; background:none; border:0; color:var(--muted);
-               border-bottom:3px solid transparent; cursor:pointer; white-space:nowrap; }
-  nav button.on { color:var(--fg); border-bottom-color:var(--accent); font-weight:600; }
+  nav button { font:inherit; font-size:15px; padding:10px 14px; background:none; border:0; color:var(--muted); border-bottom:3px solid transparent; cursor:pointer; white-space:nowrap; }
+  nav button.on { color:var(--fg); border-bottom-color:var(--fg); font-weight:600; }
   section { display:none; } section.on { display:block; }
 
   /* controls */
   .row { display:flex; gap:8px; align-items:center; flex-wrap:wrap; justify-content:space-between; }
   .chips { display:flex; gap:6px; flex-wrap:wrap; }
-  .chips button, select, input[type=search], a.btn { font:inherit; font-size:14px; padding:6px 12px; border-radius:8px;
-           border:1px solid var(--line); background:var(--card); color:var(--fg); cursor:pointer; text-decoration:none; }
+  .chips button, select, input[type=search], a.btn, button.btn { font:inherit; font-size:14px; padding:6px 12px; border-radius:8px; border:1px solid var(--line); background:var(--card); color:var(--fg); cursor:pointer; text-decoration:none; }
   .chips button.on { background:var(--fg); color:var(--card); border-color:var(--fg); }
   input[type=search] { cursor:text; min-width:0; flex:1 1 160px; }
   .chartbox { position:relative; height:260px; margin-top:10px; }
@@ -68,27 +74,26 @@
   .side.BUY { background:var(--upbg); color:var(--up); } .side.SELL { background:var(--downbg); color:var(--down); }
   .day { margin:16px 0 0; font-size:13px; font-weight:600; color:var(--muted); }
   .two { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
-  @media (max-width:640px) { .two { grid-template-columns:1fr; } .hero .big { font-size:32px; } }
   .scroll { overflow-x:auto; }
   table { width:100%; border-collapse:collapse; font-size:14px; }
   th, td { text-align:right; padding:7px 8px; border-bottom:1px solid var(--line); white-space:nowrap; }
   th:first-child, td:first-child { text-align:left; }
   th { color:var(--muted); font-weight:500; font-size:12px; }
-  ol.steps { margin:8px 0 0; padding-left:20px; } ol.steps li { margin:6px 0; }
-  dl { margin:8px 0 0; } dt { font-weight:600; margin-top:10px; } dd { margin:0; color:var(--muted); }
+  tr.me td { font-weight:600; }
+  ol.steps, ul.plain { margin:8px 0 0; padding-left:20px; } ol.steps li, ul.plain li { margin:6px 0; }
   .more { display:block; width:100%; margin-top:12px; }
   .funnel { margin-top:12px; }
-  .funnel .f { margin:0 auto 6px; padding:9px 12px; border-radius:8px; background:var(--chip); text-align:center; min-width:150px; }
+  .funnel .f { margin:0 auto 6px; padding:9px 12px; border-radius:8px; background:var(--chip); text-align:center; }
   .funnel .f b { display:block; font-size:18px; }
-  .funnel .f:last-child { background:var(--accent); color:#fff; }
+  .funnel .f.last { background:var(--botc); color:#fff; }
   .funnel .arrow { text-align:center; color:var(--muted); font-size:12px; margin-bottom:6px; }
   .rule { padding:14px 0; border-bottom:1px solid var(--line); }
   .rule:last-child { border-bottom:0; padding-bottom:0; }
-  .rule h3 { font-size:15px; margin:0 0 4px; }
   .rule p { margin:4px 0; }
   .rule .why { color:var(--muted); font-size:14px; }
   code { background:var(--chip); padding:1px 6px; border-radius:5px; font-size:13px; }
-  ul.plain { margin:8px 0 0; padding-left:20px; } ul.plain li { margin:6px 0; }
+  .dot { display:inline-block; width:10px; height:10px; border-radius:50%; margin-right:6px; vertical-align:baseline; }
+  @media (max-width:640px) { .two { grid-template-columns:1fr; } .hero .big { font-size:32px; } .bot .vv { font-size:17px; } .bot .tg { display:none; } }
 </style>
 </head>
 <body>
@@ -98,14 +103,15 @@
     <span class="pill" id="status"><i></i><span>Loading…</span></span>
   </header>
 
+  <div class="bots" id="bots"></div>
   <div class="card hero" id="hero"></div>
 
   <nav id="tabs">
     <button data-t="overview">Overview</button>
     <button data-t="holdings">Holdings</button>
     <button data-t="trades">Trade log</button>
+    <button data-t="compare">Compare bots</button>
     <button data-t="backtest">Past test</button>
-    <button data-t="how">How it works</button>
     <button data-t="model">The model</button>
   </nav>
 
@@ -136,7 +142,7 @@
 
   <section id="trades">
     <div class="card">
-      <div class="row"><h2>Every buy and sell</h2><a class="btn" href="trades.csv" download>Download as spreadsheet</a></div>
+      <div class="row"><h2 id="tradeh">Every buy and sell</h2><a class="btn" id="csv" download>Download as spreadsheet</a></div>
       <div class="small muted" id="tcount"></div>
       <div class="row" style="margin-top:10px">
         <div class="chips" id="tside"><button data-s="">All</button><button data-s="BUY">Buys</button><button data-s="SELL">Sells</button></div>
@@ -146,30 +152,26 @@
     </div>
   </section>
 
+  <section id="compare">
+    <div class="card"><h2>Since the bots started</h2><div class="small muted" id="cnote"></div>
+      <div class="chartbox"><canvas id="cchart"></canvas></div>
+      <div class="scroll"><table id="ctable" class="num" style="margin-top:10px"></table></div></div>
+    <div class="card"><h2>In the 5-year past test</h2><div class="small muted" id="cbnote"></div>
+      <div class="chartbox"><canvas id="cbchart"></canvas></div>
+      <div class="scroll"><table id="cbtable" class="num" style="margin-top:10px"></table></div>
+      <ul class="plain small" id="cbtext"></ul></div>
+    <div class="card"><h2>Stocks both bots own</h2><div class="list" id="overlap"></div></div>
+  </section>
+
   <section id="backtest">
-    <div class="card">
-      <h2>If the bot had run for the last 5 years</h2>
-      <div class="small muted" id="btsub"></div>
-      <div class="facts" id="btfacts"></div>
-    </div>
+    <div class="card"><h2 id="bth">If this bot had run for the last 5 years</h2><div class="small muted" id="btsub"></div><div class="facts" id="btfacts"></div></div>
     <div class="card"><h2>Growth over the test</h2><div class="chartbox"><canvas id="btchart"></canvas></div></div>
     <div class="card"><h2>Year by year</h2><div class="scroll"><table id="bttable" class="num"></table></div></div>
   </section>
 
-  <section id="how">
-    <div class="card"><h2>What the bot does, in short</h2><ol class="steps" id="steps"></ol></div>
-    <div class="card"><h2>What the words mean</h2>
-      <dl>
-        <dt>Practice money</dt><dd>The bot starts with a pretend ₹10,00,000. No real orders are placed.</dd>
-        <dt>Total gain</dt><dd>How much the pretend portfolio is up or down since the start, after trading costs.</dd>
-        <dt>Index</dt><dd>The average of the market. If the bot's gain is higher than the index, it is beating the market.</dd>
-        <dt>Invested</dt><dd>The share of the money that is in stocks. The rest is kept as cash.</dd>
-        <dt>Times</dt><dd>All times are Indian Standard Time. Prices come from Yahoo Finance and can be about 15 minutes behind.</dd>
-      </dl>
-    </div>
-  </section>
   <section id="model">
-    <div class="card"><h2>The idea</h2><p id="m_idea" style="margin:6px 0 0"></p></div>
+    <div class="card"><h2 id="m_h">The idea</h2><p id="m_idea" style="margin:6px 0 0"></p></div>
+    <div class="card"><h2>In short</h2><ol class="steps" id="m_short"></ol></div>
     <div class="card"><h2>From every NSE share down to a portfolio</h2>
       <div class="small muted">Each step throws stocks out. Only what survives all of them is bought.</div>
       <div class="funnel" id="m_funnel"></div></div>
@@ -180,16 +182,35 @@
       <div class="scroll"><table id="m_ev" class="num" style="margin-top:8px"></table></div>
       <ul class="plain" id="m_evtext"></ul></div>
     <div class="card"><h2>What the model does not do</h2><ul class="plain" id="m_limits"></ul></div>
+    <div class="card"><h2>What the words mean</h2>
+      <ul class="plain">
+        <li><b>Practice money:</b> each bot starts with a pretend ₹10,00,000. No real orders are placed.</li>
+        <li><b>Total gain:</b> how much the pretend portfolio is up or down since the start, after trading costs.</li>
+        <li><b>Index:</b> the average of the market. A bot ahead of the index is beating the market.</li>
+        <li><b>Invested:</b> the share of the money in stocks. The rest is cash.</li>
+        <li><b>Biggest drop:</b> the largest fall from a high point to a later low point.</li>
+        <li><b>Times:</b> all Indian Standard Time. Prices come from Yahoo Finance and can be about 15 minutes behind.</li>
+      </ul></div>
     <div class="card"><h2>Exact settings</h2><div class="scroll"><table id="m_cfg"></table></div></div>
   </section>
 </main>
 
 <script>
+const BOTS = {
+  growth: { name: "Growth bot", color: "--growth", short: "Bigger gains, bigger drops",
+            tagline: "Buys the 20 biggest 12-month winners. Aims for higher returns and accepts bigger drops." },
+  steady: { name: "Steady bot", color: "--steady", short: "Smoother ride, smaller gains",
+            tagline: "Buys 20 calm, steadily rising stocks and holds back cash when the market gets rough. Aims for smoother returns and accepts lower gains." },
+};
+const IDS = Object.keys(BOTS);
+// older backtest files stored the bots under these names
+const OLD_KEYS = { growth: ["LIVE CONFIG", "winners 12m [nohind]"], steady: ["calm risers (previous bot) [index]", "calm risers (previous bot) [nohind]"] };
+
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 const inr = v => "₹" + Math.round(v).toLocaleString("en-IN");
 const sinr = v => (v >= 0 ? "+" : "−") + inr(Math.abs(v));
-const pct = (v, d = 2) => v == null ? "–" : (v >= 0 ? "+" : "−") + Math.abs(v).toFixed(d) + "%";
+const pct = (v, d = 2) => v == null || isNaN(v) ? "–" : (v >= 0 ? "+" : "−") + Math.abs(v).toFixed(d) + "%";
 const cls = v => v == null ? "" : v >= 0 ? "up" : "down";
 const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
 const IST = { timeZone: "Asia/Kolkata" };
@@ -200,16 +221,16 @@ const fShort = t => new Date(t).toLocaleString("en-IN", { ...IST, day: "numeric"
 const get = f => fetch(f + "?t=" + Date.now()).then(r => r.ok ? r.json() : null).catch(() => null);
 const pretty = n => String(n || "").replace(/\b(Limited|Ltd\.?)$/i, "").trim();
 const store = { get: k => { try { return localStorage.getItem(k); } catch { return null; } }, set: (k, v) => { try { localStorage.setItem(k, v); } catch {} } };
+const empty = msg => `<div class="muted small" style="padding:10px 0">${msg}</div>`;
 
-let S = null, B = null, range = 0, side = "", shown = 100;
+let ST = {}, B = null, bot = "growth", range = 0, side = "", shown = 100;
+const S = () => ST[bot];
 const charts = {};
 
+/* ---------- helpers ---------- */
 function ago(t) {
   const m = Math.round((Date.now() - new Date(t)) / 60000);
-  if (m < 1) return "just now";
-  if (m < 60) return m + " min ago";
-  if (m < 1440) return Math.round(m / 60) + " hr ago";
-  return Math.round(m / 1440) + " days ago";
+  return m < 1 ? "just now" : m < 60 ? m + " min ago" : m < 1440 ? Math.round(m / 60) + " hr ago" : Math.round(m / 1440) + " days ago";
 }
 function marketOpen() {
   const p = Object.fromEntries(new Intl.DateTimeFormat("en-GB", { ...IST, weekday: "short", hour: "2-digit", minute: "2-digit", hour12: false })
@@ -217,14 +238,13 @@ function marketOpen() {
   const mins = +p.hour * 60 + +p.minute;
   return !["Sat", "Sun"].includes(p.weekday) && mins >= 555 && mins <= 930;
 }
-
 function line(id, labels, sets) {
   if (!window.Chart) return;
   if (charts[id]) charts[id].destroy();
   charts[id] = new Chart($(id), {
     type: "line",
     data: { labels, datasets: sets.map(([label, data, color, dash]) =>
-      ({ label, data, borderColor: css(color), borderWidth: 2, borderDash: dash ? [4, 4] : [], pointRadius: 0, tension: .2 })) },
+      ({ label, data, borderColor: css(color), borderWidth: 2, borderDash: dash ? [4, 4] : [], pointRadius: 0, tension: .2, spanGaps: true })) },
     options: { maintainAspectRatio: false, animation: false, interaction: { mode: "index", intersect: false },
       scales: { x: { ticks: { color: css("--muted"), maxTicksLimit: 6, maxRotation: 0 }, grid: { display: false } },
                 y: { ticks: { color: css("--muted"), callback: v => v + "%" }, grid: { color: css("--line") } } },
@@ -232,38 +252,64 @@ function line(id, labels, sets) {
                  tooltip: { callbacks: { label: c => `${c.dataset.label}: ${pct(c.parsed.y)}` } } } }
   });
 }
-
-/* ---------- headline ---------- */
-function hero() {
-  const open = marketOpen();
-  $("status").className = "pill" + (open ? " open" : "");
-  const H = S && S.history || [];
-  if (!H.length) {
-    $("status").lastElementChild.textContent = open ? "Market open" : "Market closed";
-    $("hero").innerHTML = `<div class="label">Practice portfolio</div><div class="big num">₹10,00,000</div>
-      <div class="line">The bot has not traded yet. It starts by itself at the next market open
-      (Monday to Friday, 9:15 am India time) and this page fills in from then.</div>`;
-    return;
-  }
+function snapshot(s) {   // headline numbers for one bot's state
+  const H = s && s.history || [];
+  if (!H.length) return null;
   const last = H.at(-1), day = t => t.slice(0, 10);
   const prev = [...H].reverse().find(h => day(h.time) !== day(last.time));
-  const base = prev ? prev.value : S.starting_capital;
-  const total = last.value - S.starting_capital, today = last.value - base;
-  const invested = (S.holdings || []).reduce((a, h) => a + h.value, 0);
+  const base = prev ? prev.value : s.starting_capital;
+  const invested = (s.holdings || []).reduce((a, h) => a + h.value, 0);
+  return { last, base, today: last.value - base, todayPct: (last.value / base - 1) * 100, total: last.value - s.starting_capital,
+           invested, investedPct: invested / last.value * 100 };
+}
+function bt(id, nohind) {   // one bot's row in the backtest table
+  if (!B) return null;
+  const t = B.table, k = nohind ? `MODEL ${id} [nohind]` : `MODEL ${id}`;
+  return t[k] || t[OLD_KEYS[id][nohind ? 1 : 0]] || null;
+}
+function btCurve(id, nohind) {
+  if (!B) return [];
+  const k = nohind ? id + "_nohind" : id;
+  return B.curve.map(c => c[k] ?? (id === "growth" ? (nohind ? c.live_nohind : c.live) : null));
+}
+function cfgOf(id) { return (ST[id] && ST[id].params) || (B && B.models && B.models[id] && B.models[id].config) || null; }
+
+/* ---------- bot picker and headline ---------- */
+function picker() {
+  $("bots").innerHTML = IDS.map(id => {
+    const s = snapshot(ST[id]), b = BOTS[id];
+    return `<button class="bot ${id}${id === bot ? " on" : ""}" data-b="${id}" aria-pressed="${id === bot}">
+      <div class="nm"><i style="background:${css(b.color)}"></i>${b.name}</div>
+      <div class="vv num">${s ? `${inr(s.last.value)} <span class="${cls(s.last.pct)}" style="font-size:15px">${pct(s.last.pct)}</span>` : "Not started"}</div>
+      <div class="tg">${b.short}</div></button>`;
+  }).join("");
+  document.documentElement.style.setProperty("--botc", css(BOTS[bot].color));
+}
+function hero() {
+  const open = marketOpen(), s = S(), snap = snapshot(s), b = BOTS[bot];
+  const upd = IDS.map(i => ST[i] && ST[i].updated_at).filter(Boolean).sort().at(-1);
+  $("status").className = "pill" + (open ? " open" : "");
+  $("status").lastElementChild.textContent = (open ? "Market open" : "Market closed") + (upd ? " · updated " + ago(upd) : "");
+  if (!snap) {
+    $("hero").innerHTML = `<div class="label">${b.name}</div><div class="big num">₹10,00,000</div>
+      <div class="line">${b.tagline}</div>
+      <div class="line muted">It has not traded yet. Both bots start by themselves at the next market open (Monday to Friday, 9:15 am India time) and this page fills in from then.</div>`;
+    return;
+  }
+  const { last, today, todayPct, total, invested } = snap;
   const diff = last.benchmark_pct == null ? null : last.pct - last.benchmark_pct;
-  $("status").lastElementChild.textContent = (open ? "Market open" : "Market closed") + " · updated " + ago(S.updated_at);
   $("hero").innerHTML = `
-    <div class="label">Practice portfolio is worth${S.demo ? " (DEMO DATA)" : ""}</div>
+    <div class="label">${b.name} is worth${s.demo ? " (DEMO DATA)" : ""}</div>
     <div class="big num">${inr(last.value)}</div>
     <div class="line num"><span class="tag ${cls(total)}">${sinr(total)} (${pct(last.pct)})</span>
-      <span class="muted">since ${fDay(S.started_at)}</span></div>
+      <span class="muted">since ${fDay(s.started_at)}</span></div>
     <div class="facts num">
-      <div><div class="k">Today</div><div class="v ${cls(today)}">${sinr(today)} <span class="small">(${pct((last.value / base - 1) * 100)})</span></div></div>
-      <div><div class="k">${esc(S.benchmark_name || "Index")}, same period</div><div class="v">${pct(last.benchmark_pct)}</div>
+      <div><div class="k">Today</div><div class="v ${cls(today)}">${sinr(today)} <span class="small">(${pct(todayPct)})</span></div></div>
+      <div><div class="k">${esc(s.benchmark_name || "Index")}, same period</div><div class="v">${pct(last.benchmark_pct)}</div>
         <div class="small ${cls(diff)}">${diff == null ? "" : "bot is " + Math.abs(diff).toFixed(2) + " points " + (diff >= 0 ? "ahead" : "behind")}</div></div>
       <div><div class="k">Invested in stocks</div><div class="v">${Math.round(invested / last.value * 100)}%</div>
-        <div class="small muted">${(S.holdings || []).length} stocks</div></div>
-      <div><div class="k">Cash</div><div class="v">${inr(S.cash)}</div></div>
+        <div class="small muted">${(s.holdings || []).length} stocks</div></div>
+      <div><div class="k">Cash</div><div class="v">${inr(s.cash)}</div></div>
     </div>`;
 }
 
@@ -274,44 +320,47 @@ const holdRow = h => `<div class="item"><div class="l"><div class="t">${esc(pret
 const tradeRow = (t, withDate) => `<div class="item"><div class="l"><div class="t"><span class="side ${t.side}">${t.side}</span>${esc(pretty(t.name) || t.ticker)}</div>
   <div class="s num">${withDate ? fDay(t.time) + ", " : ""}${fTime(t.time)} · ${esc(t.ticker)}</div></div>
   <div class="r num"><div class="t">${inr(t.value ?? t.qty * t.price)}</div><div class="s">${t.qty} × ₹${t.price.toFixed(2)}</div></div></div>`;
-const empty = msg => `<div class="muted small" style="padding:10px 0">${msg}</div>`;
 
 function overview() {
-  const H = S && S.history || [];
+  const s = S(), H = s && s.history || [];
+  $("chart").parentElement.hidden = $("range").hidden = !H.length;
   document.querySelectorAll("#range button").forEach(b => b.classList.toggle("on", +b.dataset.r === range));
   if (H.length) {
     const days = [...new Set(H.map(h => h.time.slice(0, 10)))];
     const keep = range ? new Set(days.slice(-range)) : null;
     const pts = keep ? H.filter(h => keep.has(h.time.slice(0, 10))) : H;
-    const b = S.benchmark_name || "Index";
-    $("chartnote").textContent = `Gain or loss since the start, compared with the ${b}.`;
+    const bn = s.benchmark_name || "Index";
+    $("chartnote").textContent = `Gain or loss since the start, compared with the ${bn}.`;
     line("chart", pts.map(h => range === 1 ? fTime(h.time).replace(/:\d\d /, " ") : fShort(h.time)),
-      [["Bot", pts.map(h => h.pct), "--accent"], [b, pts.map(h => h.benchmark_pct), "--muted", true]]);
-  } else $("chartnote").textContent = "The chart appears after the first run.";
-  const hs = [...(S && S.holdings || [])].sort((a, b) => b.pnl_pct - a.pnl_pct);
+      [[BOTS[bot].name, pts.map(h => h.pct), BOTS[bot].color], [bn, pts.map(h => h.benchmark_pct), "--muted", true]]);
+  } else { $("chartnote").textContent = "The chart appears after the first run."; if (charts.chart) { charts.chart.destroy(); delete charts.chart; } }
+  const hs = [...(s && s.holdings || [])].sort((a, b) => b.pnl_pct - a.pnl_pct);
   $("best").innerHTML = hs.slice(0, 3).map(holdRow).join("") || empty("No holdings yet.");
   $("worst").innerHTML = hs.slice(-3).reverse().map(holdRow).join("") || empty("No holdings yet.");
-  $("latest").innerHTML = (S && S.trades || []).slice(-5).reverse().map(t => tradeRow(t, true)).join("") || empty("No trades yet.");
+  $("latest").innerHTML = (s && s.trades || []).slice(-5).reverse().map(t => tradeRow(t, true)).join("") || empty("No trades yet.");
 }
 
 /* ---------- holdings ---------- */
 function holdings() {
-  const hs = [...(S && S.holdings || [])], k = $("hsort").value;
+  const hs = [...(S() && S().holdings || [])], k = $("hsort").value;
   hs.sort({ gain: (a, b) => b.pnl_pct - a.pnl_pct, loss: (a, b) => a.pnl_pct - b.pnl_pct, value: (a, b) => b.value - a.value,
             new: (a, b) => String(b.bought_at).localeCompare(String(a.bought_at)),
             name: (a, b) => (pretty(a.name) || a.ticker).localeCompare(pretty(b.name) || b.ticker) }[k]);
-  $("holdh").textContent = `What the bot owns (${hs.length})`;
+  $("holdh").textContent = `What the ${BOTS[bot].name} owns (${hs.length})`;
   $("hold").innerHTML = hs.map(h => `<div class="item"><div class="l"><div class="t">${esc(pretty(h.name) || h.ticker)}</div>
     <div class="s num">${esc(h.ticker)} · ${h.qty} shares · bought at ₹${h.avg_price.toFixed(2)}, now ₹${h.price.toFixed(2)}</div>
     <div class="s num">First bought ${h.bought_at ? fDate(h.bought_at) + ", " + fTime(h.bought_at) : "–"}</div></div>
     <div class="r num"><div class="t ${cls(h.pnl_pct)}">${pct(h.pnl_pct)}</div><div class="s">${inr(h.value)}</div>
     <div class="s ${cls(h.pnl_pct)}">${sinr(h.value - h.qty * h.avg_price)}</div></div></div>`).join("")
-    || empty("The bot is holding only cash right now.");
+    || empty(S() && S().history && S().history.length ? "This bot is holding only cash right now." : "Nothing yet: the bot has not traded.");
 }
 
 /* ---------- trade log ---------- */
 function trades() {
-  const all = S && S.trades || [], q = $("tq").value.trim().toLowerCase();
+  const all = S() && S().trades || [], q = $("tq").value.trim().toLowerCase();
+  $("tradeh").textContent = `Every buy and sell by the ${BOTS[bot].name}`;
+  $("csv").href = `trades-${bot}.csv`;
+  $("csv").hidden = !all.length;
   document.querySelectorAll("#tside button").forEach(b => b.classList.toggle("on", b.dataset.s === side));
   const rows = all.filter(t => (!side || t.side === side) && (!q || (t.ticker + " " + (t.name || "")).toLowerCase().includes(q))).reverse();
   const buys = all.filter(t => t.side === "BUY").length;
@@ -321,183 +370,229 @@ function trades() {
   let html = "", lastDay = "";
   for (const t of rows.slice(0, shown)) {
     const d = fDate(t.time);
-    if (d !== lastDay) { html += `<div class="day">${d}</div><div class="list">`; lastDay = d; }
+    if (d !== lastDay) { html += (lastDay ? "</div>" : "") + `<div class="day">${d}</div><div class="list">`; lastDay = d; }
     html += tradeRow(t, false);
   }
-  if (rows.length > shown) html += `<button class="btn more chips" id="more">Show ${Math.min(100, rows.length - shown)} more</button>`;
+  if (lastDay) html += "</div>";
+  if (rows.length > shown) html += `<button class="btn more" id="more">Show ${Math.min(100, rows.length - shown)} more</button>`;
   $("tlist").innerHTML = html || empty(all.length ? "No trades match." : "No trades yet.");
   const m = $("more"); if (m) m.onclick = () => { shown += 100; trades(); };
 }
 
+/* ---------- compare ---------- */
+function compare() {
+  const snaps = Object.fromEntries(IDS.map(i => [i, snapshot(ST[i])]));
+  const live = IDS.filter(i => snaps[i]);
+  $("cchart").parentElement.hidden = $("ctable").hidden = !live.length;
+  if (live.length) {
+    // line up both bots on the timestamps of the one with more history
+    const base = live.map(i => ST[i].history).sort((a, b) => b.length - a.length)[0];
+    const at = i => Object.fromEntries(ST[i].history.map(h => [h.time.slice(0, 16), h.pct]));
+    const maps = Object.fromEntries(live.map(i => [i, at(i)]));
+    $("cnote").textContent = "Gain or loss since the start for each bot, compared with the index.";
+    line("cchart", base.map(h => fShort(h.time)),
+      [...live.map(i => [BOTS[i].name, base.map(h => maps[i][h.time.slice(0, 16)] ?? null), BOTS[i].color]),
+       [ST[live[0]].benchmark_name || "Index", base.map(h => h.benchmark_pct), "--muted", true]]);
+  } else { $("cnote").textContent = "The live comparison appears after the first run on Monday."; if (charts.cchart) { charts.cchart.destroy(); delete charts.cchart; } }
+  const r = (label, f) => `<tr><td>${label}</td>${IDS.map(i => `<td>${snaps[i] ? f(snaps[i], ST[i]) : "–"}</td>`).join("")}</tr>`;
+  $("ctable").innerHTML = `<tr><th></th>${IDS.map(i => `<th><span class="dot" style="background:${css(BOTS[i].color)}"></span>${BOTS[i].name}</th>`).join("")}</tr>` +
+    r("Worth now", x => inr(x.last.value)) +
+    r("Total gain", x => `<span class="${cls(x.last.pct)}">${pct(x.last.pct)}</span>`) +
+    r("Today", x => `<span class="${cls(x.todayPct)}">${pct(x.todayPct)}</span>`) +
+    r("Invested in stocks", x => Math.round(x.investedPct) + "%") +
+    r("Stocks held", (x, s) => (s.holdings || []).length) +
+    r("Trades so far", (x, s) => (s.trades || []).length);
+
+  const g = IDS.map(i => [i, bt(i), bt(i, true)]);
+  if (g.every(([, a]) => a)) {
+    $("cbnote").textContent = `${B.period}, after trading costs. "No hindsight" uses a stock list built only from past data, which is the fairer estimate.`;
+    line("cbchart", B.curve.map(c => c.date.slice(0, 7)),
+      [...IDS.map(i => [BOTS[i].name, btCurve(i), BOTS[i].color]), ["All index stocks", B.curve.map(c => c.all_index ?? c.all_listed), "--alt", true],
+       ["Nifty 50", B.curve.map(c => c.nifty50), "--muted", true]]);
+    const row = (label, k, fmt) => `<tr><td>${label}</td>${g.map(([, a, n]) => `<td>${fmt(a[k])}</td><td class="muted">${fmt(n[k])}</td>`).join("")}</tr>`;
+    const p1 = v => `<span class="${cls(v)}">${pct(v, 1)}</span>`;
+    $("cbtable").innerHTML = `<tr><th></th>${IDS.map(i => `<th>${BOTS[i].name}</th><th>no hindsight</th>`).join("")}</tr>` +
+      row("Average per year", "per yr %", p1) + row("Biggest drop", "worst fall %", p1) + row("Worst year", "worst yr %", p1) +
+      row("Worst month", "worst month %", p1) + row("Months with a gain", "up months %", v => Math.round(v) + "%") +
+      row("Typical yearly swing", "swing %", v => v.toFixed(0) + "%") + row("Last 6 months", "last 6m %", p1);
+    const [gr, sd] = [bt("growth", true), bt("steady", true)];
+    $("cbtext").innerHTML = [
+      `Without hindsight, the Growth bot made about ${(gr["per yr %"] - sd["per yr %"]).toFixed(0)} points a year more than the Steady bot.`,
+      `The price was a deeper worst drop (${pct(gr["worst fall %"], 0)} against ${pct(sd["worst fall %"], 0)}) and a worse worst year (${pct(gr["worst yr %"], 0)} against ${pct(sd["worst yr %"], 0)}).`,
+      "Running both splits the difference: when one has a bad stretch, the other often does better.",
+    ].map(x => `<li>${x}</li>`).join("");
+  } else $("cbnote").textContent = "Test results for both bots are being prepared.";
+
+  const owned = IDS.map(i => new Set((ST[i] && ST[i].holdings || []).map(h => h.ticker)));
+  const both = (ST.growth && ST.growth.holdings || []).filter(h => owned[1].has(h.ticker));
+  $("overlap").innerHTML = both.length ? both.map(h => `<div class="item"><div class="l"><div class="t">${esc(pretty(h.name) || h.ticker)}</div><div class="s">${esc(h.ticker)}</div></div></div>`).join("")
+    : empty(live.length === IDS.length ? "None: the two bots own completely different stocks." : "Shown after both bots have traded.");
+}
+
 /* ---------- past test ---------- */
 function backtest() {
-  if (!B || !B.table["LIVE CONFIG"]) { $("btsub").textContent = "No test results available yet."; return; }
-  const t = B.table, me = t["LIVE CONFIG"], nifty = t["Nifty 50"], nh = t["LIVE CONFIG [nohind]"];
-  const all = t["ALL index members (no costs)"] || t["ALL 400 LISTED (no costs)"];
+  const me = bt(bot), nh = bt(bot, true);
+  $("bth").textContent = `If the ${BOTS[bot].name} had run for the last 5 years`;
+  if (!me) { $("btsub").textContent = "Test results for this bot are being prepared."; $("btfacts").innerHTML = ""; return; }
+  const t = B.table, all = t["ALL index members (no costs)"] || t["ALL 400 LISTED (no costs)"], nifty = t["Nifty 50"];
   const [from, to] = B.period.split(" to ");
   $("btsub").textContent = `${fDay(from)} ${from.slice(0, 4)} to ${fDay(to)} ${to.slice(0, 4)}, after trading costs. ` +
     "This is a replay on old prices, so it shows what could have happened, not what will. " +
-    "It uses today's index members, which flatters it: the same rules on a list built only from past data are shown as \"No hindsight\"." + (B.demo ? " DEMO DATA." : "");
+    "It uses today's index members, which flatters it; \"no hindsight\" uses a list built only from past data." + (B.demo ? " DEMO DATA." : "");
   const f = (k, v, c, n) => `<div><div class="k">${k}</div><div class="v ${c || ""}">${v}</div><div class="small muted">${n || ""}</div></div>`;
   $("btfacts").innerHTML =
     f("Average per year", pct(me["per yr %"], 1), cls(me["per yr %"]), `all index stocks: ${pct(all["per yr %"], 1)}`) +
-    f("Biggest drop", "−" + Math.abs(me["worst fall %"]).toFixed(1) + "%", "down", "from a high point") +
+    f("Biggest drop", pct(me["worst fall %"], 1), "down", "from a high point") +
     f("Months with a gain", Math.round(me["up months %"]) + " in 100", "", `worst month ${pct(me["worst month %"], 1)}`) +
     f("Worst year", pct(me["worst yr %"], 1), cls(me["worst yr %"]), `last 6 months ${pct(me["last 6m %"], 1)}`) +
     (nh ? f("No hindsight, per year", pct(nh["per yr %"], 1), cls(nh["per yr %"]), `biggest drop ${pct(nh["worst fall %"], 1)}`) : "");
   line("btchart", B.curve.map(c => c.date.slice(0, 7)),
-    [["Bot", B.curve.map(c => c.live), "--accent"], ["All index stocks, no picking", B.curve.map(c => c.all_index ?? c.all_listed), "--alt"],
-     ["Nifty 50", B.curve.map(c => c.nifty50), "--muted", true]]);
+    [[BOTS[bot].name, btCurve(bot), BOTS[bot].color], ["No hindsight", btCurve(bot, true), BOTS[bot].color, true],
+     ["All index stocks", B.curve.map(c => c.all_index ?? c.all_listed), "--alt"], ["Nifty 50", B.curve.map(c => c.nifty50), "--muted", true]]);
   const years = Object.keys(me).filter(k => /^\d{4}$/.test(k)).sort();
-  const row = (name, r) => `<tr><td>${name}</td>` + years.map(y => `<td class="${cls(r[y])}">${pct(r[y], 1)}</td>`).join("") + `<td><b>${pct(r["per yr %"], 1)}</b></td></tr>`;
+  const row = (name, r, c) => r ? `<tr${c ? ' class="me"' : ""}><td>${name}</td>` + years.map(y => `<td class="${cls(r[y])}">${pct(r[y], 1)}</td>`).join("") + `<td><b>${pct(r["per yr %"], 1)}</b></td></tr>` : "";
   $("bttable").innerHTML = "<tr><th></th>" + years.map(y => `<th>${y}</th>`).join("") + "<th>Average</th></tr>" +
-    row("Bot", me) + (nh ? row("Bot, no hindsight", nh) : "") + row("All index stocks", all) + row("Nifty 50", nifty);
-}
-
-/* ---------- how it works ---------- */
-function how() {
-  const c = (S && S.params) || (B && B.config);
-  if (!c) { $("steps").innerHTML = "<li>Details appear after the first run.</li>"; return; }
-  const months = Math.round(c.lookback / 21), ex = c.exposure || [];
-  const pick = { mom: `holds the ${c.top_n} that have risen the most`,
-                 mom_vol: `holds the ${c.top_n} that have risen the most for how bumpy they are`,
-                 lowvol: `takes the best-rising third and holds the ${c.top_n} calmest (least bumpy) of them` }[c.select];
-  const steps = [
-    c.universe === "index"
-      ? "<b>Sticks to mid and small caps.</b> It only picks from the roughly 400 companies in the Nifty MidSmallcap 400 index: India's mid-sized and smaller listed companies."
-      : `<b>Builds its own stock list.</b> Once a month it looks at every share on the NSE, skips the ${c.universe_skip} most traded (the giants) and keeps the next ${c.universe_size}. Nobody hand-picks anything.`,
-    `<b>Looks for stocks on the way up.</b> A stock qualifies if it rose over the last ${months} months and is above its ${c.trend_sma}-day average price.`,
-    `<b>Chooses ${c.top_n}.</b> From those, it ${pick}, with equal money in each.`,
-    `<b>Re-checks ${c.rebalance}.</b> Stocks that no longer qualify are sold and replaced. A stock it already owns is kept while it stays in the top ${Math.round(c.top_n * c.buffer)}.`,
-  ];
-  if (ex.includes("voltarget")) steps.push("<b>Plays safer in rough weather.</b> When the market gets unusually jumpy, it moves part of the money into cash. Checked weekly.");
-  if (ex.includes("breadth")) steps.push("<b>Follows the crowd's health.</b> When fewer than half of the stocks are rising, it invests less.");
-  if (ex.includes("regime")) steps.push("<b>Steps aside in a weak market.</b> When the Nifty 50 is below its 200-day average, it moves fully to cash.");
-  steps.push(`<b>Pays costs.</b> Every pretend trade is charged ${(c.cost ?? 0.002) * 100}% to mimic real brokerage and taxes.`);
-  $("steps").innerHTML = steps.map(s => `<li>${s}</li>`).join("") +
-    '<p style="margin:12px 0 0 -20px"><a class="btn" href="#model">Read the full explanation of the model</a></p>';
+    row(BOTS[bot].name, me, true) + row("No hindsight", nh) + row("All index stocks", all) + row("Nifty 50", nifty);
 }
 
 /* ---------- the model ---------- */
 function model() {
-  const c = (S && S.params) || (B && B.config);
-  if (!c) { $("m_idea").textContent = "Details appear after the first run."; return; }
-  const n = c.top_n, months = Math.round(c.lookback / 21), ex = c.exposure || [];
+  const c = cfgOf(bot), b = BOTS[bot];
+  $("m_h").textContent = `The idea behind the ${b.name}`;
+  if (!c) { $("m_idea").textContent = b.tagline + " Full details appear once the test results or the first run are in."; return; }
+  const n = c.top_n, months = Math.round(c.lookback / 21), ex = c.exposure || [], calm = c.select === "lowvol";
   const listed = c.listed ? c.listed.toLocaleString("en-IN") : "about 2,400";
-  const cost = ((c.cost ?? 0.002) * 100).toFixed(1), vt = Math.round(c.vol_target * 100);
-  const calm = c.select === "lowvol";
+  const cost = ((c.cost ?? 0.002) * 100).toFixed(1), vt = Math.round((c.vol_target || 0.15) * 100);
+  const pool = c.universe === "index" ? "the Nifty MidSmallcap 400 index" : `its own list of ${c.universe_size} mid- and small-sized NSE stocks`;
+
   $("m_idea").innerHTML = (calm
-    ? `<b>Buy steady climbers.</b> The model looks for mid- and small-sized companies whose share price has been rising for about ${months} months, and from those it prefers the ones that rise smoothly over the ones that jump around. `
-    : `<b>Buy what has been rising.</b> The model looks for mid- and small-sized companies whose share price has been rising for about ${months} months. `)
+    ? `<b>Buy steady climbers.</b> The ${b.name} looks for mid- and small-sized companies whose share price has been rising for about ${months} months, and from those it prefers the ones that rise smoothly over the ones that jump around. `
+    : `<b>Back the biggest winners.</b> The ${b.name} looks for the mid- and small-sized companies whose share price has risen the most over about ${months} months, and buys them. `)
     + `It spreads the money equally over ${n} of them` + (ex.length ? ", and holds back some cash when the whole market turns rough. " : ". ")
-    + "It only looks at prices and trading volumes. It follows fixed rules, so there is no guessing and no opinion involved.";
+    + "It only looks at prices and trading volumes, and follows fixed rules, so there is no guessing and no opinion involved.";
+
+  const short = [
+    `<b>Stays in mid and small caps.</b> It only picks from ${pool}.`,
+    `<b>Looks for stocks on the way up.</b> A stock qualifies if it rose over the last ${months} months and is above its ${c.trend_sma}-day average price.`,
+    calm ? `<b>Prefers calm ones.</b> From the best-rising third it picks the ${n} least bumpy.` : `<b>Backs the biggest winners.</b> It picks the ${n} that rose the most.`,
+    `<b>Re-checks ${c.rebalance}.</b> Stocks that no longer qualify are sold and replaced; a stock it owns is kept while it stays in the top ${Math.round(n * c.buffer)}.`,
+  ];
+  if (ex.includes("voltarget")) short.push("<b>Plays safer in rough weather.</b> When the market gets unusually jumpy, it moves part of the money into cash. Checked weekly.");
+  short.push(`<b>Pays costs.</b> Every pretend trade is charged ${cost}%.`);
+  $("m_short").innerHTML = short.map(x => `<li>${x}</li>`).join("");
 
   const steps = [[listed, "shares listed on the NSE", 100],
-    c.universe === "index" ? ["~400", "in the Nifty MidSmallcap 400 index", 82]
-      : [c.universe_size, `mid- and small-sized: skip the ${c.universe_skip} most traded, keep the next ${c.universe_size}`, 82],
+    c.universe === "index" ? ["~400", "in the Nifty MidSmallcap 400 index", 82] : [c.universe_size, `skip the ${c.universe_skip} most traded, keep the next ${c.universe_size}`, 82],
     ["Rising", `up over ${months} months and above their ${c.trend_sma}-day average (the number changes month to month)`, 64]];
   if (calm) steps.push(["Top third", "the best risers among those", 46]);
-  steps.push([n, calm ? "the calmest of them are bought" : "the strongest of them are bought", 30]);
-  $("m_funnel").innerHTML = steps.map(([b, t, w], i) =>
-    (i ? '<div class="arrow">▼</div>' : "") + `<div class="f" style="width:${w}%"><b>${b}</b><span class="small">${t}</span></div>`).join("");
+  steps.push([n, calm ? "the calmest of them are bought" : "the biggest risers are bought", 30]);
+  $("m_funnel").innerHTML = steps.map(([x, t, w], i) =>
+    (i ? '<div class="arrow">▼</div>' : "") + `<div class="f${i === steps.length - 1 ? " last" : ""}" style="width:${w}%;min-width:160px"><b>${x}</b><span class="small">${t}</span></div>`).join("");
 
   const R = (h, body, why) => `<div class="rule"><h3>${h}</h3>${body}<p class="why"><b>Why:</b> ${why}</p></div>`;
-  let r = "";
-  if (c.universe === "index") r += R("1. Start from the index", `<p>The model only considers the companies in the Nifty MidSmallcap 400, NSE's index of the 400 companies ranked 101 to 500 by size. Each month it drops any member with under 120 days of price history, under ₹${c.min_price} a share, or no trading.</p>`,
-    "The index is an official, rules-based definition of mid and small caps, so the model sticks to exactly the part of the market you asked for.");
-  else r += R("1. Build the stock list", `<p>Once a month, for every NSE share, the model takes the money traded in it per day (price × shares traded) and finds the middle value over the last 126 trading days. It ranks all shares by that figure, drops the top ${c.universe_skip}, and keeps the next ${c.universe_size}. Shares under ₹${c.min_price} are ignored.</p>`,
-    "Nobody hand-picks the list, so it cannot be biased by knowing which companies did well later. Skipping the most traded shares removes the large caps. Requiring steady trading keeps out shares that would be hard to buy or sell.");
-  r += R("2. Measure the rise", `<p>For each stock: <code>rise = price ${c.skip} days ago ÷ price ${c.lookback + c.skip} days ago − 1</code>. That is about ${months} months of return, leaving out the most recent month. Only stocks with a positive rise continue.</p>`,
+  let r = "", k = 1;
+  r += c.universe === "index"
+    ? R(`${k++}. Start from the index`, `<p>Only companies in the Nifty MidSmallcap 400 are considered: NSE's index of the companies ranked 101 to 500 by size. Each month any member with under 120 days of price history, under ₹${c.min_price} a share, or no trading is dropped.</p>`,
+        "The index is an official, rules-based definition of mid and small caps. In the test, the same rules did worse than simply holding everything on large caps, so the bot stays away from them.")
+    : R(`${k++}. Build the stock list`, `<p>Once a month every NSE share is ranked by the money traded in it per day; the top ${c.universe_skip} are dropped and the next ${c.universe_size} kept.</p>`, "Nobody hand-picks the list, so it cannot be biased by hindsight.");
+  r += R(`${k++}. Measure the rise`, `<p>For each stock: <code>rise = price ${c.skip} days ago ÷ price ${c.lookback + c.skip} days ago − 1</code>. That is about ${months} months of return, leaving out the most recent month. Only stocks with a positive rise continue.</p>`,
     "Stocks that have risen over several months tend to keep rising for a while. The latest month is left out because very recent jumps often reverse.");
-  r += R("3. Check the trend is still alive", `<p>The current price must be above the stock's average price over the last ${c.trend_sma} trading days. Stocks with any one-day move of 40% or more in the period are dropped as bad data or freak events.</p>`,
-    "A stock can have a good six months and already be falling. This filter avoids buying it on the way down.");
-  if (calm) r += R("4. Prefer the calm ones", `<p>The model keeps the best-rising third of the remaining stocks (at least ${n * 2}). For each it measures how bumpy the ride was: the typical size of its daily price moves over the same period. It then picks the ${n} least bumpy.</p>`,
-    "In the test, simply buying the biggest risers did no better than holding the whole list and fell much harder. Choosing the calm risers gave smaller falls and milder bad years.");
-  else r += R("4. Back the biggest winners", `<p>The remaining stocks are ranked${c.select === "mom_vol" ? " by rise divided by bumpiness" : " by how much they rose"} and the top ${n} are bought.</p>`,
-    `Stocks that have risen most tend to keep outperforming for a while. In the test, ranking on the ${months}-month rise beat holding every index stock by a clear margin, including on the list built without hindsight.`);
-  r += R("5. Split the money", `<p>Each stock gets ${c.weighting === "inv_vol" ? "a share of the money that is larger for calmer stocks" : `one ${n}th of the portfolio`}. If fewer than ${n} stocks qualify, the unused shares stay in cash. A holding is only resized when it drifts more than ${Math.round(c.drift * 100)}% from its target size.</p>`,
-    "Equal sizes mean no single stock can sink the portfolio. Not fine-tuning sizes avoids paying trading costs for little benefit.");
-  r += R("6. Keep what still works", `<p>Stocks are re-picked ${c.rebalance}, on the first trading day. A stock already owned is kept as long as it still ranks in the top ${Math.round(n * c.buffer)}, even if it is no longer in the top ${n}.</p>`,
-    "Without this, the model would swap stocks over tiny changes in rank and lose money to trading costs. The first version of this bot traded daily and lost about 15% a year to costs alone.");
-  if (ex.includes("voltarget")) r += R("7. Turn the risk down in rough markets", `<p>Each week the model measures how jumpy the whole stock list has been over the last 20 trading days, as a yearly figure. <code>share invested = ${vt}% ÷ jumpiness</code>, capped at 100%. The rest is held as cash.</p>`,
-    "Big falls usually come when the market is already swinging wildly. Holding less during those spells gives up some gains and softens the falls.");
-  if (ex.includes("breadth")) r += R("7b. Watch how many stocks are rising", "<p>If fewer than half of the stocks on the list are above their 200-day average, the model invests proportionally less.</p>", "When most stocks are falling, even good picks tend to fall with them.");
-  if (ex.includes("regime")) r += R("7c. Step aside in a weak market", "<p>If the Nifty 50 is below its 200-day average, the model sells everything and waits in cash.</p>", "It avoids the worst of long market declines, at the price of missing the start of recoveries.");
-  r += R("8. Count the costs", `<p>Every pretend trade is charged ${cost}% of its value.</p>`, "Real trading has brokerage, taxes and a gap between buying and selling prices. Leaving them out would make the results look better than they could be.");
+  r += R(`${k++}. Check the trend is still alive`, `<p>The current price must be above the stock's average over the last ${c.trend_sma} trading days. Stocks with any one-day move of 40% or more in the period are dropped as bad data or freak events.</p>`,
+    "A stock can have a good run and already be falling. This avoids buying it on the way down.");
+  r += calm
+    ? R(`${k++}. Prefer the calm ones`, `<p>The best-rising third of the remaining stocks is kept (at least ${n * 2}). For each, the typical size of its daily price moves is measured, and the ${n} least bumpy are picked.</p>`,
+        "In the test, choosing calm risers gave smaller drops and much milder bad years than choosing the biggest risers.")
+    : R(`${k++}. Back the biggest winners`, `<p>The remaining stocks are ranked by how much they rose and the top ${n} are bought.</p>`,
+        `In the test, ranking on the ${months}-month rise was the only winner-focused version that clearly beat holding every index stock, including on a list built without hindsight.`);
+  r += R(`${k++}. Split the money`, `<p>Each stock gets one ${n}th of the portfolio. If fewer than ${n} qualify, the unused share stays in cash. A holding is only resized when it drifts more than ${Math.round(c.drift * 100)}% from its target.</p>`,
+    "Equal sizes mean no single stock can sink the portfolio. Not fine-tuning avoids paying trading costs for little benefit.");
+  r += R(`${k++}. Keep what still works`, `<p>Stocks are re-picked ${c.rebalance}, on the first trading day. A stock already owned is kept while it ranks in the top ${Math.round(n * c.buffer)}, even if it has left the top ${n}.</p>`,
+    "Without this the bot would swap stocks over tiny rank changes and lose money to costs. The very first version of this project traded daily and lost about 15% a year to costs alone.");
+  if (ex.includes("voltarget")) r += R(`${k++}. Turn the risk down in rough markets`, `<p>Each week the bot measures how jumpy the whole stock list has been over the last 20 trading days, as a yearly figure. <code>share invested = ${vt}% ÷ jumpiness</code>, capped at 100%. The rest is held as cash.</p>`,
+    "Big falls usually come when the market is already swinging wildly. Holding less then gives up some gains and softens the drops.");
+  r += R(`${k++}. Count the costs`, `<p>Every pretend trade is charged ${cost}% of its value.</p>`, "Real trading has brokerage, taxes and a gap between buying and selling prices.");
   $("m_rules").innerHTML = r;
 
-  $("m_example").innerHTML = `<p style="margin:6px 0">Suppose it is the first trading day of the month and the portfolio is worth ₹10,00,000.</p>
-    <ul class="plain">
-      <li>The model takes the ${c.universe === "index" ? "roughly 400 stocks in the index" : `list of ${c.universe_size} stocks`}. Say 150 of them have risen over ${months} months and are above their ${c.trend_sma}-day average.</li>
-      ${calm ? `<li>It keeps the best-rising third: 50 stocks. From those it picks the ${n} with the smallest daily price swings.</li>` : `<li>It picks the ${n} that have risen the most.</li>`}
-      ${ex.includes("voltarget") ? `<li>The market's jumpiness over the last 20 days works out to 20% a year. Share invested = ${vt}% ÷ 20% = ${Math.round(vt / 20 * 100)}%, so ₹${(vt / 20 * 10).toFixed(1)} lakh goes into stocks and the rest stays in cash.</li>
-      <li>Each stock gets about ₹${Math.round(1000000 * vt / 20 / n).toLocaleString("en-IN")}. A share priced at ₹500 means buying ${Math.floor(1000000 * vt / 20 / n / 500)} shares.</li>`
-      : `<li>Each stock gets about ₹${Math.round(1000000 / n).toLocaleString("en-IN")}. A share priced at ₹500 means buying ${Math.floor(1000000 / n / 500)} shares.</li>`}
+  const per = ex.includes("voltarget") ? 1000000 * vt / 20 / n : 1000000 / n;
+  $("m_example").innerHTML = `<p style="margin:6px 0">Suppose it is the first trading day of the month and the portfolio is worth ₹10,00,000.</p><ul class="plain">
+      <li>The bot takes the ${c.universe === "index" ? "roughly 400 stocks in the index" : `list of ${c.universe_size} stocks`}. Say 150 of them have risen over ${months} months and are above their ${c.trend_sma}-day average.</li>
+      ${calm ? `<li>It keeps the best-rising third, 50 stocks, and picks the ${n} with the smallest daily price swings.</li>` : `<li>It picks the ${n} that rose the most.</li>`}
+      ${ex.includes("voltarget") ? `<li>The market's jumpiness over the last 20 days works out to 20% a year. Share invested = ${vt}% ÷ 20% = ${Math.round(vt / 20 * 100)}%, so ₹${(vt / 20 * 10).toFixed(1)} lakh goes into stocks and the rest stays in cash.</li>` : ""}
+      <li>Each stock gets about ₹${Math.round(per).toLocaleString("en-IN")}. A share priced at ₹500 means buying ${Math.floor(per / 500)} shares.</li>
       <li>Next month, a stock that has slipped to rank ${n + 5} is kept. One that has slipped to rank ${Math.round(n * c.buffer) + 10}, or fallen below its ${c.trend_sma}-day average, is sold and replaced.</li>
     </ul><p class="small muted" style="margin:8px 0 0">The numbers here are made up to show the arithmetic.</p>`;
 
-  const t = B && B.table;
-  if (t && t["LIVE CONFIG"]) {
-    const rows = [["This model", "LIVE CONFIG"], ["This model, no hindsight", "LIVE CONFIG [nohind]"],
-      ["Winners over 6 months", "winners [index]"], ["Winners, selling fallers weekly", "winners cut losers [index]"],
-      ["Winners, cash in rough markets", "winners + rough-market cash [index]"], ["Calm risers (previous bot)", "calm risers (previous bot) [index]"],
-      ["All index stocks, no picking", "ALL index members (no costs)"], ["Same rules on large caps", "winners 12m [large]"],
-      ["All large caps, no picking", "ALL large caps (no costs)"], ["Nifty 50", "Nifty 50"]];
+  if (B) {
+    const t = B.table, other = IDS.find(i => i !== bot);
+    const rows = [[`${b.name}`, bt(bot), true], [`${b.name}, no hindsight`, bt(bot, true), true], [BOTS[other].name, bt(other)], [`${BOTS[other].name}, no hindsight`, bt(other, true)],
+      ["Winners over 6 months", t["winners [index]"]], ["Winners, selling fallers weekly", t["winners cut losers [index]"]],
+      ["All index stocks, no picking", t["ALL index members (no costs)"]], ["Winners on large caps", t["winners 12m [large]"] || t["winners [large]"]],
+      ["All large caps, no picking", t["ALL large caps (no costs)"]], ["Nifty 50", t["Nifty 50"]]].filter(x => x[1]);
     $("m_evnote").textContent = `${B.period}. Rows without "no hindsight" use today's index members, which flatters them.`;
     $("m_ev").innerHTML = "<tr><th></th><th>Per year</th><th>Biggest drop</th><th>Months up</th><th>Worst year</th></tr>" +
-      rows.filter(([, k]) => t[k]).map(([name, k]) => `<tr><td>${name}</td><td class="${cls(t[k]["per yr %"])}">${pct(t[k]["per yr %"], 1)}</td>
-        <td class="down">${pct(t[k]["worst fall %"], 1)}</td><td>${Math.round(t[k]["up months %"])}%</td><td class="${cls(t[k]["worst yr %"])}">${pct(t[k]["worst yr %"], 1)}</td></tr>`).join("");
-    const me = t["LIVE CONFIG"];
-    $("m_evtext").innerHTML = [
-      "Ranking on the 12-month rise was the only winner-focused version that clearly beat holding every stock, both on today's index list and on the list built without hindsight.",
-      "Selling fallers every week made things worse in every test: more trading, deeper falls and worse bad years.",
-      "Holding back cash in rough markets cut the falls a little but cost more return than it saved.",
-      "On large caps the same rules did worse than simply holding all of them. The approach only worked on mid and small caps.",
-      `The edge is modest and uneven: the first half of the test made about ${Math.round(me["1st half /yr"])}% a year and the second half about ${Math.round(me["2nd half /yr"])}%.`,
-    ].map(x => `<li>${x}</li>`).join("");
-  } else $("m_evnote").textContent = "Test results are not available yet.";
+      rows.map(([name, x, me]) => `<tr${me ? ' class="me"' : ""}><td>${name}</td><td class="${cls(x["per yr %"])}">${pct(x["per yr %"], 1)}</td>
+        <td class="down">${pct(x["worst fall %"], 1)}</td><td>${Math.round(x["up months %"])}%</td><td class="${cls(x["worst yr %"])}">${pct(x["worst yr %"], 1)}</td></tr>`).join("");
+    $("m_evtext").innerHTML = (calm ? [
+      "Choosing calm risers gave the mildest worst year and drops close to just holding every stock, while still earning a bit more.",
+      "Holding back cash in rough markets cut the drops further, at the cost of some return. That suits a bot whose priority is a smooth ride.",
+      "The Growth bot earned more but fell much further in bad stretches.",
+    ] : [
+      "Ranking on the 12-month rise was the only winner-focused version that clearly beat holding every stock, on both today's index list and the no-hindsight list.",
+      "Selling fallers every week made things worse in every test: more trading, deeper drops and worse bad years.",
+      "Holding back cash cut the drops a little but cost more return than it saved, so the Growth bot stays fully invested.",
+      "On large caps the same rules did worse than simply holding all of them.",
+    ]).map(x => `<li>${x}</li>`).join("");
+  }
 
   $("m_limits").innerHTML = [
     "It does not read news, company results or valuations. It only sees prices and trading volumes.",
     "It has no stop-loss. A stock can fall a long way between the monthly re-picks.",
-    "It cannot promise steady gains. It lost money in 2025 in the test.",
+    calm ? "Smoother does not mean safe. In the test it still dropped more than a fifth from its high at one point."
+         : "It is aggressive: in the test it once fell more than a third from its high, and it lost money in 2025.",
     "The test could not include companies that were delisted, so past results look a little better than they should.",
-    "It is more aggressive than the previous calm-stock version: bigger gains in good years, deeper falls in bad ones. In the test it once fell more than a third from its high.",
-    "This version was chosen from about 30 that were tested, after seeing the results. Expect real performance to be somewhat worse than the test.",
+    "These settings were chosen from about 30 versions after seeing the results. Expect real performance to be somewhat worse than the test.",
     "It assumes every order fills at the current price, which is not always true for small companies.",
   ].map(x => `<li>${x}</li>`).join("");
 
-  const names = { universe: "Stock pool", lookback2: "Second rise window (days)", near_high: "Must be near 52-week high", cut_losers: "Sell fallers weekly", universe_skip: "Most-traded shares skipped", universe_size: "Stocks on the list", min_price: "Minimum share price (₹)",
-    top_n: "Stocks held", lookback: "Rise measured over (trading days)", skip: "Most recent days ignored", trend_sma: "Trend average (days)",
-    select: "How stocks are chosen", weighting: "How money is split", buffer: "Keep-zone (multiple of stocks held)", exposure: "Risk controls",
-    vol_target: "Target yearly jumpiness", rebalance: "Stocks re-picked", risk_check: "Risk re-checked", drift: "Resize when off target by", cost: "Cost per trade" };
-  const val = (k, v) => k === "select" ? { lowvol: "calmest of the best risers", mom: "biggest risers", mom_vol: "rise relative to bumpiness" }[v]
-    : k === "universe" ? (v === "index" ? "Nifty MidSmallcap 400" : "own list by trading activity")
-    : k === "near_high" ? (v ? "within " + Math.round((1 - v) * 100) + "%" : "no") : k === "cut_losers" ? (v ? "yes" : "no") : k === "lookback2" ? (v || "not used")
-    : k === "weighting" ? (v === "inv_vol" ? "more to calmer stocks" : "equal") : k === "exposure" ? (v.length ? v.map(x => ({ voltarget: "cut back when jumpy", breadth: "cut back when few stocks rise", regime: "all cash in a weak market" }[x])).join(", ") : "none")
-    : ["vol_target", "drift", "cost"].includes(k) ? (v * 100).toFixed(k === "cost" ? 1 : 0) + "%" : v == null ? "–" : v;
-  const hide = new Set([...(c.universe === "index" ? ["universe_skip", "universe_size"] : []),
-    ...(ex.includes("voltarget") ? [] : ["vol_target"]), ...(ex.length || c.cut_losers ? [] : ["risk_check"])]);
-  $("m_cfg").innerHTML = Object.keys(names).filter(k => k in c && !hide.has(k)).map(k => `<tr><td>${names[k]}</td><td>${esc(val(k, c[k]))}</td></tr>`).join("");
+  const names = { universe: "Stock pool", top_n: "Stocks held", lookback: "Rise measured over (trading days)", skip: "Most recent days ignored",
+    trend_sma: "Trend average (days)", select: "How stocks are chosen", weighting: "How money is split", buffer: "Keep-zone (multiple of stocks held)",
+    exposure: "Risk controls", vol_target: "Target yearly jumpiness", rebalance: "Stocks re-picked", risk_check: "Risk re-checked",
+    drift: "Resize when off target by", min_price: "Minimum share price (₹)", cost: "Cost per trade" };
+  const val = (key, v) => key === "universe" ? (v === "index" ? "Nifty MidSmallcap 400" : "own list by trading activity")
+    : key === "select" ? { lowvol: "calmest of the best risers", mom: "biggest risers", mom_vol: "rise relative to bumpiness" }[v]
+    : key === "weighting" ? (v === "inv_vol" ? "more to calmer stocks" : "equal")
+    : key === "exposure" ? (v.length ? v.map(x => ({ voltarget: "cut back when jumpy", breadth: "cut back when few stocks rise", regime: "all cash in a weak market" }[x])).join(", ") : "none, always fully invested")
+    : ["vol_target", "drift", "cost"].includes(key) ? (v * 100).toFixed(key === "cost" ? 1 : 0) + "%" : v == null ? "–" : v;
+  const hide = new Set([...(ex.includes("voltarget") ? [] : ["vol_target"]), ...(ex.length ? [] : ["risk_check"])]);
+  $("m_cfg").innerHTML = Object.keys(names).filter(x => x in c && !hide.has(x)).map(x => `<tr><td>${names[x]}</td><td>${esc(val(x, c[x]))}</td></tr>`).join("");
 }
 
 /* ---------- wiring ---------- */
+const TABS = ["overview", "holdings", "trades", "compare", "backtest", "model"];
 function tab(name) {
-  if (!$(name) || $(name).tagName !== "SECTION") name = "overview";
+  if (!TABS.includes(name)) name = "overview";
   document.querySelectorAll("section").forEach(s => s.classList.toggle("on", s.id === name));
   document.querySelectorAll("nav button").forEach(b => b.classList.toggle("on", b.dataset.t === name));
   if (name === "overview") overview();   // charts need a visible canvas
+  if (name === "compare") compare();
   if (name === "backtest") backtest();
 }
-function render() { hero(); holdings(); trades(); how(); model(); tab(location.hash.slice(1) || "overview"); }
-async function load() { [S, B] = await Promise.all([get("state.json"), get("backtest.json")]); render(); }
+function render() { picker(); hero(); holdings(); trades(); model(); tab(location.hash.slice(1)); }
+async function load() {
+  const res = await Promise.all([...IDS.map(i => get(`state-${i}.json`)), get("backtest.json")]);
+  IDS.forEach((i, n) => { ST[i] = res[n]; });
+  B = res.at(-1);
+  render();
+}
 
+$("bots").onclick = e => { const el = e.target.closest("[data-b]"); if (!el) return; bot = el.dataset.b; store.set("bot", bot); shown = 100; render(); };
 $("tabs").onclick = e => { const t = e.target.dataset.t; if (t) location.hash = t; };
-window.onhashchange = () => { tab(location.hash.slice(1)); window.scrollTo(0, 0); };
+window.onhashchange = () => tab(location.hash.slice(1));
 $("range").onclick = e => { if (e.target.dataset.r != null) { range = +e.target.dataset.r; store.set("range", range); overview(); } };
 $("tside").onclick = e => { if (e.target.dataset.s != null) { side = e.target.dataset.s; shown = 100; trades(); } };
 $("tq").oninput = () => { shown = 100; trades(); };
 $("hsort").onchange = () => { store.set("hsort", $("hsort").value); holdings(); };
+bot = BOTS[store.get("bot")] ? store.get("bot") : "growth";
 range = +(store.get("range") || 0);
 if (store.get("hsort")) $("hsort").value = store.get("hsort");
 load();

@@ -1,8 +1,10 @@
 """
 NSE Momentum Paper Trader
 -------------------------
-Paper-trades (FAKE money) mid- and small-cap NSE stocks. Nothing is
-hand-picked: the bot builds its own stock list from every NSE-listed share.
+Paper-trades (FAKE money) mid- and small-cap NSE stocks with two bots side
+by side: a Growth bot and a Steady bot (see MODELS). Each has its own
+₹10 lakh, its own state file (docs/state-<bot>.json) and trade log
+(docs/trades-<bot>.csv).
 
 Rules (all set in CONFIG below):
   1. Stock list: rank every NSE stock by how much money trades in it per day
@@ -15,7 +17,7 @@ Rules (all set in CONFIG below):
      on market conditions. The rest sits in cash. Re-checked weekly.
   5. Stocks are re-picked monthly.
 
-State lives in docs/state.json, which the dashboard (docs/index.html) reads.
+The dashboard (docs/index.html) reads the state files.
 
 Usage:
   python trader.py                    # live prices
@@ -35,11 +37,9 @@ import numpy as np
 import pandas as pd
 
 ROOT = Path(__file__).parent
-STATE_FILE = ROOT / "docs" / "state.json"
 SYMBOLS_FILE = ROOT / "data" / "symbols.txt"
 NAMES_FILE = ROOT / "data" / "names.json"      # ticker -> company name
 INDEX_FILE = ROOT / "data" / "midsmallcap400.txt"   # current Nifty MidSmallcap 400 members
-TRADES_CSV = ROOT / "docs" / "trades.csv"      # permanent log of every buy and sell
 IST = timezone(timedelta(hours=5, minutes=30))
 
 STARTING_CAPITAL = 1_000_000.0  # ₹10 lakh fake money
@@ -80,6 +80,30 @@ CONFIG = {
     "risk_check": None,     # when exposure is re-checked (None = only at rebalance)
     "drift": 0.25,          # only resize a holding if it is >25% away from its target size
 }
+
+# Two bots run side by side, each with its own ₹10 lakh of practice money.
+# Each one's settings are CONFIG with the changes listed here.
+MODELS = {
+    "growth": {
+        "name": "Growth bot",
+        "tagline": "Buys the 20 biggest 12-month winners. Aims for higher returns and accepts bigger drops.",
+        "config": {**CONFIG},
+    },
+    "steady": {
+        "name": "Steady bot",
+        "tagline": "Buys 20 calm, steadily rising stocks and holds back cash when the market gets rough. "
+                   "Aims for smoother returns and accepts lower gains.",
+        "config": {**CONFIG, "lookback": 126, "select": "lowvol", "exposure": ["voltarget"], "risk_check": "weekly"},
+    },
+}
+
+
+def state_file(model):
+    return ROOT / "docs" / f"state-{model}.json"
+
+
+def trades_csv(model):
+    return ROOT / "docs" / f"trades-{model}.csv"   # permanent log of every buy and sell
 
 
 # ---------------------------------------------------------------- data
@@ -329,17 +353,16 @@ def new_state() -> dict:
     }
 
 
-def load_state() -> dict:
-    if STATE_FILE.exists():
-        return json.loads(STATE_FILE.read_text())
-    return new_state()
+def load_state(model) -> dict:
+    f = state_file(model)
+    return json.loads(f.read_text()) if f.exists() else new_state()
 
 
-def save_state(state: dict) -> None:
-    STATE_FILE.parent.mkdir(exist_ok=True)
-    STATE_FILE.write_text(json.dumps(state, indent=1))
+def save_state(state: dict, model) -> None:
+    state_file(model).parent.mkdir(exist_ok=True)
+    state_file(model).write_text(json.dumps(state, indent=1))
     # every trade ever made, one per line, with its exact timestamp (IST)
-    with TRADES_CSV.open("w", newline="") as f:
+    with trades_csv(model).open("w", newline="") as f:
         w = csv.writer(f)
         w.writerow(["time_ist", "side", "ticker", "company", "qty", "price", "value", "fee"])
         for t in state["trades"]:
@@ -421,40 +444,9 @@ def step(state, prices, day, ts, cfg, universe_fn):
     return True
 
 
-def main():
-    if "--refresh-symbols" in sys.argv:
-        ok = [refresh_symbols(), refresh_index()]
-        sys.exit(0 if all(ok) else 1)
-    demo = "--demo" in sys.argv
-    state = new_state() if "--reset" in sys.argv else load_state()
-    now = datetime.now(IST)
-    ts = now.isoformat(timespec="seconds")
-    held = list(state["positions"])
-
-    # cheap first look: is the market open today?
-    if demo:
-        syms = all_tickers(demo=True)[:600] + INDEX_SYMBOLS
-        _, prices, volume = demo_data(syms, 420)
-        CONFIG["_members"] = syms[:400]
-    else:
-        _, prices, volume = download(INDEX_SYMBOLS + held, "5d")
-        if prices.index[-1].date() != now.date():
-            print(f"No prices for today yet (latest: {prices.index[-1].date()}) - market closed or holiday.")
-            if "--reset" in sys.argv:
-                save_state(state)
-            return
-        mkey = period_key(now.date(), CONFIG["rebalance"])
-        rkey = period_key(now.date(), CONFIG["risk_check"]) if CONFIG["risk_check"] else mkey
-        if state["universe"] is None or state["last_rebalance"] != mkey:
-            pool = index_members() if CONFIG["universe"] == "index" else all_tickers()
-            _, prices, volume = download(pool + held + INDEX_SYMBOLS, "2y")       # monthly: whole pool
-        elif state["last_risk"] != rkey:
-            _, prices, volume = download(state["universe"] + held + INDEX_SYMBOLS, "2y")  # weekly
-
-    if step(state, prices, now.date(), ts, CONFIG, lambda: choose_universe(prices, volume, CONFIG)):
-        print(f"Rebalanced. Exposure {state['exposure']:.0%} ->",
-              [t.replace('.NS', '') for t in state["positions"]] or "all cash")
-
+def finish(state, model, prices, ts, demo, names):
+    """Record the portfolio's value and save it."""
+    m, cfg = MODELS[model], MODELS[model]["config"]
     last = prices.iloc[-1]
     if state.get("benchmark") is None:
         for sym, name in BENCHMARKS.items():
@@ -462,7 +454,6 @@ def main():
                 state.update(benchmark=sym, benchmark_name=name, benchmark_start=float(last[sym]))
                 break
     bsym = state.get("benchmark")
-    names = company_names()
     for t in state["trades"]:
         t.setdefault("name", names.get(t["ticker"], ""))
     value = portfolio_value(state, last)
@@ -480,12 +471,69 @@ def main():
         "value": round(p["qty"] * float(last[t]), 2),
         "pnl_pct": round((float(last[t]) / p["avg_price"] - 1) * 100, 2),
     } for t, p in state["positions"].items()]
-    state["params"] = {**{k: v for k, v in CONFIG.items() if not k.startswith("_")}, "cost": COST, "description": describe(),
-                       "listed": len(all_tickers(demo))}
+    state["model"] = {"id": model, "name": m["name"], "tagline": m["tagline"]}
+    state["params"] = {**{k: v for k, v in cfg.items() if not k.startswith("_")}, "cost": COST,
+                       "description": describe(cfg), "listed": len(all_tickers(demo))}
     state["updated_at"] = ts
     state["demo"] = demo
-    save_state(state)
-    print(f"{ts}  value ₹{value:,.0f}  ({state['history'][-1]['pct']:+.2f}%)")
+    save_state(state, model)
+    print(f"{m['name']:12s} {ts}  value ₹{value:,.0f}  ({state['history'][-1]['pct']:+.2f}%)")
+
+
+def main():
+    if "--refresh-symbols" in sys.argv:
+        ok = [refresh_symbols(), refresh_index()]
+        sys.exit(0 if all(ok) else 1)
+    demo = "--demo" in sys.argv
+    reset = "--reset" in sys.argv
+    states = {k: new_state() if reset else load_state(k) for k in MODELS}
+    now = datetime.now(IST)
+    ts = now.isoformat(timespec="seconds")
+    held = sorted({t for st in states.values() for t in st["positions"]})
+
+    def due(model):
+        """'month' = re-pick stocks, 'week' = re-check risk, None = just record value."""
+        cfg, st = MODELS[model]["config"], states[model]
+        mkey = period_key(now.date(), cfg["rebalance"])
+        rkey = period_key(now.date(), cfg["risk_check"]) if cfg["risk_check"] else mkey
+        if st["universe"] is None or st["last_rebalance"] != mkey:
+            return "month"
+        return "week" if st["last_risk"] != rkey else None
+
+    if demo:
+        syms = all_tickers(demo=True)[:600] + INDEX_SYMBOLS
+        _, prices, volume = demo_data(syms, 420)
+        for m in MODELS.values():
+            m["config"]["_members"] = syms[:400]
+    else:
+        # cheap first look: is the market open today?
+        _, prices, volume = download(INDEX_SYMBOLS + held, "5d")
+        if prices.index[-1].date() != now.date():
+            print(f"No prices for today yet (latest: {prices.index[-1].date()}) - market closed or holiday.")
+            if reset:
+                for k, st in states.items():
+                    save_state(st, k)
+            return
+        needs = {k: due(k) for k in MODELS}
+        if "month" in needs.values():                       # re-pick: whole stock pool
+            pool = set(held)
+            for k, m in MODELS.items():
+                if needs[k] == "month":
+                    pool |= set(index_members() if m["config"]["universe"] == "index" else all_tickers())
+                else:
+                    pool |= set(states[k]["universe"] or [])
+            _, prices, volume = download(sorted(pool) + INDEX_SYMBOLS, "2y")
+        elif "week" in needs.values():                      # risk check: current lists only
+            pool = set(held) | {t for st in states.values() for t in (st["universe"] or [])}
+            _, prices, volume = download(sorted(pool) + INDEX_SYMBOLS, "2y")
+
+    names = company_names()
+    for k, m in MODELS.items():
+        st, cfg = states[k], m["config"]
+        if step(st, prices, now.date(), ts, cfg, lambda cfg=cfg: choose_universe(prices, volume, cfg)):
+            print(f"{m['name']}: rebalanced. Exposure {st['exposure']:.0%} ->",
+                  [t.replace('.NS', '') for t in st["positions"]] or "all cash")
+        finish(st, k, prices, ts, demo, names)
 
 
 if __name__ == "__main__":

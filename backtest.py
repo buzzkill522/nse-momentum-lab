@@ -52,8 +52,9 @@ def variants():
             v[f"{name} [{pool}]"] = {**cfg, **POOLS[pool]}
     for name in ("winners", "winners 12m", "winners near high + cut", "calm risers (previous bot)"):
         v[f"{name} [large]"] = {**kinds[name], **POOLS["large"]}
-    v["LIVE CONFIG"] = dict(T.CONFIG)
-    v["LIVE CONFIG [nohind]"] = {**T.CONFIG, **POOLS["nohind"]}
+    for mid, m in T.MODELS.items():
+        v[f"MODEL {mid}"] = dict(m["config"])
+        v[f"MODEL {mid} [nohind]"] = {**m["config"], **POOLS["nohind"]}
     return v
 
 
@@ -139,6 +140,8 @@ def main():
     years = next((int(a) for a in sys.argv[1:] if a.isdigit()), 5)
     syms = T.all_tickers(demo) + T.INDEX_SYMBOLS
     T.CONFIG["_members"] = syms[100:500] if demo else T.index_members()
+    for m in T.MODELS.values():
+        m["config"]["_members"] = T.CONFIG["_members"]
     opn, close, volume = T.demo_data(syms, 252 * (years + 2), seed=7) if demo else T.download(syms, f"{years + 2}y")
     days = close.index[close.index > close.index[-1] - pd.DateOffset(years=years)]
     cap = T.STARTING_CAPITAL
@@ -172,12 +175,15 @@ def main():
     print(text)
     OUT.mkdir(exist_ok=True)
     (OUT / "backtest.txt").write_text(text + "\n")
-    weekly = pd.DataFrame({"live": curves["LIVE CONFIG"], "live_nohind": curves["LIVE CONFIG [nohind]"],
+    weekly = pd.DataFrame({**{k: curves[f"MODEL {k}"] for k in T.MODELS},
+                           **{k + "_nohind": curves[f"MODEL {k} [nohind]"] for k in T.MODELS},
                            "nifty50": curves["Nifty 50"], "all_index": curves["ALL index members (no costs)"],
                            "all_listed": curves["ALL 400 LISTED (no costs)"]}).iloc[::5]
     (OUT / "backtest.json").write_text(json.dumps({
         "period": f"{days[0].date()} to {days[-1].date()}", "demo": demo,
-        "config": {k: v for k, v in T.CONFIG.items() if not k.startswith("_")}, "description": T.describe(),
+        "models": {k: {"name": m["name"], "tagline": m["tagline"], "description": T.describe(m["config"]),
+                       "config": {**{a: b for a, b in m["config"].items() if not a.startswith("_")}, "cost": T.COST}}
+                   for k, m in T.MODELS.items()},
         "table": json.loads(table.round(2).to_json(orient="index")),
         "curve": [{"date": d.date().isoformat(), **{k: round((x / cap - 1) * 100, 2) for k, x in r.items()}}
                   for d, r in weekly.iterrows()],
