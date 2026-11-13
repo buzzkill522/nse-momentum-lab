@@ -4,24 +4,25 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>NSE Momentum Lab</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="chart.umd.js"></script>
 <style>
   :root { --bg:#f7f7f5; --card:#fff; --fg:#1a1a1a; --muted:#6b6b6b; --line:#e4e4e0;
-          --up:#0a8a4a; --down:#c4322b; --accent:#2f5bd3; }
+          --up:#0a8a4a; --down:#c4322b; --accent:#2f5bd3; --alt:#b7791f; }
   @media (prefers-color-scheme: dark) {
     :root { --bg:#121212; --card:#1c1c1c; --fg:#ececec; --muted:#9a9a9a; --line:#2c2c2c;
-            --up:#3ccf7f; --down:#ff6b61; --accent:#7ea2ff; }
+            --up:#3ccf7f; --down:#ff6b61; --accent:#7ea2ff; --alt:#e0b050; }
   }
   * { box-sizing:border-box; }
   body { margin:0; background:var(--bg); color:var(--fg);
          font:15px/1.5 system-ui, -apple-system, Segoe UI, sans-serif; }
   main { max-width:1000px; margin:0 auto; padding:24px 16px 48px; }
   h1 { font-size:22px; margin:0 0 4px; }
-  .sub { color:var(--muted); font-size:13px; margin-bottom:20px; }
-  .tiles { display:grid; grid-template-columns:repeat(auto-fit,minmax(170px,1fr)); gap:12px; }
+  .sub { color:var(--muted); font-size:13px; }
+  .tiles { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:12px; margin-top:16px; }
   .tile, .card { background:var(--card); border:1px solid var(--line); border-radius:10px; padding:14px 16px; }
   .tile .k { color:var(--muted); font-size:12px; text-transform:uppercase; letter-spacing:.04em; }
-  .tile .v { font-size:24px; font-weight:600; font-variant-numeric:tabular-nums; }
+  .tile .v { font-size:22px; font-weight:600; font-variant-numeric:tabular-nums; }
+  .tile .n { color:var(--muted); font-size:12px; }
   .card { margin-top:16px; }
   .card h2 { font-size:15px; margin:0 0 10px; }
   .up { color:var(--up); } .down { color:var(--down); }
@@ -30,76 +31,151 @@
   th, td { text-align:right; padding:6px 8px; border-bottom:1px solid var(--line); white-space:nowrap; }
   th:first-child, td:first-child { text-align:left; }
   th { color:var(--muted); font-weight:500; font-size:12px; }
-  .chartbox { position:relative; height:300px; }
-  .badge { display:inline-block; background:var(--accent); color:#fff; border-radius:4px; padding:0 6px; font-size:11px; }
+  .chartbox { position:relative; height:280px; }
+  .badge { display:inline-block; background:var(--accent); color:#fff; border-radius:4px; padding:0 6px; font-size:11px; vertical-align:middle; }
+  .section { margin:32px 0 0; font-size:17px; }
+  .notice { border-left:3px solid var(--accent); }
 </style>
 </head>
 <body>
 <main>
-  <h1>NSE Momentum Lab <span class="badge">PAPER</span></h1>
+  <h1>NSE Momentum Lab <span class="badge">PAPER MONEY</span></h1>
   <div class="sub" id="sub">Loading…</div>
 
-  <div class="tiles">
-    <div class="tile"><div class="k">Portfolio value</div><div class="v" id="value">–</div></div>
-    <div class="tile"><div class="k">Total return</div><div class="v" id="ret">–</div></div>
-    <div class="tile"><div class="k" id="benchk">Benchmark (same period)</div><div class="v" id="bench">–</div></div>
-    <div class="tile"><div class="k">Cash</div><div class="v" id="cash">–</div></div>
+  <div id="live" hidden>
+    <div class="tiles">
+      <div class="tile"><div class="k">Portfolio value</div><div class="v" id="value">–</div><div class="n" id="started"></div></div>
+      <div class="tile"><div class="k">Total return</div><div class="v" id="ret">–</div><div class="n" id="retabs"></div></div>
+      <div class="tile"><div class="k">Today</div><div class="v" id="today">–</div><div class="n" id="todayabs"></div></div>
+      <div class="tile"><div class="k" id="benchk">Index</div><div class="v" id="bench">–</div><div class="n">same period</div></div>
+      <div class="tile"><div class="k">Invested</div><div class="v" id="inv">–</div><div class="n" id="cash"></div></div>
+    </div>
+    <div class="card"><h2 id="charth">Return since start (%)</h2><div class="chartbox"><canvas id="chart"></canvas></div></div>
+    <div class="card"><h2 id="holdh">Holdings</h2><div class="scroll"><table id="hold"></table></div></div>
+    <div class="card"><h2>Recent trades</h2><div class="scroll"><table id="trades"></table></div></div>
+  </div>
+  <div class="card notice" id="waiting" hidden>
+    The bot has not traded yet. It starts on its own at the next market open
+    (Monday to Friday, 9:15 am IST) and this page fills in from then.
   </div>
 
-  <div class="card"><h2 id="charth">Return vs benchmark (%)</h2><div class="chartbox"><canvas id="chart"></canvas></div></div>
-  <div class="card"><h2>Holdings</h2><div class="scroll"><table id="hold"></table></div></div>
-  <div class="card"><h2>Recent trades</h2><div class="scroll"><table id="trades"></table></div></div>
-  <div class="card sub" id="rules"></div>
+  <div id="bt" hidden>
+    <h2 class="section">Backtest: how these rules would have done</h2>
+    <div class="sub" id="btsub"></div>
+    <div class="tiles">
+      <div class="tile"><div class="k">Per year</div><div class="v" id="b_yr">–</div><div class="n" id="b_yr_n"></div></div>
+      <div class="tile"><div class="k">Worst fall</div><div class="v down" id="b_dd">–</div><div class="n">from a peak</div></div>
+      <div class="tile"><div class="k">Months up</div><div class="v" id="b_um">–</div><div class="n" id="b_wm"></div></div>
+      <div class="tile"><div class="k">Worst year</div><div class="v" id="b_wy">–</div><div class="n" id="b_ly"></div></div>
+    </div>
+    <div class="card"><h2>Backtest growth (%)</h2><div class="chartbox"><canvas id="btchart"></canvas></div></div>
+    <div class="card"><h2>Year by year (%)</h2><div class="scroll"><table id="bttable"></table></div></div>
+  </div>
+
+  <div class="card sub" id="rules" hidden></div>
 </main>
 <script>
+const $ = id => document.getElementById(id);
 const inr = v => "₹" + Math.round(v).toLocaleString("en-IN");
-const pct = v => v == null ? "–" : (v >= 0 ? "+" : "") + v.toFixed(2) + "%";
+const pct = (v, d = 2) => v == null ? "–" : (v >= 0 ? "+" : "") + v.toFixed(d) + "%";
 const cls = v => v == null ? "" : v >= 0 ? "up" : "down";
-const set = (id, txt, c) => { const e = document.getElementById(id); e.textContent = txt; if (c !== undefined) e.className = "v " + c; };
+const set = (id, txt, c) => { $(id).textContent = txt; if (c !== undefined) $(id).className = "v " + c; };
+const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const when = t => new Date(t).toLocaleString("en-IN", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
+const get = f => fetch(f + "?t=" + Date.now()).then(r => r.ok ? r.json() : null).catch(() => null);
+const charts = {};
 
-fetch("state.json?t=" + Date.now()).then(r => r.json()).then(s => {
-  const last = s.history.at(-1) || {};
-  document.getElementById("sub").textContent =
-    `Started ${new Date(s.started_at).toLocaleString("en-IN")} with ${inr(s.starting_capital)} fake money · ` +
-    `last update ${new Date(s.updated_at).toLocaleString("en-IN")}` + (s.demo ? " · DEMO DATA" : "");
-  set("value", inr(last.value));
-  set("ret", pct(last.pct), cls(last.pct));
-  set("bench", pct(last.benchmark_pct), cls(last.benchmark_pct));
-  set("cash", inr(s.cash));
-  const bname = s.benchmark_name || "Benchmark";
-  document.getElementById("benchk").textContent = bname + " (same period)";
-  document.getElementById("charth").textContent = "Return vs " + bname + " (%)";
-
-  const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
-  new Chart(document.getElementById("chart"), {
+function line(id, labels, sets) {
+  if (!window.Chart) return;
+  if (charts[id]) charts[id].destroy();
+  charts[id] = new Chart($(id), {
     type: "line",
-    data: {
-      labels: s.history.map(h => new Date(h.time).toLocaleString("en-IN", {day:"numeric", month:"short", hour:"2-digit", minute:"2-digit"})),
-      datasets: [
-        { label: "Strategy", data: s.history.map(h => h.pct), borderColor: css("--accent"), pointRadius: 0, tension: .2 },
-        { label: bname, data: s.history.map(h => h.benchmark_pct), borderColor: css("--muted"), borderDash: [4,4], pointRadius: 0, tension: .2 },
-      ]
-    },
-    options: { maintainAspectRatio: false, interaction: { mode: "index", intersect: false },
-      scales: { x: { ticks: { color: css("--muted"), maxTicksLimit: 8 }, grid: { color: css("--line") } },
+    data: { labels, datasets: sets.map(([label, data, color, dash]) =>
+      ({ label, data, borderColor: css(color), borderWidth: 2, borderDash: dash ? [4, 4] : [], pointRadius: 0, tension: .2 })) },
+    options: { maintainAspectRatio: false, animation: false, interaction: { mode: "index", intersect: false },
+      scales: { x: { ticks: { color: css("--muted"), maxTicksLimit: 7, maxRotation: 0 }, grid: { color: css("--line") } },
                 y: { ticks: { color: css("--muted"), callback: v => v + "%" }, grid: { color: css("--line") } } },
-      plugins: { legend: { labels: { color: css("--fg") } } } }
+      plugins: { legend: { labels: { color: css("--fg"), boxHeight: 2 } } } }
   });
+}
 
-  const H = s.holdings || [];
-  document.getElementById("hold").innerHTML = H.length
-    ? "<tr><th>Stock</th><th>Qty</th><th>Avg</th><th>Price</th><th>Value</th><th>P&L</th></tr>" +
-      H.map(h => `<tr><td>${h.ticker}</td><td>${h.qty}</td><td>${h.avg_price.toFixed(2)}</td><td>${h.price.toFixed(2)}</td><td>${inr(h.value)}</td><td class="${cls(h.pnl_pct)}">${pct(h.pnl_pct)}</td></tr>`).join("")
+function showLive(s) {
+  const H = s.history || [];
+  if (!H.length) { $("waiting").hidden = false; $("live").hidden = true; return false; }
+  $("live").hidden = false; $("waiting").hidden = true;
+  const last = H.at(-1), day = t => t.slice(0, 10);
+  const prev = [...H].reverse().find(h => day(h.time) !== day(last.time));
+  const base = prev ? prev.value : s.starting_capital;
+  const dchg = (last.value / base - 1) * 100;
+  const invested = (s.holdings || []).reduce((a, h) => a + h.value, 0);
+  const days = new Set(H.map(h => day(h.time))).size;
+  const bname = s.benchmark_name || "Index";
+
+  set("value", inr(last.value));
+  $("started").textContent = `from ${inr(s.starting_capital)} · day ${days}`;
+  set("ret", pct(last.pct), cls(last.pct));
+  $("retabs").textContent = (last.value >= s.starting_capital ? "+" : "−") + inr(Math.abs(last.value - s.starting_capital));
+  set("today", pct(dchg), cls(dchg));
+  $("todayabs").textContent = (last.value >= base ? "+" : "−") + inr(Math.abs(last.value - base));
+  set("bench", pct(last.benchmark_pct), cls(last.benchmark_pct));
+  $("benchk").textContent = bname;
+  set("inv", Math.round(invested / last.value * 100) + "%");
+  $("cash").textContent = inr(s.cash) + " in cash";
+  $("charth").textContent = `Return since start vs ${bname} (%)`;
+  line("chart", H.map(h => when(h.time)),
+    [["Bot", H.map(h => h.pct), "--accent"], [bname, H.map(h => h.benchmark_pct), "--muted", true]]);
+
+  const hold = [...(s.holdings || [])].sort((a, b) => b.pnl_pct - a.pnl_pct);
+  $("holdh").textContent = `Holdings (${hold.length})`;
+  $("hold").innerHTML = hold.length
+    ? "<tr><th>Stock</th><th>Qty</th><th>Bought at</th><th>Now</th><th>Value</th><th>Gain</th></tr>" +
+      hold.map(h => `<tr><td>${h.ticker}</td><td>${h.qty}</td><td>${h.avg_price.toFixed(2)}</td><td>${h.price.toFixed(2)}</td><td>${inr(h.value)}</td><td class="${cls(h.pnl_pct)}">${pct(h.pnl_pct)}</td></tr>`).join("")
     : "<tr><td>All cash right now.</td></tr>";
+  const T = s.trades || [];
+  $("trades").innerHTML = T.length
+    ? "<tr><th>Time</th><th>Side</th><th>Stock</th><th>Qty</th><th>Price</th></tr>" +
+      T.slice(-30).reverse().map(t => `<tr><td>${when(t.time)}</td><td class="${t.side === "BUY" ? "up" : "down"}">${t.side}</td><td>${t.ticker}</td><td>${t.qty}</td><td>${t.price.toFixed(2)}</td></tr>`).join("")
+    : "<tr><td>No trades yet.</td></tr>";
+  return true;
+}
 
-  document.getElementById("trades").innerHTML =
-    "<tr><th>Time</th><th>Side</th><th>Stock</th><th>Qty</th><th>Price</th></tr>" +
-    s.trades.slice(-25).reverse().map(t => `<tr><td>${new Date(t.time).toLocaleString("en-IN")}</td><td class="${t.side==="BUY"?"up":"down"}">${t.side}</td><td>${t.ticker}</td><td>${t.qty}</td><td>${t.price.toFixed(2)}</td></tr>`).join("");
+function showBacktest(b) {
+  const t = b.table, me = t["LIVE CONFIG"], all = t["ALL 400 LISTED (no costs)"], nifty = t["Nifty 50"];
+  if (!me) return;
+  $("bt").hidden = false;
+  $("btsub").textContent = `${b.period}, after trading costs. The stock list was rebuilt each month from past data only. ` +
+    `Past results do not predict future ones.` + (b.demo ? " DEMO DATA." : "");
+  set("b_yr", pct(me["per yr %"], 1), cls(me["per yr %"]));
+  $("b_yr_n").textContent = `all 400 stocks: ${pct(all["per yr %"], 1)}`;
+  set("b_dd", me["worst fall %"].toFixed(1) + "%");
+  set("b_um", Math.round(me["up months %"]) + "%");
+  $("b_wm").textContent = `worst month ${me["worst month %"].toFixed(1)}%`;
+  set("b_wy", pct(me["worst yr %"], 1), cls(me["worst yr %"]));
+  $("b_ly").textContent = `last 6 months ${pct(me["last 6m %"], 1)}`;
+  line("btchart", b.curve.map(c => c.date.slice(0, 7)),
+    [["Bot", b.curve.map(c => c.live), "--accent"],
+     ["All 400 stocks on its list", b.curve.map(c => c.all_listed), "--alt"],
+     ["Nifty 50", b.curve.map(c => c.nifty50), "--muted", true]]);
+  const years = Object.keys(me).filter(k => /^\d{4}$/.test(k)).sort();
+  const row = (name, r) => `<tr><td>${name}</td>` + years.map(y => `<td class="${cls(r[y])}">${pct(r[y], 1)}</td>`).join("") +
+    `<td>${pct(r["per yr %"], 1)}</td></tr>`;
+  $("bttable").innerHTML = "<tr><th></th>" + years.map(y => `<th>${y}</th>`).join("") + "<th>Per year</th></tr>" +
+    row("Bot", me) + row("All 400 stocks", all) + row("Nifty 50", nifty);
+  return b.description;
+}
 
-  document.getElementById("rules").textContent =
-    (s.exposure != null ? `Currently aiming to have ${Math.round(s.exposure * 100)}% of the money invested. ` : "") +
-    "Strategy: " + s.params.description;
-}).catch(() => { document.getElementById("sub").textContent = "No data yet — the bot hasn't run."; });
+async function load() {
+  const [s, b] = await Promise.all([get("state.json"), get("backtest.json")]);
+  const live = s ? showLive(s) : ($("waiting").hidden = false, false);
+  const desc = (s && s.params && s.params.description) || (b && showBacktest(b)) || "";
+  if (b && s && s.params) showBacktest(b);
+  $("sub").textContent = live
+    ? `Started ${when(s.started_at)} · last update ${when(s.updated_at)} · refreshes every 30 min in market hours` + (s.demo ? " · DEMO DATA" : "")
+    : "A bot that trades mid- and small-cap NSE stocks with fake money.";
+  if (desc) { $("rules").hidden = false; $("rules").textContent = "How it works: " + desc; }
+}
+load();
+setInterval(load, 5 * 60 * 1000);
 </script>
 </body>
 </html>
