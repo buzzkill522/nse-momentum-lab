@@ -141,10 +141,25 @@ def fetch_bc(d):
     name = next((n for n in z.namelist() if n.lower().startswith("bc") and n.lower().endswith(".csv")), None)
     if name is None:
         return None
-    df = pd.read_csv(z.open(name), dtype=str)
-    df.columns = [c.strip().upper().replace(" ", "_") for c in df.columns]
-    df["FILE_DATE"] = d.isoformat()
-    return df
+    return z.read(name).decode("latin1")      # kept as text: purposes can contain unquoted commas
+
+
+def read_bc_text(text):
+    """Parse a book-closure file, joining extra comma-split pieces back into the purpose."""
+    lines = [l for l in text.splitlines() if l.strip()]
+    if not lines:
+        return pd.DataFrame()
+    head = [c.strip().upper().replace(" ", "_") for c in lines[0].split(",")]
+    pi = next((i for i, c in enumerate(head) if "PURPOSE" in c), None)
+    rows = []
+    for l in lines[1:]:
+        f = l.split(",")
+        extra = len(f) - len(head)
+        if extra > 0 and pi is not None:
+            f = f[:pi] + [",".join(f[pi:pi + extra + 1])] + f[pi + extra + 1:]
+        if len(f) == len(head):
+            rows.append([x.strip().strip('"') for x in f])
+    return pd.DataFrame(rows, columns=head)
 
 
 def download(start, end):
@@ -183,7 +198,7 @@ def download(start, end):
         if df is None:
             (BC / f"{d:%Y%m%d}.none").touch()
             return 0
-        df.to_csv(BC / f"{d:%Y%m%d}.csv", index=False)
+        (BC / f"{d:%Y%m%d}.csv").write_text(df)
         return 1
 
     with cf.ThreadPoolExecutor(4) as ex:
@@ -239,7 +254,7 @@ def load_actions(mapping):
     frames = []
     for f in sorted(BC.glob("*.csv")):
         try:
-            frames.append(pd.read_csv(f, dtype=str))
+            frames.append(read_bc_text(f.read_text()))
         except Exception:  # noqa: BLE001
             continue
     if not frames:
