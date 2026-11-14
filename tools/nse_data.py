@@ -232,10 +232,10 @@ def parse_purpose(text):
         a, b = float(m.group(1)), float(m.group(2))
         if a > 0 and b > 0:
             factor = b / (a + b)
-    m = re.search(r"SPLIT.*?(?:RS|RE)\s*" + _NUM + r".*?(?:TO|-)\s*(?:RS|RE)?\s*" + _NUM, t)
+    m = re.search(r"(?:SPLI?T|SUB-?DIV|CONSOLIDAT)\D*?(?:RS|RE)\s*" + _NUM + r".*?(?:TO|-)\s*(?:RS|RE)?\s*" + _NUM, t)
     if m:
         frm, to = float(m.group(1)), float(m.group(2))
-        if frm > 0 and 0 < to < frm:
+        if frm > 0 and to > 0 and frm != to:                 # split (to < from) or consolidation (to > from)
             factor = (factor or 1.0) * to / frm
     div, unparsed = 0.0, False
     if re.search(r"DIVIDEND|\bDIV\b", t):
@@ -321,6 +321,7 @@ def build():
     raw = pd.concat((pd.read_csv(f, dtype={"symbol": str, "isin": str, "series": str}, parse_dates=["date"]) for f in files),
                     ignore_index=True)
     raw = raw.dropna(subset=["close"])
+    raw = raw[raw["isin"].fillna("").str.startswith("INE")]   # company shares only: drops ETFs and fund units (INF...)
     mapping = _canonical(raw)
     raw["company"] = raw["symbol"].map(mapping)
     renamed = int((raw["symbol"] != raw["company"]).groupby(raw["symbol"]).any().sum())
@@ -343,7 +344,7 @@ def build():
             continue
         day = factor.index[pos]
         f = 1.0
-        if pd.notna(a.factor) and 0.02 < a.factor < 1:
+        if pd.notna(a.factor) and 0.02 < a.factor < 50 and a.factor != 1:
             f *= a.factor
         lc = last_close.at[day, a.company]
         if a.div and pd.notna(lc) and lc > 0 and a.div < 0.5 * lc * f:
