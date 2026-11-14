@@ -31,6 +31,21 @@ Each bot keeps its own files: `docs/state-growth.json` / `docs/state-steady.json
 
 "No hindsight" uses a stock list rebuilt each month from past data only; today's index members flatter the results because companies that did badly have since dropped out. Full table: `docs/backtest.txt`. Re-run from the Actions tab → *backtest* → Run workflow. Choosing mode *experiments* tests one rule change at a time and writes `docs/experiments.txt`.
 
+## Backtest on official NSE data (no survivorship bias)
+
+`tools/nse_data.py` downloads NSE's daily price file for every trading day since 2019: 3,161 companies, including 515 that later stopped trading. Prices are adjusted for 544 bonuses and splits and 6,884 dividends from NSE's book-closure files, plus 389 unlisted splits recognised from price moves. ETFs and fund units are excluded. Market value comes from NSE's issue-size files (from February 2024), worked back through splits. For today's index members, 12-month returns match Yahoo at the median in every month.
+
+15 November 2021 to 13 November 2026, after costs:
+
+| Stock list | Growth bot | Steady bot | Holding every stock (no costs) |
+|---|---|---|---|
+| Trading-activity ranks 101–500, rebuilt monthly | 32.6% a year (drop −28.6%) | 23.7% (−21.1%) | 15.4% (−25.4%) |
+| Market-value ranks 101–500, rebuilt monthly (how the index is built) | 25.7% (−32.0%) | 13.4% (−26.2%) | 13.4% (−24.2%) |
+| Today's Nifty MidSmallcap 400 members | 41.7% (−33.0%) | 23.8% (−20.6%) | 22.6% (−22.3%) |
+| 100 most traded (large caps) | 12.4% (−31.4%) | 4.5% (−22.8%) | 10.9% (−22.2%) |
+
+The market-value list leaves out companies that disappeared before February 2024, because NSE publishes no share counts for them. Run from the Actions tab → *nse-data* → mode *backtest*; results are in `docs/backtest_nse.txt` and the data check in `docs/data_report.txt`.
+
 ## Files
 - `trader.py`: runs both bots: fetches prices (Yahoo Finance), re-picks on schedule, and records each portfolio's value on every run.
 - `backtest.py`: replays the same rules on 5 years of history for several variants.
