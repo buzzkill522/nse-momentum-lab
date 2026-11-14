@@ -53,7 +53,7 @@ UDIFF_FROM = dt.date(2024, 7, 8)
 MCAP_FROM = dt.date(2024, 2, 1)
 # standard split / bonus price factors, used to recognise actions missing from the book-closure files
 STANDARD = sorted({round(b / (a + b), 4) for a in range(1, 6) for b in range(1, 6)} |
-                  {round(1 / k, 4) for k in (2, 2.5, 4, 5, 10, 20)})
+                  {round(1 / k, 4) for k in (2, 2.5, 4, 5, 10, 20, 50, 100)})
 
 _S = requests.Session()
 _S.headers.update({"User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/126 Safari/537.36",
@@ -358,7 +358,7 @@ def build():
     inferred = 0
     for (day, comp), r in big.stack().items():
         near = min(STANDARD, key=lambda x: abs(x - r))
-        if r < 1 and abs(r / near - 1) < 0.04:
+        if r < 1 and abs(r / near - 1) < 0.12:
             factor.at[day, comp] = near
             inferred += 1
     events = factor.where(factor != 1.0)
