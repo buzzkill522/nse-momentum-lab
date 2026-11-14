@@ -1,14 +1,22 @@
 === NSE DATA REPORT ===
-days: 1942
-companies: 3535
-renamed_symbols: 321
-corporate_actions: 16313
-stopped_trading: 527
-with_shares: 2745
+days: 1952
+companies: 3161
+renamed_symbols: 192
+corporate_actions: 7770
+from_book_closures: 7381
+inferred_from_price: 389
+unexplained_big_moves: 208
+book_closure_rows: 16050
+splits_bonuses: 544
+dividends: 6884
+unparsed_dividends: 768
+purpose_examples: ['EGM', 'CAP RED RS 10 TO RS 2', 'INT DIV - RS 5 PER SH', 'INTERIM DIVIDEND', 'BUY BACK', 'FVSPLT FRM RS 10 TO RS 2', 'RIGHTS 588:1000@PRM RS 2', 'DIV- RS 7/- PER SHARE', 'INT DIV- RS 14 PER SH', 'SPCL DIV - RS 4 PER SH', 'INT DIV - RS 4 PER SH', 'INT DIV- RE 0.60 PER SH']
+stopped_trading: 515
+with_shares: 2742
 first_day: 2019-01-01
 last_day: 2026-11-13
-corporate-action factors: median 1.009, below 0.95: 503, 0.95 to 1.05: 15151
-companies that stopped trading before the end: 527; examples: OCLINDIA (2019-01-04), TODAYS (2019-01-30), BHARATIDIL (2019-01-31), PINCON (2019-02-04), MANDHANA (2019-02-13), NAKODA (2019-02-18), VIJAYABANK (2019-03-07), DENABANK (2019-03-07), PANORAMUNI (2019-03-18), SHARONBIO (2019-03-28), USHERAGRO (2019-03-29), GITANJALI (2019-04-01), AMTEKAUTO (2019-04-01), GEMINI (2019-04-12), SALORAINTL (2019-04-16)
-Yahoo comparison: 397 companies, 579474 company-days
-  daily-return correlation 0.9409; days differing by more than 2 points: 1837 (0.317%)
-  most mismatched: NMDC 16, CESC 14, PNBHOUSING 14, RECLTD 14, IRCON 13, PCBL 13, ENGINERSIN 12, CASTROLIND 12, OIL 11, GODFRYPHLP 11
+corporate-action factors: median 0.993, below 0.95: 993, 0.95 to 1.05: 6777
+companies that stopped trading before the end: 515; examples: OCLINDIA (2019-01-04), TODAYS (2019-01-30), BHARATIDIL (2019-01-31), PINCON (2019-02-04), MANDHANA (2019-02-13), NAKODA (2019-02-18), DENABANK (2019-03-07), VIJAYABANK (2019-03-07), PANORAMUNI (2019-03-18), SHARONBIO (2019-03-28), USHERAGRO (2019-03-29), AMTEKAUTO (2019-04-01), GITANJALI (2019-04-01), GEMINI (2019-04-12), SALORAINTL (2019-04-16)
+Yahoo comparison: 397 companies, 580129 company-days
+  daily-return correlation 0.9820; days differing by more than 2 points: 668 (0.115%)
+  most mismatched: PNBHOUSING 12, NMDC 10, PCBL 8, RECLTD 7, CASTROLIND 7, HEROMOTOCO 7, OFSS 6, ENGINERSIN 6, CESC 6, RRKABEL 6
