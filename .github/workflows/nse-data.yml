@@ -5,15 +5,23 @@ on:
   workflow_dispatch:
     inputs:
       mode:
-        description: "probe = check which NSE files are reachable"
+        description: "backtest = download NSE data (cached) and run the backtest on it; probe = check which NSE files are reachable"
         type: choice
-        options: [probe, probe-mcap]
-        default: probe
+        options: [backtest, probe, probe-mcap]
+        default: backtest
+      years:
+        description: "Years to test"
+        default: "5"
+
+permissions:
+  contents: write
+
+concurrency: nse-data
 
 jobs:
   run:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 180
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -25,3 +33,32 @@ jobs:
         run: python tools/probe_nse.py
       - if: inputs.mode == 'probe-mcap'
         run: python tools/probe_mcap.py
+      - if: inputs.mode == 'backtest'
+        name: Restore downloaded NSE files
+        uses: actions/cache@v4
+        with:
+          path: .cache/nse/raw
+          key: nse-raw-${{ github.run_id }}
+          restore-keys: nse-raw-
+      - if: inputs.mode == 'backtest'
+        name: Restore market-cap files
+        uses: actions/cache@v4
+        with:
+          path: .cache/nse/mcap
+          key: nse-mcap-${{ github.run_id }}
+          restore-keys: nse-mcap-
+      - if: inputs.mode == 'backtest'
+        name: Download and build NSE data
+        run: python tools/nse_data.py build 2019-01-01
+      - if: inputs.mode == 'backtest'
+        name: Backtest on NSE data
+        run: python backtest.py ${{ inputs.years || '5' }} --source=nse
+      - if: inputs.mode == 'backtest'
+        name: Save results
+        run: |
+          git config user.name "paper-trader-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add docs/backtest_nse.txt docs/backtest_nse.json docs/data_report.txt
+          git diff --cached --quiet || git commit -m "NSE-data backtest results $(date -u +%F)"
+          git pull --rebase
+          git push

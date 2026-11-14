@@ -26,7 +26,23 @@ OUT = Path(__file__).parent / "docs"
 
 POOLS = {"index": {"universe": "index"},                                              # today's index members
          "nohind": {"universe": "traded", "universe_skip": 100, "universe_size": 400},     # rebuilt monthly from past data
-         "large": {"universe": "traded", "universe_skip": 0, "universe_size": 100}}       # 100 most traded
+         "large": {"universe": "traded", "universe_skip": 0, "universe_size": 100},       # 100 most traded
+         "mcap": {"universe": "mcap", "universe_skip": 100, "universe_size": 400}}        # market-value ranks 101-500
+
+
+def nse_variants():
+    """For official NSE data: both bots on every stock list."""
+    v = {}
+    for pool in ("nohind", "mcap", "index", "large"):
+        for mid, m in T.MODELS.items():
+            v[f"MODEL {mid} [{pool}]"] = {**m["config"], **POOLS[pool]}
+    g = T.MODELS["growth"]["config"]
+    for pool in ("nohind", "mcap"):
+        one = {**g, **POOLS[pool], "tranches": 1}
+        v[f"CHECK growth all monthly [{pool}]"] = one
+        for off in (0, 1, 2):
+            v[f"CHECK growth all quarterly, start month +{off} [{pool}]"] = {**one, "rebalance": "quarterly", "rebalance_offset": off}
+    return v
 
 
 def variants():
@@ -177,9 +193,76 @@ def stats(v, cap, state=None):
     return out
 
 
+def nse_main(years):
+    """Backtest on official NSE prices for every listed share, including delisted ones."""
+    sys.path.insert(0, str(Path(__file__).parent / "tools"))
+    import nse_data as N
+    panel = N.load_panel()
+    opn, close, volume, mcap = N.as_matrices(panel)
+    # index levels (Nifty 50 and benchmarks) still come from Yahoo
+    _, iclose, _ = T.download(T.INDEX_SYMBOLS, f"{years + 3}y")
+    iclose = iclose.reindex(close.index).ffill()
+    for c in iclose.columns:
+        close[c] = iclose[c]
+        opn[c] = iclose[c]
+        volume[c] = 0.0
+    members = [m for m in T.index_members() if m in close.columns]
+    T.CONFIG["_members"] = members
+    for m in T.MODELS.values():
+        m["config"]["_members"] = members
+    POOLS["mcap"]["_mcap"] = mcap
+    days = close.index[close.index > close.index[-1] - pd.DateOffset(years=years)]
+    cap = T.STARTING_CAPITAL
+    sim = Sim(opn, close, volume, days)
+    last_trade = panel["last"].rename(lambda c: c + ".NS")
+    lines = [f"Source: official NSE bhavcopy, every listed company including delisted ones",
+             f"Period: {days[0].date()} to {days[-1].date()}  ({len(days)} trading days)",
+             f"Companies in the data: {panel['meta']['companies']}, of which stopped trading before the end: "
+             f"{panel['meta']['stopped_trading']}; with share counts: {panel['meta']['with_shares']}",
+             f"Index members found in NSE data: {len(members)}",
+             "Stock list size at start / end: " + ", ".join(
+                 f"{k} {len(sim.universe(days[0], {**T.CONFIG, **p}))} / {len(sim.universe(days[-1], {**T.CONFIG, **p}))}"
+                 for k, p in POOLS.items())]
+    rows, curves = {}, {}
+    idx = close[T.REGIME_INDEX]
+    curves["Nifty 50"] = idx.loc[days] / idx.loc[:days[0]].iloc[-2] * cap
+    for k in ("nohind", "mcap", "index", "large"):
+        curves[f"ALL [{k}] (no costs)"] = sim.hold_universe({**T.CONFIG, **POOLS[k]})
+    for k in list(curves):
+        rows[k] = stats(curves[k], cap)
+    for name, cfg in nse_variants().items():
+        v, state = sim.run(cfg)
+        r = stats(v, cap, state)
+        # sales of shares that had already stopped trading (delisted or suspended)
+        stuck = [t for t in state["trades"] if t["side"] == "SELL"
+                 and last_trade.get(t["ticker"] + ".NS", pd.Timestamp.max) < pd.Timestamp(t["time"]) - pd.Timedelta(days=14)]
+        r["stuck sales"] = len(stuck)
+        rows[name], curves[name] = r, v
+    table = pd.DataFrame(rows).T
+    pd.set_option("display.width", 400)
+    pd.set_option("display.max_columns", 50)
+    lines += ["=== RESULTS ON NSE DATA (bot figures are after costs) ===", table.round(1).to_string()]
+    text = "\n".join(lines)
+    print(text)
+    OUT.mkdir(exist_ok=True)
+    (OUT / "backtest_nse.txt").write_text(text + "\n")
+    weekly = pd.DataFrame({k: v for k, v in curves.items()}).iloc[::5]
+    (OUT / "backtest_nse.json").write_text(json.dumps({
+        "period": f"{days[0].date()} to {days[-1].date()}", "source": "nse", "meta": panel["meta"],
+        "table": json.loads(table.round(2).to_json(orient="index")),
+        "curve": [{"date": d.date().isoformat(), **{k: round((x / cap - 1) * 100, 2) for k, x in r.items() if pd.notna(x)}}
+                  for d, r in weekly.iterrows()],
+    }, indent=1))
+    # data check: NSE against Yahoo for today's index members
+    _, yclose, _ = T.download(members, f"{years + 2}y")
+    (OUT / "data_report.txt").write_text(N.report(yclose) + "\n")
+
+
 def main():
     demo = "--demo" in sys.argv
     years = next((int(a) for a in sys.argv[1:] if a.isdigit()), 5)
+    if "--source=nse" in sys.argv:
+        return nse_main(years)
     syms = T.all_tickers(demo) + T.INDEX_SYMBOLS
     T.CONFIG["_members"] = syms[100:500] if demo else T.index_members()
     for m in T.MODELS.values():

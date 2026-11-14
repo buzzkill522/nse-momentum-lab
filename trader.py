@@ -55,6 +55,7 @@ CONFIG = {
     # --- stock list
     "universe": "index",    # "index"  = members of the Nifty MidSmallcap 400
                             # "traded" = bot's own list by trading activity (see next two)
+                            # "mcap"   = ranked by market value (backtests on NSE data only)
     "universe_skip": 100,   # "traded" only: ignore the N most-traded stocks (large caps)
     "universe_size": 400,   # "traded" only: then take this many
     "min_price": 20,        # ignore penny stocks
@@ -253,8 +254,13 @@ def choose_universe(close, volume, cfg=CONFIG) -> list[str]:
     c, v = close[stocks].iloc[-126:], volume[stocks].iloc[-126:]
     traded = (c * v).median()
     ok = (c.notna().sum() >= 120) & (c.iloc[-1] >= cfg["min_price"]) & (traded > 0)
+    ok &= (v.iloc[-5:] > 0).any()                # still trading: skip suspended or delisted shares
     if cfg["universe"] == "index":
         return traded[ok].sort_values(ascending=False).index.tolist()
+    if cfg["universe"] == "mcap":                # rank by 6-month average market value, like the index
+        size = cfg["_mcap"].reindex(index=c.index, columns=stocks).mean()
+        ranked = size[ok & size.notna()].sort_values(ascending=False).index.tolist()
+        return ranked[cfg["universe_skip"]: cfg["universe_skip"] + cfg["universe_size"]]
     ranked = traded[ok].sort_values(ascending=False).index.tolist()
     return ranked[cfg["universe_skip"]: cfg["universe_skip"] + cfg["universe_size"]]
 
