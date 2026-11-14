@@ -48,6 +48,13 @@ jobs:
           key: nse-mcap-${{ github.run_id }}
           restore-keys: nse-mcap-
       - if: inputs.mode == 'backtest' || inputs.mode == 'diagnose'
+        name: Restore book-closure files
+        uses: actions/cache@v4
+        with:
+          path: .cache/nse/bc
+          key: nse-bc-${{ github.run_id }}
+          restore-keys: nse-bc-
+      - if: inputs.mode == 'backtest' || inputs.mode == 'diagnose'
         name: Download and build NSE data
         run: python tools/nse_data.py build 2019-01-01
       - if: inputs.mode == 'diagnose'
