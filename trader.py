@@ -233,6 +233,46 @@ def download(symbols, period):
     return o, c, v
 
 
+MARKET_FILE = ROOT / "docs" / "market.json"
+MARKET_CHARTS = {"^NSEI": "Nifty 50", "NIFTYMIDSML400.NS": "Nifty MidSmallcap 400"}
+
+
+def save_market(ts):
+    """Save index levels for the website's market chart: 5-minute points for the latest
+    trading day and daily closes for a year. Never stops the bot if Yahoo fails."""
+    try:
+        import yfinance as yf
+        syms = list(MARKET_CHARTS)
+
+        def closes(**kw):
+            df = yf.download(syms, auto_adjust=True, progress=False, threads=True, **kw)["Close"]
+            if df.index.tz is not None:
+                df.index = df.index.tz_convert(IST).tz_localize(None)
+            return df
+
+        daily, intra = closes(period="1y", interval="1d"), closes(period="5d", interval="5m")
+        out = []
+        for sym, name in MARKET_CHARTS.items():
+            d = daily[sym].dropna() if sym in daily else pd.Series(dtype=float)
+            m = intra[sym].dropna() if sym in intra else pd.Series(dtype=float)
+            if len(d) < 2:
+                continue
+            m = m[m.index.date == m.index[-1].date()] if len(m) else m
+            day = m.index[-1].date() if len(m) else d.index[-1].date()
+            before = d[d.index.date < day]
+            out.append({
+                "name": name, "last": round(float(m.iloc[-1] if len(m) else d.iloc[-1]), 2),
+                "prev_close": round(float(before.iloc[-1]), 2) if len(before) else None,
+                "day": day.isoformat(),
+                "today": [[t.strftime("%H:%M"), round(float(v), 2)] for t, v in m.items()],
+                "year": [[t.date().isoformat(), round(float(v), 2)] for t, v in d.items()],
+            })
+        if out:
+            MARKET_FILE.write_text(json.dumps({"updated_at": ts, "indices": out}, separators=(",", ":")))
+    except Exception as e:  # noqa: BLE001
+        print(f"Market chart not updated: {e}")
+
+
 def demo_data(symbols, periods, seed=None):
     rng = np.random.default_rng(seed if seed is not None else int(time.time()) // 600)
     idx = pd.bdate_range(end=datetime.now(IST).date(), periods=periods)
@@ -641,6 +681,7 @@ def main():
             m["config"]["_members"] = syms[:400]
     else:
         # cheap first look: is the market open today?
+        save_market(ts)
         _, prices, volume = download(INDEX_SYMBOLS + held, "1mo")
         if prices.index[-1].date() != now.date():
             print(f"No prices for today yet (latest: {prices.index[-1].date()}) - market closed or holiday.")

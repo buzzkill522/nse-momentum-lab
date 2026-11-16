@@ -110,6 +110,14 @@
   <div class="bots" id="bots"></div>
   <div class="card hero" id="hero"></div>
 
+  <div class="card" id="market">
+    <div class="row"><h2>The market now</h2>
+      <div class="chips" id="mrange"><button data-r="today">Today</button><button data-r="month">Month</button><button data-r="year">Year</button></div></div>
+    <div class="chips" id="mindex" style="margin-top:8px"></div>
+    <div class="line num" id="mhead"></div>
+    <div class="chartbox" style="height:180px"><canvas id="mchart"></canvas></div>
+  </div>
+
   <nav id="tabs">
     <button data-t="overview">Overview</button>
     <button data-t="holdings">Holdings</button>
@@ -216,6 +224,7 @@ const inr = v => "₹" + Math.round(v).toLocaleString("en-IN");
 const flat = (v, d = 2) => Math.abs(v) < 0.5 / 10 ** d;   // shows as zero once rounded
 const sinr = v => flat(v, 0) ? inr(0) : (v > 0 ? "+" : "−") + inr(Math.abs(v));
 const pct = (v, d = 2) => v == null || isNaN(v) ? "–" : flat(v, d) ? (0).toFixed(d) + "%" : (v > 0 ? "+" : "−") + Math.abs(v).toFixed(d) + "%";
+const sinrPts = v => (v > 0 ? "+" : v < 0 ? "−" : "") + Math.abs(v).toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 const cls = v => v == null || flat(v) ? "" : v > 0 ? "up" : "down";
 const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
 const IST = { timeZone: "Asia/Kolkata" };
@@ -228,7 +237,8 @@ const pretty = n => String(n || "").replace(/\b(Limited|Ltd\.?)$/i, "").trim();
 const store = { get: k => { try { return localStorage.getItem(k); } catch { return null; } }, set: (k, v) => { try { localStorage.setItem(k, v); } catch {} } };
 const empty = msg => `<div class="muted small" style="padding:10px 0">${msg}</div>`;
 
-let ST = {}, B = null, bot = "growth", range = 0, side = "", shown = 100;
+let ST = {}, B = null, M = null, bot = "growth", range = 0, side = "", shown = 100;
+let mRange = store.get("mrange") || "today", mIdx = +(store.get("mindex") || 0);
 const S = () => ST[bot];
 const charts = {};
 
@@ -255,6 +265,36 @@ function line(id, labels, sets) {
                 y: { ticks: { color: css("--muted"), callback: v => v + "%" }, grid: { color: css("--line") } } },
       plugins: { legend: { labels: { color: css("--fg"), boxHeight: 2 } },
                  tooltip: { callbacks: { label: c => `${c.dataset.label}: ${pct(c.parsed.y)}` } } } }
+  });
+}
+function market() {   // index chart, shown on every tab
+  const list = M && M.indices || [];
+  $("mindex").innerHTML = list.map((x, i) => `<button data-i="${i}" class="${i === mIdx ? "on" : ""}">${esc(x.name)}</button>`).join("");
+  document.querySelectorAll("#mrange button").forEach(b => b.classList.toggle("on", b.dataset.r === mRange));
+  const x = list[mIdx] || list[0];
+  $("mchart").parentElement.hidden = !x;
+  if (!x) { $("mhead").innerHTML = `<span class="muted">The market chart appears after the bot's next hourly update.</span>`; return; }
+  const pts = mRange === "today" ? x.today : mRange === "month" ? x.year.slice(-22) : x.year;
+  const start = mRange === "today" ? (x.prev_close ?? (pts[0] && pts[0][1])) : pts[0] && pts[0][1];
+  const chg = start ? (x.last / start - 1) * 100 : null;
+  const lvl = v => v.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const span = { today: fDay(x.day) === fDay(new Date()) ? "today" : "on " + fDay(x.day), month: "in a month", year: "in a year" }[mRange];
+  $("mhead").innerHTML = `<b style="font-size:20px">${lvl(x.last)}</b>
+    <span class="tag ${cls(chg)}">${chg == null ? "–" : sinrPts(x.last - start) + " (" + pct(chg) + ")"}</span>
+    <span class="muted">${span} · updated ${ago(M.updated_at)}</span>`;
+  $("mchart").parentElement.hidden = pts.length < 2;
+  if (pts.length < 2 || !window.Chart) return;
+  if (charts.mchart) charts.mchart.destroy();
+  const color = css(chg == null || chg >= 0 ? "--up" : "--down");
+  charts.mchart = new Chart($("mchart"), {
+    type: "line",
+    data: { labels: pts.map(p => mRange === "today" ? p[0] : fDay(p[0])),
+            datasets: [{ label: x.name, data: pts.map(p => p[1]), borderColor: color, borderWidth: 2, pointRadius: 0, tension: .2 },
+                       ...(mRange === "today" && x.prev_close ? [{ label: "Previous close", data: pts.map(() => x.prev_close), borderColor: css("--muted"), borderWidth: 1, borderDash: [4, 4], pointRadius: 0 }] : [])] },
+    options: { maintainAspectRatio: false, animation: false, interaction: { mode: "index", intersect: false },
+      scales: { x: { ticks: { color: css("--muted"), maxTicksLimit: 6, maxRotation: 0 }, grid: { display: false } },
+                y: { ticks: { color: css("--muted"), callback: v => v.toLocaleString("en-IN") }, grid: { color: css("--line") } } },
+      plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => `${c.dataset.label}: ${lvl(c.parsed.y)}` } } } }
   });
 }
 function snapshot(s) {   // headline numbers for one bot's state
@@ -601,17 +641,19 @@ function tab(name) {
   if (name === "compare") compare();
   if (name === "backtest") backtest();
 }
-function render() { picker(); hero(); holdings(); trades(); model(); tab(location.hash.slice(1)); }
+function render() { picker(); hero(); market(); holdings(); trades(); model(); tab(location.hash.slice(1)); }
 async function load() {
-  const res = await Promise.all([...IDS.map(i => get(`state-${i}.json`)), get("backtest.json")]);
+  const res = await Promise.all([...IDS.map(i => get(`state-${i}.json`)), get("backtest.json"), get("market.json")]);
   IDS.forEach((i, n) => { ST[i] = res[n]; });
-  B = res.at(-1);
+  B = res.at(-2); M = res.at(-1);
   render();
 }
 
 $("bots").onclick = e => { const el = e.target.closest("[data-b]"); if (!el) return; bot = el.dataset.b; store.set("bot", bot); shown = 100; render(); };
 $("tabs").onclick = e => { const t = e.target.dataset.t; if (t) location.hash = t; };
 window.onhashchange = () => tab(location.hash.slice(1));
+$("mrange").onclick = e => { if (e.target.dataset.r) { mRange = e.target.dataset.r; store.set("mrange", mRange); market(); } };
+$("mindex").onclick = e => { if (e.target.dataset.i != null) { mIdx = +e.target.dataset.i; store.set("mindex", mIdx); market(); } };
 $("range").onclick = e => { if (e.target.dataset.r != null) { range = +e.target.dataset.r; store.set("range", range); overview(); } };
 $("tside").onclick = e => { if (e.target.dataset.s != null) { side = e.target.dataset.s; shown = 100; trades(); } };
 $("tq").oninput = () => { shown = 100; trades(); };

@@ -33,7 +33,7 @@ jobs:
         run: |
           git config user.name "paper-trader-bot"
           git config user.email "actions@users.noreply.github.com"
-          git add docs/state-*.json docs/trades-*.csv
+          git add docs/state-*.json docs/trades-*.csv docs/market.json
           git diff --cached --quiet || git commit -m "Update portfolio $(date -u +%FT%TZ)"
           git pull --rebase
           git push
