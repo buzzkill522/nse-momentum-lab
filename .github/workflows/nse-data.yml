@@ -7,7 +7,7 @@ on:
       mode:
         description: "backtest = download NSE data (cached) and run the backtest on it; probe = check which NSE files are reachable"
         type: choice
-        options: [backtest, diagnose, probe, probe-mcap]
+        options: [backtest, walkforward, diagnose, probe, probe-mcap]
         default: backtest
       years:
         description: "Years to test"
@@ -33,28 +33,28 @@ jobs:
         run: python tools/probe_nse.py
       - if: inputs.mode == 'probe-mcap'
         run: python tools/probe_mcap.py
-      - if: inputs.mode == 'backtest' || inputs.mode == 'diagnose'
+      - if: inputs.mode == 'backtest' || inputs.mode == 'walkforward' || inputs.mode == 'diagnose'
         name: Restore downloaded NSE files
         uses: actions/cache@v4
         with:
           path: .cache/nse/raw
           key: nse-raw-${{ github.run_id }}
           restore-keys: nse-raw-
-      - if: inputs.mode == 'backtest' || inputs.mode == 'diagnose'
+      - if: inputs.mode == 'backtest' || inputs.mode == 'walkforward' || inputs.mode == 'diagnose'
         name: Restore market-cap files
         uses: actions/cache@v4
         with:
           path: .cache/nse/mcap
           key: nse-mcap-${{ github.run_id }}
           restore-keys: nse-mcap-
-      - if: inputs.mode == 'backtest' || inputs.mode == 'diagnose'
+      - if: inputs.mode == 'backtest' || inputs.mode == 'walkforward' || inputs.mode == 'diagnose'
         name: Restore book-closure files
         uses: actions/cache@v4
         with:
           path: .cache/nse/bc
           key: nse-bc-${{ github.run_id }}
           restore-keys: nse-bc-
-      - if: inputs.mode == 'backtest' || inputs.mode == 'diagnose'
+      - if: inputs.mode == 'backtest' || inputs.mode == 'walkforward' || inputs.mode == 'diagnose'
         name: Download and build NSE data
         run: python tools/nse_data.py build 2019-01-01
       - if: inputs.mode == 'diagnose'
@@ -62,6 +62,18 @@ jobs:
       - if: inputs.mode == 'backtest'
         name: Backtest on NSE data
         run: python backtest.py ${{ inputs.years || '5' }} --source=nse
+      - if: inputs.mode == 'walkforward'
+        name: Walk-forward test on NSE data
+        run: python backtest.py ${{ inputs.years || '6' }} --source=nse --walkforward
+      - if: inputs.mode == 'walkforward'
+        name: Save walk-forward results
+        run: |
+          git config user.name "paper-trader-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add docs/walkforward.txt docs/walkforward.json
+          git diff --cached --quiet || git commit -m "Walk-forward test results $(date -u +%F)"
+          git pull --rebase
+          git push
       - if: inputs.mode == 'backtest'
         name: Save results
         run: |

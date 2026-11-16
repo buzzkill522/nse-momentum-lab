@@ -68,6 +68,8 @@ CONFIG = {
     "skip": 21,             # ignore the most recent N days when measuring return
     "trend_sma": 50,        # stock must be above this moving average
     "select": "mom",        # "mom"     = highest return
+                            # "resid"   = highest return after removing the market's own move
+                            # "resid_vol" = the same, per unit of the stock's own volatility
                             # "mom_vol" = highest return per unit of volatility
                             # "lowvol"  = calmest stocks among the top third by return
     "weighting": "equal",   # "equal" or "inv_vol" (calmer stocks get more money)
@@ -394,7 +396,17 @@ def pick_stocks(prices, universe, cfg=CONFIG, held=(), locked=False) -> dict:
         mom = (mom[ok].rank(pct=True) + mom2[ok].rank(pct=True)).reindex(mom.index)
     if cfg.get("near_high"):
         ok &= last >= cfg["near_high"] * px.iloc[-252:].max()
-    if cfg["select"] == "mom_vol":
+    if cfg["select"] in ("resid", "resid_vol"):
+        # residual momentum: the part of each stock's rise that the market's own move does not explain
+        mkt = rets.mean(axis=1)                  # the stock list's average daily move
+        m0 = mkt - mkt.mean()
+        beta = rets.sub(rets.mean()).mul(m0, axis=0).sum() / (m0 ** 2).sum()
+        resid = rets - np.outer(mkt.fillna(0), beta)
+        score = resid.sum()
+        if cfg["select"] == "resid_vol":         # per unit of the stock's own (non-market) volatility
+            score = score / (resid.std() * np.sqrt(lb))
+        score = score[ok]
+    elif cfg["select"] == "mom_vol":
         score = (mom / (vol * np.sqrt(lb)))[ok]
     elif cfg["select"] == "lowvol":
         cands = mom[ok].sort_values(ascending=False)
@@ -449,6 +461,8 @@ def describe(cfg=CONFIG) -> str:
     rise = f"{months}-month" + (f" and {round(cfg['lookback2'] / 21)}-month" if cfg.get("lookback2") else "")
     how = {"mom": f"the {cfg['top_n']} with the biggest {rise} rise",
            "mom_vol": f"the {cfg['top_n']} with the biggest {rise} rise relative to their volatility",
+           "resid": f"the {cfg['top_n']} with the biggest {rise} rise beyond what the market's own move explains",
+           "resid_vol": f"the {cfg['top_n']} with the steadiest {rise} rise beyond what the market's own move explains",
            "lowvol": f"the {cfg['top_n']} calmest stocks among the top third by {rise} rise"}[cfg["select"]]
     pool = ("the Nifty MidSmallcap 400 index" if cfg["universe"] == "index" else
             f"its own list of {cfg['universe_size']} mid- and small-cap NSE stocks (by trading activity)")

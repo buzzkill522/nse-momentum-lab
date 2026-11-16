@@ -45,6 +45,91 @@ def nse_variants():
     return v
 
 
+def wf_candidates():
+    """Versions of the Growth bot the walk-forward test may choose between."""
+    g = T.MODELS["growth"]["config"]
+    out = {}
+    for sel, label in (("mom", "plain momentum"), ("resid", "residual momentum"),
+                       ("resid_vol", "residual momentum, volatility-scaled"), ("mom_vol", "momentum per unit of volatility")):
+        for lb in (252, 126):
+            out[f"{label}, {lb // 21}-month"] = {**g, "select": sel, "lookback": lb}
+    return out
+
+
+CURRENT = "plain momentum, 12-month"            # the live Growth bot
+WF_TRAIN, WF_STEP = 504, 126                    # first choice after 2 years, re-chosen every 6 months
+
+
+def walk_forward(sim, days, cap, panel):
+    """Is residual momentum better, and would it have been picked without hindsight?
+    Every candidate is run over the whole period. Then, every six months, the candidate with the
+    best Sharpe ratio on the data SO FAR is traded for the next six months. The chained result
+    uses no information from the future. A switch is charged a full sell-and-rebuy."""
+    cols = ["per yr %", "swing %", "sharpe", "worst fall %", "worst month %", "worst yr %", "1st half /yr", "2nd half /yr",
+            "trades/yr", "fees %/yr"]
+    lines = [f"Source: official NSE bhavcopy, every listed company including delisted ones ({panel['meta']['companies']} companies)",
+             f"Period: {days[0].date()} to {days[-1].date()}  ({len(days)} trading days)", ""]
+    result = {"period": f"{days[0].date()} to {days[-1].date()}", "pools": {}}
+    sharpe = lambda r: float(r.mean() / r.std() * np.sqrt(252)) if r.std() else -9.0  # noqa: E731
+    for pool in ("nohind", "mcap"):
+        curves, rows = {}, {}
+        for name, cfg in wf_candidates().items():
+            v, state = sim.run({**cfg, **POOLS[pool]})
+            curves[name], rows[name] = v, {k: stats(v, cap, state)[k] for k in cols}
+        hold = sim.hold_universe({**T.CONFIG, **POOLS[pool]})
+        rows["ALL stocks on the list (no costs)"] = {k: stats(hold, cap).get(k, np.nan) for k in cols}
+        table = pd.DataFrame(rows).T
+        base = table.loc[CURRENT]
+        # the project's acceptance rule: better overall and in both halves, and no deeper worst fall
+        passes = [n for n in wf_candidates() if n != CURRENT
+                  and table.loc[n, "per yr %"] > base["per yr %"] and table.loc[n, "1st half /yr"] > base["1st half /yr"]
+                  and table.loc[n, "2nd half /yr"] > base["2nd half /yr"] and table.loc[n, "worst fall %"] >= base["worst fall %"]]
+        rets = pd.DataFrame(curves).pct_change().fillna(0.0)
+        chain, picks, prev = [], [], None
+        for a in range(WF_TRAIN, len(days), WF_STEP):
+            seen = rets.iloc[1:a]
+            best = max(rets.columns, key=lambda c: sharpe(seen[c]))
+            seg = rets[best].iloc[a:a + WF_STEP].copy()
+            if prev is not None and best != prev:
+                seg.iloc[0] -= 2 * T.COST                     # sell everything, buy the new portfolio
+            chain.append(seg)
+            picks.append({"from": days[a].date().isoformat(), "chosen": best,
+                          "sharpe_so_far": round(sharpe(seen[best]), 2), "next_6m_%": round(((1 + seg).prod() - 1) * 100, 1),
+                          "current_bot_next_6m_%": round(((1 + rets[CURRENT].iloc[a:a + WF_STEP]).prod() - 1) * 100, 1)})
+            prev = best
+        oos = pd.concat(chain)
+        w = lambda r: cap * (1 + r).cumprod()  # noqa: E731
+        same = {"WALK-FORWARD (chosen without hindsight)": w(oos),
+                "current Growth bot, same period": w(rets[CURRENT].loc[oos.index]),
+                "ALL stocks on the list (no costs)": w(hold.pct_change().loc[oos.index])}
+        for n in wf_candidates():
+            if n != CURRENT:
+                same[n + ", same period"] = w(rets[n].loc[oos.index])
+        oos_cols = ["per yr %", "swing %", "sharpe", "worst fall %", "worst month %", "worst yr %"]
+        oos_table = pd.DataFrame({k: {c: stats(v, cap)[c] for c in oos_cols} for k, v in same.items()}).T
+        pd.set_option("display.width", 300)
+        pd.set_option("display.max_columns", 30)
+        lines += [f"================ STOCK LIST: {pool} ================",
+                  "--- Every candidate over the whole period (after costs) ---", table.round(1).to_string(), "",
+                  "Candidates that pass the acceptance rule against the current bot "
+                  "(higher return overall and in both halves, no deeper worst fall): " + (", ".join(passes) or "none"), "",
+                  f"--- Walk-forward: first choice after {WF_TRAIN} trading days, re-chosen every {WF_STEP} ---",
+                  pd.DataFrame(picks).to_string(index=False), "",
+                  f"--- Out-of-sample period only: {oos.index[0].date()} to {oos.index[-1].date()} ---",
+                  oos_table.round(1).to_string(), ""]
+        result["pools"][pool] = {"full": json.loads(table.round(2).to_json(orient="index")), "passes": passes, "picks": picks,
+                                 "oos_period": f"{oos.index[0].date()} to {oos.index[-1].date()}",
+                                 "oos": json.loads(oos_table.round(2).to_json(orient="index"))}
+    both = [n for n in result["pools"]["nohind"]["passes"] if n in result["pools"]["mcap"]["passes"]]
+    lines.append("PASSES ON BOTH STOCK LISTS: " + (", ".join(both) or "none - the current bot stays"))
+    result["passes_both"] = both
+    text = "\n".join(lines)
+    print(text)
+    OUT.mkdir(exist_ok=True)
+    (OUT / "walkforward.txt").write_text(text + "\n")
+    (OUT / "walkforward.json").write_text(json.dumps(result, indent=1))
+
+
 def variants():
     w = {**T.CONFIG, "select": "mom", "weighting": "equal", "exposure": [], "risk_check": "weekly", "top_n": 20,
          "lookback": 126, "lookback2": 0, "near_high": 0.0, "cut_losers": False}
@@ -214,6 +299,8 @@ def nse_main(years):
     days = close.index[close.index > close.index[-1] - pd.DateOffset(years=years)]
     cap = T.STARTING_CAPITAL
     sim = Sim(opn, close, volume, days)
+    if "--walkforward" in sys.argv:
+        return walk_forward(sim, days, cap, panel)
     last_trade = panel["last"].rename(lambda c: c + ".NS")
     lines = [f"Source: official NSE bhavcopy, every listed company including delisted ones",
              f"Period: {days[0].date()} to {days[-1].date()}  ({len(days)} trading days)",
