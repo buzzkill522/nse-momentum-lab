@@ -22,6 +22,7 @@ import pandas as pd
 import trader as T
 
 OUT = Path(__file__).parent / "docs"
+T.COST = 0.002      # the backtest still charges 0.2% per trade (brokerage, taxes, spreads); the live simulation does not
 
 
 POOLS = {"index": {"universe": "index"},                                              # today's index members

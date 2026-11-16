@@ -204,7 +204,7 @@
     <div class="card"><h2>What the words mean</h2>
       <ul class="plain">
         <li><b>Practice money:</b> each bot starts with a pretend ₹10,00,000. No real orders are placed.</li>
-        <li><b>Total gain:</b> how much the pretend portfolio is up or down since the start, after trading costs.</li>
+        <li><b>Total gain:</b> how much the pretend portfolio is up or down since the start. The live simulation charges no trading fees.</li>
         <li><b>Index:</b> the average of the market. A bot ahead of the index is beating the market.</li>
         <li><b>In stocks + Cash = Total:</b> the total is the current value of the shares held plus the cash that has not been invested.</li>
         <li><b>Biggest drop:</b> the largest fall from a high point to a later low point.</li>
@@ -561,7 +561,7 @@ function model() {
       : `<b>Re-checks ${c.rebalance}.</b> Stocks that no longer qualify are sold and replaced; a stock it owns is kept while it stays in the top ${Math.round(n * c.buffer)}.`,
   ];
   if (ex.includes("voltarget")) short.push("<b>Plays safer in rough weather.</b> When the market gets unusually jumpy, it moves part of the money into cash. Checked weekly.");
-  short.push(`<b>Pays costs.</b> Every pretend trade is charged ${cost}%.`);
+  short.push(+cost ? `<b>Pays costs.</b> Every pretend trade is charged ${cost}%.` : `<b>No fees.</b> The live simulation charges nothing to trade. The past test charges 0.2% per trade.`);
   $("m_short").innerHTML = short.map(x => `<li>${x}</li>`).join("");
 
   const steps = [[listed, "shares listed on the NSE", 100],
@@ -597,7 +597,8 @@ function model() {
     "Without this the bot would swap stocks over tiny rank changes and lose money to costs. The very first version of this project traded daily and lost about 15% a year to costs alone.");
   if (ex.includes("voltarget")) r += R(`${k++}. Turn the risk down in rough markets`, `<p>Each week the bot measures how jumpy the whole stock list has been over the last 20 trading days, as a yearly figure. <code>share invested = ${vt}% ÷ jumpiness</code>, capped at 100%. The rest is held as cash.</p>`,
     "Big falls usually come when the market is already swinging wildly. Holding less then gives up some gains and softens the drops.");
-  r += R(`${k++}. Count the costs`, `<p>Every pretend trade is charged ${cost}% of its value.</p>`, "Real trading has brokerage, taxes and a gap between buying and selling prices.");
+  r += +cost ? R(`${k++}. Count the costs`, `<p>Every pretend trade is charged ${cost}% of its value.</p>`, "Real trading has brokerage, taxes and a gap between buying and selling prices.")
+    : R(`${k++}. No fees in the live simulation`, `<p>Pretend trades are free. The past test still charges 0.2% of every trade.</p>`, "Real trading has brokerage, taxes and a gap between buying and selling prices, so real results would be lower than the live figures here.");
   if (c.cash_yield) r += R(`${k++}. Put idle cash to work`, `<p>Money not in stocks is assumed to earn ${Math.round(c.cash_yield * 100)}% a year, as it would in a liquid fund.</p>`,
     "Cash sitting in a trading account earns nothing. This is an assumption about where the spare cash is parked, not a trading skill, and it only matters when the bot is holding cash.");
   $("m_rules").innerHTML = r;
@@ -652,7 +653,7 @@ function model() {
     : key === "select" ? { lowvol: "calmest of the best risers", mom: "biggest risers", mom_vol: "rise relative to bumpiness" }[v]
     : key === "weighting" ? (v === "inv_vol" ? "more to calmer stocks" : "equal")
     : key === "exposure" ? (v.length ? v.map(x => ({ voltarget: "cut back when jumpy", breadth: "cut back when few stocks rise", regime: "all cash in a weak market" }[x])).join(", ") : "none, always fully invested")
-    : ["vol_target", "drift", "cost", "cash_yield"].includes(key) ? (v * 100).toFixed(key === "cost" ? 1 : 0) + "%" + (key === "cash_yield" ? " a year" : "")
+    : ["vol_target", "drift", "cost", "cash_yield"].includes(key) ? (key === "cost" && !v ? "none" : (v * 100).toFixed(key === "cost" ? 1 : 0) + "%") + (key === "cash_yield" ? " a year" : "")
     : key === "tranches" ? (v === 3 ? "a third each month" : "all at once") : key === "sector_cap" ? (v || "no limit") : v == null ? "–" : v;
   const hide = new Set([...(ex.includes("voltarget") ? [] : ["vol_target"]), ...(ex.length ? [] : ["risk_check"]),
     ...(c.sector_cap ? [] : ["sector_cap"]), ...(c.cash_yield ? [] : ["cash_yield"])]);

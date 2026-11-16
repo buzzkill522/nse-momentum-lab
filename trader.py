@@ -44,7 +44,7 @@ SECTORS_FILE = ROOT / "data" / "sectors.json"       # ticker -> industry, from t
 IST = timezone(timedelta(hours=5, minutes=30))
 
 STARTING_CAPITAL = 1_000_000.0  # ₹10 lakh fake money
-COST = 0.002                    # 0.2% per trade (brokerage + STT + mid/small-cap spreads)
+COST = 0.0                      # the live simulation charges no fees; the backtest sets its own (0.2% per trade)
 REGIME_INDEX = "^NSEI"          # Nifty 50, used for the market check
 # First benchmark that Yahoo returns data for is used.
 BENCHMARKS = {"NIFTYMIDSML400.NS": "Nifty MidSmallcap 400", "NIFTY_MIDCAP_100.NS": "Nifty Midcap 100",
@@ -487,7 +487,8 @@ def describe(cfg=CONFIG) -> str:
         s += " It " + ", and ".join(ex) + (f" (checked {cfg['risk_check']})." if cfg["risk_check"] else ".")
     if cfg.get("cash_yield"):
         s += f" Idle cash is assumed to earn {cfg['cash_yield'] * 100:.0f}% a year, as in a liquid fund."
-    return s + f" {COST * 100:.1f}% cost per trade. Prices from Yahoo Finance (may be delayed ~15 min)."
+    fees = f"{COST * 100:.1f}% cost per trade." if COST else "No trading fees are charged."
+    return s + f" {fees} Prices from Yahoo Finance (may be delayed ~15 min)."
 
 
 # ---------------------------------------------------------------- state
@@ -503,7 +504,18 @@ def new_state() -> dict:
 
 def load_state(model) -> dict:
     f = state_file(model)
-    return json.loads(f.read_text()) if f.exists() else new_state()
+    state = json.loads(f.read_text()) if f.exists() else new_state()
+    paid = sum(t.get("fee", 0) for t in state["trades"])
+    if not COST and paid:                 # fees were switched off: give back the ones already charged
+        state["cash"] += paid
+        for t in state["trades"]:
+            t["fee"] = 0.0
+        for h in state["history"]:
+            # correct while every fee was charged before the first saved value, as it was when fees were removed
+            h["value"] = round(h["value"] + paid, 2)
+            h["pct"] = round((h["value"] / state["starting_capital"] - 1) * 100, 3)
+        print(f"Fees removed: Rs {paid:,.0f} returned to cash")
+    return state
 
 
 def save_state(state: dict, model) -> None:
