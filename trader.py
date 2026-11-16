@@ -444,6 +444,42 @@ def trade(state, ticker, qty, price, ts):
                             "fee": round(fee, 2)})
 
 
+def adjust_for_splits(state, prices):
+    """After a split or bonus Yahoo rewrites a share's past prices. Each holding remembers one
+    past closing price; if Yahoo now reports a different price for that same day, the share
+    count is changed to match so the holding's value does not jump."""
+    done = prices.index[:-1]                       # finished days (the last row is today, still moving)
+    for t, p in state["positions"].items():
+        if t not in prices:
+            continue
+        col, ref = prices[t], p.get("ref")
+        if ref:
+            same_day = [d for d in prices.index if d.date().isoformat() == ref[0]]
+            if same_day and pd.notna(col[same_day[0]]) and col[same_day[0]] > 0:
+                ratio = ref[1] / float(col[same_day[0]])
+                if abs(ratio - 1) > 0.04:
+                    qty = max(1, round(p["qty"] * ratio))
+                    state.setdefault("adjustments", []).append(
+                        {"day": prices.index[-1].date().isoformat(), "ticker": t.replace(".NS", ""),
+                         "old_qty": p["qty"], "new_qty": qty, "ratio": round(ratio, 4)})
+                    print(f"Split/bonus adjustment: {t} {p['qty']} -> {qty} shares")
+                    p["avg_price"] *= p["qty"] / qty
+                    p["qty"] = qty
+        if len(done) and pd.notna(col[done[-1]]):
+            p["ref"] = [done[-1].date().isoformat(), float(col[done[-1]])]
+
+
+def fill_missing(prices, volume, states):
+    """If Yahoo returns nothing for a held share (renamed, suspended, or a failed download),
+    carry it at its last known price so the run does not stop. It cannot be picked again."""
+    gone = {t: p for st in states.values() for t, p in st["positions"].items() if t not in prices}
+    for t, p in gone.items():
+        print(f"No price for {t} - using the last known price")
+        prices[t] = p.get("last_price", p["avg_price"])
+        volume[t] = 0.0
+    return prices, volume
+
+
 def portfolio_value(state, last):
     return state["cash"] + sum(p["qty"] * float(last[t]) for t, p in state["positions"].items())
 
@@ -536,6 +572,8 @@ def finish(state, model, prices, ts, demo, names):
     bsym = state.get("benchmark")
     for t in state["trades"]:
         t.setdefault("name", names.get(t["ticker"], ""))
+    for t, p in state["positions"].items():
+        p["last_price"] = float(last[t])
     value = portfolio_value(state, last)
     bench = float(last[bsym]) if bsym and pd.notna(last.get(bsym)) else None
     bench_pct = (bench / state["benchmark_start"] - 1) * 100 if bench and state["benchmark_start"] else None
@@ -593,7 +631,7 @@ def main():
             m["config"]["_members"] = syms[:400]
     else:
         # cheap first look: is the market open today?
-        _, prices, volume = download(INDEX_SYMBOLS + held, "5d")
+        _, prices, volume = download(INDEX_SYMBOLS + held, "1mo")
         if prices.index[-1].date() != now.date():
             print(f"No prices for today yet (latest: {prices.index[-1].date()}) - market closed or holiday.")
             if reset:
@@ -614,6 +652,9 @@ def main():
             _, prices, volume = download(sorted(pool) + INDEX_SYMBOLS, "2y")
 
     names = company_names()
+    for st in states.values():
+        adjust_for_splits(st, prices)
+    prices, volume = fill_missing(prices.copy(), volume.copy(), states)
     for k, m in MODELS.items():
         st, cfg = states[k], m["config"]
         accrue_interest(st, now.date(), cfg)
