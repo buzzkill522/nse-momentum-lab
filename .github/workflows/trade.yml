@@ -2,10 +2,11 @@ name: paper-trade
 
 on:
   schedule:
-    # Hourly, Mon–Fri, 10:00–15:00 IST (04:30–09:30 UTC), plus once after the 15:30 close.
-    # The first run is at 10:00, not the 9:15 open, because opening prices are the jumpiest.
-    - cron: "30 4-9 * * 1-5"
-    - cron: "5 10 * * 1-5"
+    # Hourly, Mon–Fri, 10:07–15:07 IST (04:37–09:37 UTC), plus once after the 15:30 close.
+    # The first run is after 10:00, not at the 9:15 open, because opening prices are the jumpiest.
+    # Odd minutes are used because GitHub delays or drops runs scheduled on the busy :00 and :30 marks.
+    - cron: "37 4-9 * * 1-5"
+    - cron: "7 10 * * 1-5"
   workflow_dispatch:
     inputs:
       reset:
