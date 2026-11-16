@@ -287,7 +287,10 @@ function market() {   // index chart, shown on every tab
   const lvl = v => v == null ? "–" : v.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   const daily = x.daily || x.year || [];
   const series = { today: x.today || [], week: x.week || [], ytd: daily.filter(p => p[0].slice(0, 4) === x.day.slice(0, 4)) };
-  const avail = RANGES.filter(([, k]) => (typeof k === "string" ? series[k].length : daily.length) > 1 && (k !== 0 || daily.length > 260));
+  // a range is offered only when the saved history is long enough to fill it
+  const jan = daily.length && daily[0][0] <= x.day.slice(0, 4) + "-01-10";
+  const avail = RANGES.filter(([, k]) => k === "ytd" ? jan && series.ytd.length > 1 : typeof k === "string" ? series[k].length > 1
+    : k === 0 ? daily.length > 260 : daily.length > Math.max(1, k * 0.8));
   const cur = avail.find(([l]) => l === mRange) || avail[0];
   if (!cur) { $("market").hidden = true; return; }
   const [label, key] = cur;

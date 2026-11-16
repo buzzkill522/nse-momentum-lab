@@ -237,7 +237,7 @@ MARKET_FILE = ROOT / "docs" / "market.json"
 MARKET_CHARTS = {"^NSEI": "Nifty 50", "NIFTYMIDSML400.NS": "Nifty MidSmallcap 400"}
 
 
-def save_market(ts):
+def save_market(ts, fallback=None):
     """Save index levels for the website's market chart: 5-minute points for the latest
     trading day, 15-minute points for five days and daily closes for five years (weekly
     beyond the last year). Never stops the bot if Yahoo fails."""
@@ -259,8 +259,20 @@ def save_market(ts):
         def longest(sym):
             for period in ("5y", "2y", "1y", "6mo", "1mo"):   # some indices have a short history on Yahoo
                 df = get(sym, period=period, interval="1d")
+                if len(df) < 2:
+                    try:                                       # a second route to the same data
+                        df = yf.Ticker(sym).history(period=period, interval="1d", auto_adjust=True)
+                        if len(df) and df.index.tz is not None:
+                            df.index = df.index.tz_convert(IST).tz_localize(None).normalize()
+                        df = df.dropna(subset=["Close"])
+                    except Exception as e:  # noqa: BLE001
+                        print(f"{sym} history {period}: {e}")
+                        df = pd.DataFrame(columns=["Open", "High", "Low", "Close"])
                 if len(df) > 1:
                     return df
+            if fallback is not None and sym in fallback:       # the closes the bot itself just downloaded
+                c = fallback[sym].dropna()
+                return pd.DataFrame({"Open": np.nan, "High": np.nan, "Low": np.nan, "Close": c})
             return df
 
         r2 = lambda v: round(float(v), 2)  # noqa: E731
@@ -286,7 +298,8 @@ def save_market(ts):
                 "name": name, "last": r2(last), "day": day.isoformat(),
                 "prev_close": r2(before.iloc[-1]) if len(before) else None,
                 "open": r2(op), "high": r2(hi), "low": r2(lo),
-                "high52": r2(max(yr.max(), last)), "low52": r2(min(yr.min(), last)),
+                "high52": r2(max(yr.max(), last)) if len(d) >= 200 else None,
+                "low52": r2(min(yr.min(), last)) if len(d) >= 200 else None,
                 "today": [[t.strftime("%H:%M"), r2(v)] for t, v in today.items()],
                 "week": [[t.strftime("%Y-%m-%dT%H:%M"), r2(v)] for t, v in m.iloc[::3].items()],
                 "daily": [[t.date().isoformat(), r2(v)] for t, v in pd.concat([old.iloc[::5], recent]).items()],
@@ -705,8 +718,8 @@ def main():
             m["config"]["_members"] = syms[:400]
     else:
         # cheap first look: is the market open today?
-        save_market(ts)
         _, prices, volume = download(INDEX_SYMBOLS + held, "1mo")
+        save_market(ts, prices)
         if prices.index[-1].date() != now.date():
             print(f"No prices for today yet (latest: {prices.index[-1].date()}) - market closed or holiday.")
             if reset:
