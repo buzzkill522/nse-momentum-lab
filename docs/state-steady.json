@@ -492,6 +492,12 @@
    "value": 994744.07,
    "pct": -0.526,
    "benchmark_pct": -0.348
+  },
+  {
+   "time": "2026-11-16T22:52:22+05:30",
+   "value": 994744.07,
+   "pct": -0.526,
+   "benchmark_pct": -0.348
   }
  ],
  "last_rebalance": "2026-11",
@@ -1196,7 +1202,7 @@
   "description": "The bot picks from the Nifty MidSmallcap 400 index. From the stocks in an uptrend it holds the 20 calmest stocks among the top third by 6-month rise. Stocks are re-picked monthly. At most 4 stocks may come from one industry. It invests less when the market is unusually jumpy (checked weekly). Idle cash is assumed to earn 6% a year, as in a liquid fund. No trading fees are charged. Prices from Yahoo Finance (may be delayed ~15 min).",
   "listed": 2391
  },
- "updated_at": "2026-11-16T15:40:03+05:30",
+ "updated_at": "2026-11-16T22:52:22+05:30",
  "demo": false,
  "interest_earned": 0.0
 }
