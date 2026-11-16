@@ -46,6 +46,10 @@
   .tag { display:inline-block; padding:1px 8px; border-radius:6px; font-weight:600; }
   .tag.up { background:var(--upbg); } .tag.down { background:var(--downbg); }
   .facts { display:grid; grid-template-columns:repeat(auto-fit,minmax(130px,1fr)); gap:12px; margin-top:14px; padding-top:14px; border-top:1px solid var(--line); }
+  .split { display:flex; flex-wrap:wrap; align-items:flex-start; gap:6px 12px; margin-top:14px; padding-top:14px; border-top:1px solid var(--line); }
+  .split .k { font-size:12px; color:var(--muted); }
+  .split .v { font-size:17px; font-weight:600; }
+  .split .op { font-size:17px; font-weight:600; color:var(--muted); padding-top:16px; }
   .facts .k { font-size:12px; color:var(--muted); }
   .facts .v { font-size:17px; font-weight:600; }
 
@@ -187,7 +191,7 @@
         <li><b>Practice money:</b> each bot starts with a pretend ₹10,00,000. No real orders are placed.</li>
         <li><b>Total gain:</b> how much the pretend portfolio is up or down since the start, after trading costs.</li>
         <li><b>Index:</b> the average of the market. A bot ahead of the index is beating the market.</li>
-        <li><b>Invested:</b> the share of the money in stocks. The rest is cash.</li>
+        <li><b>In stocks + Cash = Total:</b> the total is the current value of the shares held plus the cash that has not been invested.</li>
         <li><b>Biggest drop:</b> the largest fall from a high point to a later low point.</li>
         <li><b>Times:</b> all Indian Standard Time. Prices come from Yahoo Finance and can be about 15 minutes behind.</li>
       </ul></div>
@@ -209,9 +213,10 @@ const OLD_KEYS = { growth: ["LIVE CONFIG", "winners 12m [nohind]"], steady: ["ca
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 const inr = v => "₹" + Math.round(v).toLocaleString("en-IN");
-const sinr = v => (v >= 0 ? "+" : "−") + inr(Math.abs(v));
-const pct = (v, d = 2) => v == null || isNaN(v) ? "–" : (v >= 0 ? "+" : "−") + Math.abs(v).toFixed(d) + "%";
-const cls = v => v == null ? "" : v >= 0 ? "up" : "down";
+const flat = (v, d = 2) => Math.abs(v) < 0.5 / 10 ** d;   // shows as zero once rounded
+const sinr = v => flat(v, 0) ? inr(0) : (v > 0 ? "+" : "−") + inr(Math.abs(v));
+const pct = (v, d = 2) => v == null || isNaN(v) ? "–" : flat(v, d) ? (0).toFixed(d) + "%" : (v > 0 ? "+" : "−") + Math.abs(v).toFixed(d) + "%";
+const cls = v => v == null || flat(v) ? "" : v > 0 ? "up" : "down";
 const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
 const IST = { timeZone: "Asia/Kolkata" };
 const fDate = t => new Date(t).toLocaleDateString("en-IN", { ...IST, weekday: "short", day: "numeric", month: "short", year: "numeric" });
@@ -258,9 +263,11 @@ function snapshot(s) {   // headline numbers for one bot's state
   const last = H.at(-1), day = t => t.slice(0, 10);
   const prev = [...H].reverse().find(h => day(h.time) !== day(last.time));
   const base = prev ? prev.value : s.starting_capital;
-  const invested = (s.holdings || []).reduce((a, h) => a + h.value, 0);
+  // the total is rounded first and cash is the remainder, so the two parts always add up on screen
+  const invested = Math.round((s.holdings || []).reduce((a, h) => a + h.value, 0));
+  const cash = Math.round(last.value) - invested;
   return { last, base, today: last.value - base, todayPct: (last.value / base - 1) * 100, total: last.value - s.starting_capital,
-           invested, investedPct: invested / last.value * 100 };
+           invested, cash, investedPct: invested / last.value * 100 };
 }
 function bt(id, nohind) {   // one bot's row in the backtest table
   if (!B) return null;
@@ -296,20 +303,23 @@ function hero() {
       <div class="line muted">It has not traded yet. Both bots start by themselves at the next market open (Monday to Friday, 9:15 am India time) and this page fills in from then.</div>`;
     return;
   }
-  const { last, today, todayPct, total, invested } = snap;
+  const { last, today, todayPct, total, invested, cash, investedPct } = snap;
   const diff = last.benchmark_pct == null ? null : last.pct - last.benchmark_pct;
   $("hero").innerHTML = `
     <div class="label">${b.name} is worth${s.demo ? " (DEMO DATA)" : ""}</div>
     <div class="big num">${inr(last.value)}</div>
     <div class="line num"><span class="tag ${cls(total)}">${sinr(total)} (${pct(last.pct)})</span>
       <span class="muted">since ${fDay(s.started_at)}</span></div>
+    <div class="split num" aria-label="How the total is made up">
+      <div><div class="k">In stocks</div><div class="v">${inr(invested)}</div><div class="small muted">${Math.round(investedPct)}% · ${(s.holdings || []).length} stocks</div></div>
+      <div class="op">+</div>
+      <div><div class="k">Cash, not invested</div><div class="v">${inr(cash)}</div><div class="small muted">${100 - Math.round(investedPct)}%</div></div>
+      <div class="small muted" style="flex-basis:100%">Together these make the ${inr(last.value)} total.</div>
+    </div>
     <div class="facts num">
       <div><div class="k">Today</div><div class="v ${cls(today)}">${sinr(today)} <span class="small">(${pct(todayPct)})</span></div></div>
       <div><div class="k">${esc(s.benchmark_name || "Index")}, same period</div><div class="v">${pct(last.benchmark_pct)}</div>
         <div class="small ${cls(diff)}">${diff == null ? "" : "bot is " + Math.abs(diff).toFixed(2) + " points " + (diff >= 0 ? "ahead" : "behind")}</div></div>
-      <div><div class="k">Invested in stocks</div><div class="v">${Math.round(invested / last.value * 100)}%</div>
-        <div class="small muted">${(s.holdings || []).length} stocks</div></div>
-      <div><div class="k">Cash</div><div class="v">${inr(s.cash)}</div></div>
     </div>`;
 }
 
@@ -323,9 +333,9 @@ const tradeRow = (t, withDate) => `<div class="item"><div class="l"><div class="
 
 function overview() {
   const s = S(), H = s && s.history || [];
-  $("chart").parentElement.hidden = $("range").hidden = !H.length;
+  $("chart").parentElement.hidden = $("range").hidden = H.length < 2;
   document.querySelectorAll("#range button").forEach(b => b.classList.toggle("on", +b.dataset.r === range));
-  if (H.length) {
+  if (H.length > 1) {
     const days = [...new Set(H.map(h => h.time.slice(0, 10)))];
     const keep = range ? new Set(days.slice(-range)) : null;
     const pts = keep ? H.filter(h => keep.has(h.time.slice(0, 10))) : H;
@@ -333,10 +343,12 @@ function overview() {
     $("chartnote").textContent = `Gain or loss since the start, compared with the ${bn}.`;
     line("chart", pts.map(h => range === 1 ? fTime(h.time).replace(/:\d\d /, " ") : fShort(h.time)),
       [[BOTS[bot].name, pts.map(h => h.pct), BOTS[bot].color], [bn, pts.map(h => h.benchmark_pct), "--muted", true]]);
-  } else { $("chartnote").textContent = "The chart appears after the first run."; if (charts.chart) { charts.chart.destroy(); delete charts.chart; } }
+  } else { $("chartnote").textContent = H.length ? "The bot has just made its first trades. The chart starts at the next hourly update." : "The chart appears after the first run."; if (charts.chart) { charts.chart.destroy(); delete charts.chart; } }
   const hs = [...(s && s.holdings || [])].sort((a, b) => b.pnl_pct - a.pnl_pct);
-  $("best").innerHTML = hs.slice(0, 3).map(holdRow).join("") || empty("No holdings yet.");
-  $("worst").innerHTML = hs.slice(-3).reverse().map(holdRow).join("") || empty("No holdings yet.");
+  const still = hs.length && hs.every(h => flat(h.pnl_pct)), half = Math.min(3, Math.floor(hs.length / 2));
+  const none = empty(still ? "No price changes yet since the stocks were bought." : "No holdings yet.");
+  $("best").innerHTML = still ? none : hs.slice(0, half).map(holdRow).join("") || none;
+  $("worst").innerHTML = still ? none : hs.slice(-half || hs.length).reverse().map(holdRow).join("") || none;
   $("latest").innerHTML = (s && s.trades || []).slice(-5).reverse().map(t => tradeRow(t, true)).join("") || empty("No trades yet.");
 }
 
@@ -399,7 +411,8 @@ function compare() {
     r("Worth now", x => inr(x.last.value)) +
     r("Total gain", x => `<span class="${cls(x.last.pct)}">${pct(x.last.pct)}</span>`) +
     r("Today", x => `<span class="${cls(x.todayPct)}">${pct(x.todayPct)}</span>`) +
-    r("Invested in stocks", x => Math.round(x.investedPct) + "%") +
+    r("In stocks", x => `${inr(x.invested)} <span class="muted">(${Math.round(x.investedPct)}%)</span>`) +
+    r("Cash, not invested", x => inr(x.cash)) +
     r("Stocks held", (x, s) => (s.holdings || []).length) +
     r("Trades so far", (x, s) => (s.trades || []).length);
 
