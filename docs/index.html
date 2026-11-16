@@ -289,16 +289,18 @@ function market() {   // index chart, shown on every tab
   const series = { today: x.today || [], week: x.week || [], ytd: daily.filter(p => p[0].slice(0, 4) === x.day.slice(0, 4)) };
   // a range is offered only when the saved history is long enough to fill it
   const jan = daily.length && daily[0][0] <= x.day.slice(0, 4) + "-01-10";
-  const avail = RANGES.filter(([, k]) => k === "ytd" ? jan && series.ytd.length > 1 : typeof k === "string" ? series[k].length > 1
+  const full5 = daily.length && new Date(x.day) - new Date(daily[0][0]) > 4.5 * 365 * 864e5;   // otherwise the long view is "Max"
+  const avail = RANGES.map(r => r[1] === 0 && !full5 ? ["Max", 0] : r).filter(([, k]) => k === "ytd" ? jan && series.ytd.length > 1 : typeof k === "string" ? series[k].length > 1
     : k === 0 ? daily.length > 260 : daily.length > Math.max(1, k * 0.8));
-  const cur = avail.find(([l]) => l === mRange) || avail[0];
+  const cur = avail.find(([l]) => l === mRange) || avail.find(([, k]) => k === 0 && ["5Y", "Max"].includes(mRange)) || avail[0];
   if (!cur) { $("market").hidden = true; return; }
   const [label, key] = cur;
   const weekly = daily.filter((p, i, d) => i === d.length - 1 || !(i % 5) && true).filter((p, i, d) => !i || i === d.length - 1 || new Date(p[0]) - new Date(d[i - 1][0]) > 3 * 864e5);   // even spacing for the long view
   const pts = typeof key === "string" ? series[key] : key ? daily.slice(-key - 1) : weekly;
   const start = key === "today" ? (x.prev_close ?? pts[0][1]) : pts[0][1];
   const diff = x.last - start, chg = (x.last / start - 1) * 100, up = diff >= 0;
-  const span = { "1D": fDay(x.day) === fDay(new Date()) ? "today" : "on " + fDay(x.day), "5D": "past 5 days", "1M": "past month", "6M": "past 6 months", YTD: "year to date", "1Y": "past year", "5Y": "past 5 years" }[label];
+  const span = { "1D": fDay(x.day) === fDay(new Date()) ? "today" : "on " + fDay(x.day), "5D": "past 5 days", "1M": "past month", "6M": "past 6 months", YTD: "year to date", "1Y": "past year", "5Y": "past 5 years",
+    Max: daily.length ? "since " + new Date(daily[0][0]).toLocaleDateString("en-IN", { month: "short", year: "numeric" }) : "" }[label];
   $("mindex").innerHTML = list.map((y, i) => `<button data-i="${i}" class="${y === x ? "on" : ""}">${esc(y.name)}</button>`).join("");
   $("mhead").innerHTML = `<div class="gprice num">${lvl(x.last)}</div>
     <div class="gchg num ${flat(chg) ? "" : up ? "up" : "down"}">${flat(chg) ? "" : up ? "↑" : "↓"} ${sinrPts(diff)} (${Math.abs(chg).toFixed(2)}%) <span class="muted">${span}</span></div>
