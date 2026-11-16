@@ -239,33 +239,57 @@ MARKET_CHARTS = {"^NSEI": "Nifty 50", "NIFTYMIDSML400.NS": "Nifty MidSmallcap 40
 
 def save_market(ts):
     """Save index levels for the website's market chart: 5-minute points for the latest
-    trading day and daily closes for a year. Never stops the bot if Yahoo fails."""
+    trading day, 15-minute points for five days and daily closes for five years (weekly
+    beyond the last year). Never stops the bot if Yahoo fails."""
     try:
         import yfinance as yf
-        syms = list(MARKET_CHARTS)
-
-        def closes(**kw):
-            df = yf.download(syms, auto_adjust=True, progress=False, threads=True, **kw)["Close"]
-            if df.index.tz is not None:
+        def get(sym, **kw):
+            """One index's price table (Open/High/Low/Close columns), empty if Yahoo has none."""
+            try:
+                df = yf.download([sym], auto_adjust=True, progress=False, threads=False, **kw)
+            except Exception as e:  # noqa: BLE001
+                print(f"{sym} {kw}: {e}")
+                return pd.DataFrame(columns=["Open", "High", "Low", "Close"])
+            if isinstance(df.columns, pd.MultiIndex):
+                df = df.xs(sym, axis=1, level=-1) if sym in df.columns.get_level_values(-1) else df.droplevel(-1, axis=1)
+            if len(df) and df.index.tz is not None:
                 df.index = df.index.tz_convert(IST).tz_localize(None)
+            return df.dropna(subset=["Close"]) if "Close" in df else pd.DataFrame(columns=["Open", "High", "Low", "Close"])
+
+        def longest(sym):
+            for period in ("5y", "2y", "1y", "6mo", "1mo"):   # some indices have a short history on Yahoo
+                df = get(sym, period=period, interval="1d")
+                if len(df) > 1:
+                    return df
             return df
 
-        daily, intra = closes(period="1y", interval="1d"), closes(period="5d", interval="5m")
+        r2 = lambda v: round(float(v), 2)  # noqa: E731
         out = []
         for sym, name in MARKET_CHARTS.items():
-            d = daily[sym].dropna() if sym in daily else pd.Series(dtype=float)
-            m = intra[sym].dropna() if sym in intra else pd.Series(dtype=float)
+            ohlc = longest(sym)
+            d, m = ohlc["Close"], get(sym, period="5d", interval="5m")["Close"]
+            print(f"Market chart {name}: {len(d)} daily and {len(m)} five-minute points")
             if len(d) < 2:
                 continue
-            m = m[m.index.date == m.index[-1].date()] if len(m) else m
             day = m.index[-1].date() if len(m) else d.index[-1].date()
+            today = m[m.index.date == day] if len(m) else m
             before = d[d.index.date < day]
+            row = ohlc[ohlc.index.date == day]
+            last = float(today.iloc[-1] if len(today) else d.iloc[-1])
+            seen = list(today) + [last]
+            hi = max(seen + ([float(row["High"].iloc[0])] if len(row) and pd.notna(row["High"].iloc[0]) else []))
+            lo = min(seen + ([float(row["Low"].iloc[0])] if len(row) and pd.notna(row["Low"].iloc[0]) else []))
+            op = float(row["Open"].iloc[0]) if len(row) and pd.notna(row["Open"].iloc[0]) else float(seen[0])
+            yr = pd.concat([ohlc["High"].iloc[-252:], ohlc["Low"].iloc[-252:], d.iloc[-252:]]).dropna()
+            old, recent = d.iloc[:-260], d.iloc[-260:]
             out.append({
-                "name": name, "last": round(float(m.iloc[-1] if len(m) else d.iloc[-1]), 2),
-                "prev_close": round(float(before.iloc[-1]), 2) if len(before) else None,
-                "day": day.isoformat(),
-                "today": [[t.strftime("%H:%M"), round(float(v), 2)] for t, v in m.items()],
-                "year": [[t.date().isoformat(), round(float(v), 2)] for t, v in d.items()],
+                "name": name, "last": r2(last), "day": day.isoformat(),
+                "prev_close": r2(before.iloc[-1]) if len(before) else None,
+                "open": r2(op), "high": r2(hi), "low": r2(lo),
+                "high52": r2(max(yr.max(), last)), "low52": r2(min(yr.min(), last)),
+                "today": [[t.strftime("%H:%M"), r2(v)] for t, v in today.items()],
+                "week": [[t.strftime("%Y-%m-%dT%H:%M"), r2(v)] for t, v in m.iloc[::3].items()],
+                "daily": [[t.date().isoformat(), r2(v)] for t, v in pd.concat([old.iloc[::5], recent]).items()],
             })
         if out:
             MARKET_FILE.write_text(json.dumps({"updated_at": ts, "indices": out}, separators=(",", ":")))

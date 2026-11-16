@@ -50,6 +50,13 @@
   .split .k { font-size:12px; color:var(--muted); }
   .split .v { font-size:17px; font-weight:600; }
   .split .op { font-size:17px; font-weight:600; color:var(--muted); padding-top:16px; }
+  .gf .gprice { font-size:30px; font-weight:600; margin-top:10px; line-height:1.15; }
+  .gf .gchg { font-size:16px; font-weight:600; margin:2px 0; }
+  .gtabs { display:flex; gap:2px; margin-top:12px; border-bottom:1px solid var(--line); overflow-x:auto; }
+  .gtabs button { border:0; background:none; color:var(--muted); font:inherit; font-size:13px; font-weight:600; padding:8px 12px; cursor:pointer; border-bottom:2px solid transparent; margin-bottom:-1px; white-space:nowrap; }
+  .gtabs button.on { color:var(--fg); border-bottom-color:var(--botc, var(--fg)); }
+  .gstats { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:0 24px; margin-top:12px; font-size:13px; }
+  .gstats div { display:flex; justify-content:space-between; padding:7px 0; border-bottom:1px solid var(--line); }
   .facts .k { font-size:12px; color:var(--muted); }
   .facts .v { font-size:17px; font-weight:600; }
 
@@ -110,12 +117,12 @@
   <div class="bots" id="bots"></div>
   <div class="card hero" id="hero"></div>
 
-  <div class="card" id="market">
-    <div class="row"><h2>The market now</h2>
-      <div class="chips" id="mrange"><button data-r="today">Today</button><button data-r="month">Month</button><button data-r="year">Year</button></div></div>
-    <div class="chips" id="mindex" style="margin-top:8px"></div>
-    <div class="line num" id="mhead"></div>
-    <div class="chartbox" style="height:180px"><canvas id="mchart"></canvas></div>
+  <div class="card gf" id="market">
+    <div class="chips" id="mindex"></div>
+    <div id="mhead"></div>
+    <div class="gtabs" id="mrange"></div>
+    <div class="chartbox" style="height:220px"><canvas id="mchart"></canvas></div>
+    <div class="gstats num" id="mstats"></div>
   </div>
 
   <nav id="tabs">
@@ -238,7 +245,7 @@ const store = { get: k => { try { return localStorage.getItem(k); } catch { retu
 const empty = msg => `<div class="muted small" style="padding:10px 0">${msg}</div>`;
 
 let ST = {}, B = null, M = null, bot = "growth", range = 0, side = "", shown = 100;
-let mRange = store.get("mrange") || "today", mIdx = +(store.get("mindex") || 0);
+let mRange = store.get("mrange") || "1D", mIdx = +(store.get("mindex") || 0);
 const S = () => ST[bot];
 const charts = {};
 
@@ -267,34 +274,50 @@ function line(id, labels, sets) {
                  tooltip: { callbacks: { label: c => `${c.dataset.label}: ${pct(c.parsed.y)}` } } } }
   });
 }
+const RANGES = [["1D", "today"], ["5D", "week"], ["1M", 22], ["6M", 126], ["YTD", "ytd"], ["1Y", 252], ["5Y", 0]];
+const crosshair = { id: "crosshair", afterDraw(c) {   // thin vertical line under the pointer
+  const a = c.tooltip && c.tooltip.getActiveElements()[0]; if (!a) return;
+  const { ctx, chartArea: r } = c; ctx.save(); ctx.strokeStyle = css("--muted"); ctx.lineWidth = 1; ctx.setLineDash([3, 3]);
+  ctx.beginPath(); ctx.moveTo(a.element.x, r.top); ctx.lineTo(a.element.x, r.bottom); ctx.stroke(); ctx.restore(); } };
 function market() {   // index chart, shown on every tab
   const list = M && M.indices || [];
-  $("mindex").innerHTML = list.map((x, i) => `<button data-i="${i}" class="${i === mIdx ? "on" : ""}">${esc(x.name)}</button>`).join("");
-  document.querySelectorAll("#mrange button").forEach(b => b.classList.toggle("on", b.dataset.r === mRange));
   const x = list[mIdx] || list[0];
-  $("mchart").parentElement.hidden = !x;
-  if (!x) { $("mhead").innerHTML = `<span class="muted">The market chart appears after the bot's next hourly update.</span>`; return; }
-  const pts = mRange === "today" ? x.today : mRange === "month" ? x.year.slice(-22) : x.year;
-  const start = mRange === "today" ? (x.prev_close ?? (pts[0] && pts[0][1])) : pts[0] && pts[0][1];
-  const chg = start ? (x.last / start - 1) * 100 : null;
-  const lvl = v => v.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-  const span = { today: fDay(x.day) === fDay(new Date()) ? "today" : "on " + fDay(x.day), month: "in a month", year: "in a year" }[mRange];
-  $("mhead").innerHTML = `<b style="font-size:20px">${lvl(x.last)}</b>
-    <span class="tag ${cls(chg)}">${chg == null ? "–" : sinrPts(x.last - start) + " (" + pct(chg) + ")"}</span>
-    <span class="muted">${span} · updated ${ago(M.updated_at)}</span>`;
-  $("mchart").parentElement.hidden = pts.length < 2;
-  if (pts.length < 2 || !window.Chart) return;
+  $("market").hidden = !x;
+  if (!x) return;
+  const lvl = v => v == null ? "–" : v.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const daily = x.daily || x.year || [];
+  const series = { today: x.today || [], week: x.week || [], ytd: daily.filter(p => p[0].slice(0, 4) === x.day.slice(0, 4)) };
+  const avail = RANGES.filter(([, k]) => (typeof k === "string" ? series[k].length : daily.length) > 1 && (k !== 0 || daily.length > 260));
+  const cur = avail.find(([l]) => l === mRange) || avail[0];
+  if (!cur) { $("market").hidden = true; return; }
+  const [label, key] = cur;
+  const weekly = daily.filter((p, i, d) => i === d.length - 1 || !(i % 5) && true).filter((p, i, d) => !i || i === d.length - 1 || new Date(p[0]) - new Date(d[i - 1][0]) > 3 * 864e5);   // even spacing for the long view
+  const pts = typeof key === "string" ? series[key] : key ? daily.slice(-key - 1) : weekly;
+  const start = key === "today" ? (x.prev_close ?? pts[0][1]) : pts[0][1];
+  const diff = x.last - start, chg = (x.last / start - 1) * 100, up = diff >= 0;
+  const span = { "1D": fDay(x.day) === fDay(new Date()) ? "today" : "on " + fDay(x.day), "5D": "past 5 days", "1M": "past month", "6M": "past 6 months", YTD: "year to date", "1Y": "past year", "5Y": "past 5 years" }[label];
+  $("mindex").innerHTML = list.map((y, i) => `<button data-i="${i}" class="${y === x ? "on" : ""}">${esc(y.name)}</button>`).join("");
+  $("mhead").innerHTML = `<div class="gprice num">${lvl(x.last)}</div>
+    <div class="gchg num ${flat(chg) ? "" : up ? "up" : "down"}">${flat(chg) ? "" : up ? "↑" : "↓"} ${sinrPts(diff)} (${Math.abs(chg).toFixed(2)}%) <span class="muted">${span}</span></div>
+    <div class="small muted">${fShort(M.updated_at)} IST · updated when the bot runs · Yahoo Finance, may be delayed</div>`;
+  $("mrange").innerHTML = avail.map(([l]) => `<button data-r="${l}" class="${l === label ? "on" : ""}">${l}</button>`).join("");
+  const st = (k, v) => `<div><span class="muted">${k}</span><b>${lvl(v)}</b></div>`;
+  $("mstats").innerHTML = st("Open", x.open) + st("High", x.high) + st("Low", x.low) + st("Prev close", x.prev_close) + st("52-wk high", x.high52) + st("52-wk low", x.low52);
+  if (!window.Chart) return;
   if (charts.mchart) charts.mchart.destroy();
-  const color = css(chg == null || chg >= 0 ? "--up" : "--down");
+  const color = css(up ? "--up" : "--down");
+  const tip = p => key === "today" ? p[0] : key === "week" ? fShort(p[0]) : new Date(p[0]).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" });
+  const tick = p => key === "today" ? p[0] : key === "week" ? fDay(p[0]) : key === 0 || key === 252 ? new Date(p[0]).toLocaleDateString("en-IN", { month: "short", year: "2-digit" }) : fDay(p[0]);
   charts.mchart = new Chart($("mchart"), {
-    type: "line",
-    data: { labels: pts.map(p => mRange === "today" ? p[0] : fDay(p[0])),
-            datasets: [{ label: x.name, data: pts.map(p => p[1]), borderColor: color, borderWidth: 2, pointRadius: 0, tension: .2 },
-                       ...(mRange === "today" && x.prev_close ? [{ label: "Previous close", data: pts.map(() => x.prev_close), borderColor: css("--muted"), borderWidth: 1, borderDash: [4, 4], pointRadius: 0 }] : [])] },
+    type: "line", plugins: [crosshair],
+    data: { labels: pts.map(tip),
+            datasets: [{ label: x.name, data: pts.map(p => p[1]), borderColor: color, borderWidth: 2, pointRadius: 0, pointHoverRadius: 4, pointHoverBackgroundColor: color, tension: .15, fill: "start",
+                         backgroundColor: c => { const r = c.chart.chartArea; if (!r) return "transparent"; const g = c.chart.ctx.createLinearGradient(0, r.top, 0, r.bottom); g.addColorStop(0, color + "44"); g.addColorStop(1, color + "00"); return g; } },
+                       ...(key === "today" && x.prev_close ? [{ label: "Previous close", data: pts.map(() => x.prev_close), borderColor: css("--muted"), borderWidth: 1, borderDash: [2, 4], pointRadius: 0, pointHoverRadius: 0 }] : [])] },
     options: { maintainAspectRatio: false, animation: false, interaction: { mode: "index", intersect: false },
-      scales: { x: { ticks: { color: css("--muted"), maxTicksLimit: 6, maxRotation: 0 }, grid: { display: false } },
-                y: { ticks: { color: css("--muted"), callback: v => v.toLocaleString("en-IN") }, grid: { color: css("--line") } } },
-      plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => `${c.dataset.label}: ${lvl(c.parsed.y)}` } } } }
+      scales: { x: { ticks: { color: css("--muted"), maxTicksLimit: 5, maxRotation: 0, callback: (v, i) => tick(pts[i]) }, grid: { display: false }, border: { display: false } },
+                y: { ticks: { color: css("--muted"), maxTicksLimit: 5, callback: v => v.toLocaleString("en-IN") }, grid: { color: css("--line") }, border: { display: false } } },
+      plugins: { legend: { display: false }, tooltip: { displayColors: false, callbacks: { label: c => `${c.dataset.label}: ${lvl(c.parsed.y)}` } } } }
   });
 }
 function snapshot(s) {   // headline numbers for one bot's state
