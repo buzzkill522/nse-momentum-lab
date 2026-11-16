@@ -12,7 +12,7 @@
     "2026-11-13",
     21078.0
    ],
-   "last_price": 21643.0
+   "last_price": 21640.0
   },
   "CRAFTSMAN.NS": {
    "qty": 3,
@@ -23,7 +23,7 @@
     "2026-11-13",
     11077.0
    ],
-   "last_price": 11177.0
+   "last_price": 11134.0
   },
   "NAVINFLUOR.NS": {
    "qty": 3,
@@ -34,7 +34,7 @@
     "2026-11-13",
     10002.0
    ],
-   "last_price": 9958.5
+   "last_price": 9890.0
   },
   "FLUOROCHEM.NS": {
    "qty": 7,
@@ -45,7 +45,7 @@
     "2026-11-13",
     4712.10009765625
    ],
-   "last_price": 4624.7998046875
+   "last_price": 4824.10009765625
   },
   "RADICO.NS": {
    "qty": 7,
@@ -56,7 +56,7 @@
     "2026-11-13",
     4605.0
    ],
-   "last_price": 4660.0
+   "last_price": 4665.0
   },
   "LAURUSLABS.NS": {
    "qty": 14,
@@ -67,7 +67,7 @@
     "2026-11-13",
     2424.0
    ],
-   "last_price": 2208.0
+   "last_price": 2220.0
   },
   "LALPATHLAB.NS": {
    "qty": 18,
@@ -78,7 +78,7 @@
     "2026-11-13",
     1993.0
    ],
-   "last_price": 1990.4000244140625
+   "last_price": 2000.699951171875
   },
   "SAILIFE.NS": {
    "qty": 18,
@@ -89,7 +89,7 @@
     "2026-11-13",
     1928.800048828125
    ],
-   "last_price": 1799.0999755859375
+   "last_price": 1800.199951171875
   },
   "NUVAMA.NS": {
    "qty": 19,
@@ -100,7 +100,7 @@
     "2026-11-13",
     1847.800048828125
    ],
-   "last_price": 1861.0
+   "last_price": 1860.4000244140625
   },
   "AETHER.NS": {
    "qty": 20,
@@ -111,7 +111,7 @@
     "2026-11-13",
     1677.199951171875
    ],
-   "last_price": 1639.4000244140625
+   "last_price": 1632.199951171875
   },
   "PVRINOX.NS": {
    "qty": 21,
@@ -122,7 +122,7 @@
     "2026-11-13",
     1641.199951171875
    ],
-   "last_price": 1637.4000244140625
+   "last_price": 1639.4000244140625
   },
   "SHYAMMETL.NS": {
    "qty": 27,
@@ -133,7 +133,7 @@
     "2026-11-13",
     1315.9000244140625
    ],
-   "last_price": 1318.0
+   "last_price": 1316.0
   },
   "MOTILALOFS.NS": {
    "qty": 29,
@@ -144,7 +144,7 @@
     "2026-11-13",
     1220.0
    ],
-   "last_price": 1211.800048828125
+   "last_price": 1217.0
   },
   "ACE.NS": {
    "qty": 30,
@@ -155,7 +155,7 @@
     "2026-11-13",
     1180.0
    ],
-   "last_price": 1174.9000244140625
+   "last_price": 1176.300048828125
   },
   "SONACOMS.NS": {
    "qty": 38,
@@ -166,7 +166,7 @@
     "2026-11-13",
     919.0
    ],
-   "last_price": 897.25
+   "last_price": 899.0
   },
   "ABDL.NS": {
    "qty": 46,
@@ -177,7 +177,7 @@
     "2026-11-13",
     757.7000122070312
    ],
-   "last_price": 781.25
+   "last_price": 784.25
   },
   "IIFL.NS": {
    "qty": 55,
@@ -188,7 +188,7 @@
     "2026-11-13",
     641.0999755859375
    ],
-   "last_price": 653.25
+   "last_price": 652.3499755859375
   },
   "HONASA.NS": {
    "qty": 69,
@@ -199,7 +199,7 @@
     "2026-11-13",
     501.95001220703125
    ],
-   "last_price": 504.8500061035156
+   "last_price": 501.25
   },
   "BHEL.NS": {
    "qty": 82,
@@ -210,7 +210,7 @@
     "2026-11-13",
     436.29998779296875
    ],
-   "last_price": 428.3500061035156
+   "last_price": 430.1000061035156
   },
   "WELSPUNLIV.NS": {
    "qty": 143,
@@ -221,7 +221,7 @@
     "2026-11-13",
     250.13999938964844
    ],
-   "last_price": 246.11000061035156
+   "last_price": 246.1300048828125
   }
  },
  "trades": [
@@ -486,6 +486,12 @@
    "value": 993199.91,
    "pct": -0.68,
    "benchmark_pct": -0.624
+  },
+  {
+   "time": "2026-11-16T15:40:03+05:30",
+   "value": 994744.07,
+   "pct": -0.526,
+   "benchmark_pct": -0.348
   }
  ],
  "last_rebalance": "2026-11",
@@ -941,9 +947,9 @@
    "bought_at": "2026-11-16T09:30:44+05:30",
    "last_buy": "2026-11-16T09:30:44+05:30",
    "avg_price": 21444.0,
-   "price": 21643.0,
-   "value": 21643.0,
-   "pnl_pct": 0.93
+   "price": 21640.0,
+   "value": 21640.0,
+   "pnl_pct": 0.91
   },
   {
    "ticker": "CRAFTSMAN",
@@ -952,9 +958,9 @@
    "bought_at": "2026-11-16T09:30:44+05:30",
    "last_buy": "2026-11-16T09:30:44+05:30",
    "avg_price": 11175.0,
-   "price": 11177.0,
-   "value": 33531.0,
-   "pnl_pct": 0.02
+   "price": 11134.0,
+   "value": 33402.0,
+   "pnl_pct": -0.37
   },
   {
    "ticker": "NAVINFLUOR",
@@ -963,9 +969,9 @@
    "bought_at": "2026-11-16T09:30:44+05:30",
    "last_buy": "2026-11-16T09:30:44+05:30",
    "avg_price": 10086.5,
-   "price": 9958.5,
-   "value": 29875.5,
-   "pnl_pct": -1.27
+   "price": 9890.0,
+   "value": 29670.0,
+   "pnl_pct": -1.95
   },
   {
    "ticker": "FLUOROCHEM",
@@ -974,9 +980,9 @@
    "bought_at": "2026-11-16T09:30:44+05:30",
    "last_buy": "2026-11-16T09:30:44+05:30",
    "avg_price": 4685.9,
-   "price": 4624.8,
-   "value": 32373.6,
-   "pnl_pct": -1.3
+   "price": 4824.1,
+   "value": 33768.7,
+   "pnl_pct": 2.95
   },
   {
    "ticker": "RADICO",
@@ -985,9 +991,9 @@
    "bought_at": "2026-11-16T09:30:44+05:30",
    "last_buy": "2026-11-16T09:30:44+05:30",
    "avg_price": 4624.8,
-   "price": 4660.0,
-   "value": 32620.0,
-   "pnl_pct": 0.76
+   "price": 4665.0,
+   "value": 32655.0,
+   "pnl_pct": 0.87
   },
   {
    "ticker": "LAURUSLABS",
@@ -996,9 +1002,9 @@
    "bought_at": "2026-11-16T09:30:44+05:30",
    "last_buy": "2026-11-16T09:30:44+05:30",
    "avg_price": 2414.2,
-   "price": 2208.0,
-   "value": 30912.0,
-   "pnl_pct": -8.54
+   "price": 2220.0,
+   "value": 31080.0,
+   "pnl_pct": -8.04
   },
   {
    "ticker": "LALPATHLAB",
@@ -1007,9 +1013,9 @@
    "bought_at": "2026-11-16T09:30:44+05:30",
    "last_buy": "2026-11-16T09:30:44+05:30",
    "avg_price": 1976.0,
-   "price": 1990.4,
-   "value": 35827.2,
-   "pnl_pct": 0.73
+   "price": 2000.7,
+   "value": 36012.6,
+   "pnl_pct": 1.25
   },
   {
    "ticker": "SAILIFE",
@@ -1018,9 +1024,9 @@
    "bought_at": "2026-11-16T09:30:44+05:30",
    "last_buy": "2026-11-16T09:30:44+05:30",
    "avg_price": 1936.5,
-   "price": 1799.1,
-   "value": 32383.8,
-   "pnl_pct": -7.1
+   "price": 1800.2,
+   "value": 32403.6,
+   "pnl_pct": -7.04
   },
   {
    "ticker": "NUVAMA",
@@ -1029,9 +1035,9 @@
    "bought_at": "2026-11-16T09:30:44+05:30",
    "last_buy": "2026-11-16T09:30:44+05:30",
    "avg_price": 1836.4,
-   "price": 1861.0,
-   "value": 35359.0,
-   "pnl_pct": 1.34
+   "price": 1860.4,
+   "value": 35347.6,
+   "pnl_pct": 1.31
   },
   {
    "ticker": "AETHER",
@@ -1040,9 +1046,9 @@
    "bought_at": "2026-11-16T09:30:44+05:30",
    "last_buy": "2026-11-16T09:30:44+05:30",
    "avg_price": 1700.0,
-   "price": 1639.4,
-   "value": 32788.0,
-   "pnl_pct": -3.56
+   "price": 1632.2,
+   "value": 32644.0,
+   "pnl_pct": -3.99
   },
   {
    "ticker": "PVRINOX",
@@ -1051,9 +1057,9 @@
    "bought_at": "2026-11-16T09:30:44+05:30",
    "last_buy": "2026-11-16T09:30:44+05:30",
    "avg_price": 1642.7,
-   "price": 1637.4,
-   "value": 34385.4,
-   "pnl_pct": -0.32
+   "price": 1639.4,
+   "value": 34427.4,
+   "pnl_pct": -0.2
   },
   {
    "ticker": "SHYAMMETL",
@@ -1062,9 +1068,9 @@
    "bought_at": "2026-11-16T09:30:44+05:30",
    "last_buy": "2026-11-16T09:30:44+05:30",
    "avg_price": 1318.7,
-   "price": 1318.0,
-   "value": 35586.0,
-   "pnl_pct": -0.05
+   "price": 1316.0,
+   "value": 35532.0,
+   "pnl_pct": -0.2
   },
   {
    "ticker": "MOTILALOFS",
@@ -1073,9 +1079,9 @@
    "bought_at": "2026-11-16T09:30:44+05:30",
    "last_buy": "2026-11-16T09:30:44+05:30",
    "avg_price": 1221.65,
-   "price": 1211.8,
-   "value": 35142.2,
-   "pnl_pct": -0.81
+   "price": 1217.0,
+   "value": 35293.0,
+   "pnl_pct": -0.38
   },
   {
    "ticker": "ACE",
@@ -1084,9 +1090,9 @@
    "bought_at": "2026-11-16T09:30:44+05:30",
    "last_buy": "2026-11-16T09:30:44+05:30",
    "avg_price": 1168.9,
-   "price": 1174.9,
-   "value": 35247.0,
-   "pnl_pct": 0.51
+   "price": 1176.3,
+   "value": 35289.0,
+   "pnl_pct": 0.63
   },
   {
    "ticker": "SONACOMS",
@@ -1095,9 +1101,9 @@
    "bought_at": "2026-11-16T09:30:44+05:30",
    "last_buy": "2026-11-16T09:30:44+05:30",
    "avg_price": 919.7,
-   "price": 897.25,
-   "value": 34095.5,
-   "pnl_pct": -2.44
+   "price": 899.0,
+   "value": 34162.0,
+   "pnl_pct": -2.25
   },
   {
    "ticker": "ABDL",
@@ -1106,9 +1112,9 @@
    "bought_at": "2026-11-16T09:30:44+05:30",
    "last_buy": "2026-11-16T09:30:44+05:30",
    "avg_price": 762.8,
-   "price": 781.25,
-   "value": 35937.5,
-   "pnl_pct": 2.42
+   "price": 784.25,
+   "value": 36075.5,
+   "pnl_pct": 2.81
   },
   {
    "ticker": "IIFL",
@@ -1117,9 +1123,9 @@
    "bought_at": "2026-11-16T09:30:44+05:30",
    "last_buy": "2026-11-16T09:30:44+05:30",
    "avg_price": 642.8,
-   "price": 653.25,
-   "value": 35928.75,
-   "pnl_pct": 1.63
+   "price": 652.35,
+   "value": 35879.25,
+   "pnl_pct": 1.49
   },
   {
    "ticker": "HONASA",
@@ -1128,9 +1134,9 @@
    "bought_at": "2026-11-16T09:30:44+05:30",
    "last_buy": "2026-11-16T09:30:44+05:30",
    "avg_price": 511.8,
-   "price": 504.85,
-   "value": 34834.65,
-   "pnl_pct": -1.36
+   "price": 501.25,
+   "value": 34586.25,
+   "pnl_pct": -2.06
   },
   {
    "ticker": "BHEL",
@@ -1139,9 +1145,9 @@
    "bought_at": "2026-11-16T09:30:44+05:30",
    "last_buy": "2026-11-16T09:30:44+05:30",
    "avg_price": 431.65,
-   "price": 428.35,
-   "value": 35124.7,
-   "pnl_pct": -0.76
+   "price": 430.1,
+   "value": 35268.2,
+   "pnl_pct": -0.36
   },
   {
    "ticker": "WELSPUNLIV",
@@ -1150,9 +1156,9 @@
    "bought_at": "2026-11-16T09:30:44+05:30",
    "last_buy": "2026-11-16T09:30:44+05:30",
    "avg_price": 247.36,
-   "price": 246.11,
-   "value": 35193.73,
-   "pnl_pct": -0.51
+   "price": 246.13,
+   "value": 35196.59,
+   "pnl_pct": -0.5
   }
  ],
  "model": {
@@ -1190,7 +1196,7 @@
   "description": "The bot picks from the Nifty MidSmallcap 400 index. From the stocks in an uptrend it holds the 20 calmest stocks among the top third by 6-month rise. Stocks are re-picked monthly. At most 4 stocks may come from one industry. It invests less when the market is unusually jumpy (checked weekly). Idle cash is assumed to earn 6% a year, as in a liquid fund. No trading fees are charged. Prices from Yahoo Finance (may be delayed ~15 min).",
   "listed": 2391
  },
- "updated_at": "2026-11-16T14:42:03+05:30",
+ "updated_at": "2026-11-16T15:40:03+05:30",
  "demo": false,
  "interest_earned": 0.0
 }
