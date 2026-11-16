@@ -1,0 +1,514 @@
+{
+ "period": "2020-11-14 to 2026-11-13",
+ "pools": {
+  "nohind": {
+   "full": {
+    "plain momentum, 12-month": {
+     "per yr %": 42.06,
+     "swing %": 25.14,
+     "sharpe": 1.55,
+     "worst fall %": -31.62,
+     "worst month %": -14.31,
+     "worst yr %": -13.63,
+     "1st half /yr": 57.67,
+     "2nd half /yr": 29.47,
+     "trades/yr": 112.91,
+     "fees %/yr": 3.7
+    },
+    "plain momentum, 6-month": {
+     "per yr %": 35.88,
+     "swing %": 26.76,
+     "sharpe": 1.3,
+     "worst fall %": -32.01,
+     "worst month %": -15.37,
+     "worst yr %": -11.49,
+     "1st half /yr": 45.55,
+     "2nd half /yr": 28.13,
+     "trades/yr": 128.75,
+     "fees %/yr": 3.45
+    },
+    "residual momentum, 12-month": {
+     "per yr %": 38.81,
+     "swing %": 24.45,
+     "sharpe": 1.49,
+     "worst fall %": -31.94,
+     "worst month %": -18.1,
+     "worst yr %": -15.94,
+     "1st half /yr": 47.59,
+     "2nd half /yr": 31.95,
+     "trades/yr": 112.41,
+     "fees %/yr": 3.2
+    },
+    "residual momentum, 6-month": {
+     "per yr %": 31.35,
+     "swing %": 25.92,
+     "sharpe": 1.2,
+     "worst fall %": -33.51,
+     "worst month %": -13.96,
+     "worst yr %": -10.64,
+     "1st half /yr": 38.64,
+     "2nd half /yr": 25.55,
+     "trades/yr": 130.26,
+     "fees %/yr": 3.02
+    },
+    "residual momentum, volatility-scaled, 12-month": {
+     "per yr %": 38.62,
+     "swing %": 23.02,
+     "sharpe": 1.56,
+     "worst fall %": -30.4,
+     "worst month %": -16.92,
+     "worst yr %": -8.46,
+     "1st half /yr": 46.25,
+     "2nd half /yr": 32.77,
+     "trades/yr": 110.74,
+     "fees %/yr": 3.29
+    },
+    "residual momentum, volatility-scaled, 6-month": {
+     "per yr %": 40.15,
+     "swing %": 23.7,
+     "sharpe": 1.57,
+     "worst fall %": -32.43,
+     "worst month %": -13.71,
+     "worst yr %": -5.1,
+     "1st half /yr": 54.82,
+     "2nd half /yr": 28.27,
+     "trades/yr": 124.59,
+     "fees %/yr": 3.8
+    },
+    "momentum per unit of volatility, 12-month": {
+     "per yr %": 39.68,
+     "swing %": 24.64,
+     "sharpe": 1.51,
+     "worst fall %": -31.69,
+     "worst month %": -16.61,
+     "worst yr %": -6.88,
+     "1st half /yr": 50.36,
+     "2nd half /yr": 31.19,
+     "trades/yr": 113.24,
+     "fees %/yr": 3.47
+    },
+    "momentum per unit of volatility, 6-month": {
+     "per yr %": 41.01,
+     "swing %": 25.01,
+     "sharpe": 1.53,
+     "worst fall %": -30.14,
+     "worst month %": -13.65,
+     "worst yr %": -2.06,
+     "1st half /yr": 57.14,
+     "2nd half /yr": 27.97,
+     "trades/yr": 126.42,
+     "fees %/yr": 4.08
+    },
+    "ALL stocks on the list (no costs)": {
+     "per yr %": 24.53,
+     "swing %": 18.76,
+     "sharpe": 1.28,
+     "worst fall %": -25.4,
+     "worst month %": -13.15,
+     "worst yr %": -0.95,
+     "1st half /yr": 36.67,
+     "2nd half /yr": 14.28,
+     "trades/yr": null,
+     "fees %/yr": null
+    }
+   },
+   "passes": [],
+   "picks": [
+    {
+     "from": "2022-11-29",
+     "chosen": "residual momentum, volatility-scaled, 12-month",
+     "sharpe_so_far": 1.74,
+     "next_6m_%": 10.4,
+     "current_bot_next_6m_%": 15.7
+    },
+    {
+     "from": "2023-06-02",
+     "chosen": "momentum per unit of volatility, 6-month",
+     "sharpe_so_far": 1.68,
+     "next_6m_%": 52.4,
+     "current_bot_next_6m_%": 58.3
+    },
+    {
+     "from": "2023-12-05",
+     "chosen": "residual momentum, volatility-scaled, 6-month",
+     "sharpe_so_far": 2.1,
+     "next_6m_%": 29.8,
+     "current_bot_next_6m_%": 34.5
+    },
+    {
+     "from": "2024-06-07",
+     "chosen": "residual momentum, volatility-scaled, 6-month",
+     "sharpe_so_far": 2.05,
+     "next_6m_%": 7.4,
+     "current_bot_next_6m_%": 27.5
+    },
+    {
+     "from": "2024-12-10",
+     "chosen": "plain momentum, 12-month",
+     "sharpe_so_far": 2.02,
+     "next_6m_%": -7.2,
+     "current_bot_next_6m_%": -6.8
+    },
+    {
+     "from": "2025-06-13",
+     "chosen": "plain momentum, 12-month",
+     "sharpe_so_far": 1.71,
+     "next_6m_%": -9.7,
+     "current_bot_next_6m_%": -9.7
+    },
+    {
+     "from": "2025-12-15",
+     "chosen": "residual momentum, volatility-scaled, 6-month",
+     "sharpe_so_far": 1.57,
+     "next_6m_%": 13.3,
+     "current_bot_next_6m_%": 24.0
+    },
+    {
+     "from": "2026-06-22",
+     "chosen": "plain momentum, 12-month",
+     "sharpe_so_far": 1.53,
+     "next_6m_%": 16.1,
+     "current_bot_next_6m_%": 16.6
+    }
+   ],
+   "oos_period": "2022-11-29 to 2026-11-13",
+   "oos": {
+    "WALK-FORWARD (chosen without hindsight)": {
+     "per yr %": 27.11,
+     "swing %": 23.73,
+     "sharpe": 1.15,
+     "worst fall %": -28.78,
+     "worst month %": -14.31,
+     "worst yr %": -14.1
+    },
+    "current Growth bot, same period": {
+     "per yr %": 40.32,
+     "swing %": 25.68,
+     "sharpe": 1.48,
+     "worst fall %": -28.78,
+     "worst month %": -14.31,
+     "worst yr %": -13.63
+    },
+    "ALL stocks on the list (no costs)": {
+     "per yr %": 19.64,
+     "swing %": 18.59,
+     "sharpe": 1.08,
+     "worst fall %": -25.4,
+     "worst month %": -13.15,
+     "worst yr %": -1.72
+    },
+    "plain momentum, 6-month, same period": {
+     "per yr %": 38.61,
+     "swing %": 27.24,
+     "sharpe": 1.36,
+     "worst fall %": -30.81,
+     "worst month %": -15.37,
+     "worst yr %": -6.88
+    },
+    "residual momentum, 12-month, same period": {
+     "per yr %": 40.11,
+     "swing %": 25.13,
+     "sharpe": 1.5,
+     "worst fall %": -31.94,
+     "worst month %": -18.1,
+     "worst yr %": -15.94
+    },
+    "residual momentum, 6-month, same period": {
+     "per yr %": 35.4,
+     "swing %": 26.29,
+     "sharpe": 1.31,
+     "worst fall %": -27.4,
+     "worst month %": -13.96,
+     "worst yr %": -3.6
+    },
+    "residual momentum, volatility-scaled, 12-month, same period": {
+     "per yr %": 37.07,
+     "swing %": 23.48,
+     "sharpe": 1.49,
+     "worst fall %": -30.4,
+     "worst month %": -16.92,
+     "worst yr %": -5.12
+    },
+    "residual momentum, volatility-scaled, 6-month, same period": {
+     "per yr %": 38.86,
+     "swing %": 23.87,
+     "sharpe": 1.53,
+     "worst fall %": -26.36,
+     "worst month %": -13.71,
+     "worst yr %": -0.81
+    },
+    "momentum per unit of volatility, 12-month, same period": {
+     "per yr %": 38.06,
+     "swing %": 25.26,
+     "sharpe": 1.43,
+     "worst fall %": -31.69,
+     "worst month %": -16.61,
+     "worst yr %": -6.88
+    },
+    "momentum per unit of volatility, 6-month, same period": {
+     "per yr %": 39.19,
+     "swing %": 25.37,
+     "sharpe": 1.46,
+     "worst fall %": -26.75,
+     "worst month %": -13.65,
+     "worst yr %": -1.61
+    }
+   }
+  },
+  "mcap": {
+   "full": {
+    "plain momentum, 12-month": {
+     "per yr %": 42.45,
+     "swing %": 23.55,
+     "sharpe": 1.65,
+     "worst fall %": -33.01,
+     "worst month %": -15.48,
+     "worst yr %": -16.63,
+     "1st half /yr": 70.37,
+     "2nd half /yr": 20.51,
+     "trades/yr": 100.74,
+     "fees %/yr": 3.98
+    },
+    "plain momentum, 6-month": {
+     "per yr %": 34.11,
+     "swing %": 24.35,
+     "sharpe": 1.35,
+     "worst fall %": -36.75,
+     "worst month %": -13.92,
+     "worst yr %": -16.67,
+     "1st half /yr": 47.08,
+     "2nd half /yr": 23.46,
+     "trades/yr": 118.08,
+     "fees %/yr": 3.09
+    },
+    "residual momentum, 12-month": {
+     "per yr %": 36.27,
+     "swing %": 22.65,
+     "sharpe": 1.51,
+     "worst fall %": -31.87,
+     "worst month %": -13.68,
+     "worst yr %": -15.68,
+     "1st half /yr": 55.96,
+     "2nd half /yr": 20.28,
+     "trades/yr": 104.24,
+     "fees %/yr": 3.25
+    },
+    "residual momentum, 6-month": {
+     "per yr %": 30.67,
+     "swing %": 22.78,
+     "sharpe": 1.31,
+     "worst fall %": -35.38,
+     "worst month %": -13.6,
+     "worst yr %": -14.94,
+     "1st half /yr": 38.77,
+     "2nd half /yr": 24.13,
+     "trades/yr": 121.42,
+     "fees %/yr": 2.79
+    },
+    "residual momentum, volatility-scaled, 12-month": {
+     "per yr %": 40.17,
+     "swing %": 20.75,
+     "sharpe": 1.76,
+     "worst fall %": -28.22,
+     "worst month %": -15.17,
+     "worst yr %": -9.98,
+     "1st half /yr": 60.72,
+     "2nd half /yr": 23.61,
+     "trades/yr": 104.24,
+     "fees %/yr": 3.6
+    },
+    "residual momentum, volatility-scaled, 6-month": {
+     "per yr %": 30.64,
+     "swing %": 20.52,
+     "sharpe": 1.43,
+     "worst fall %": -36.8,
+     "worst month %": -12.76,
+     "worst yr %": -15.9,
+     "1st half /yr": 46.8,
+     "2nd half /yr": 17.29,
+     "trades/yr": 124.42,
+     "fees %/yr": 3.14
+    },
+    "momentum per unit of volatility, 12-month": {
+     "per yr %": 42.34,
+     "swing %": 22.36,
+     "sharpe": 1.72,
+     "worst fall %": -30.39,
+     "worst month %": -16.09,
+     "worst yr %": -13.9,
+     "1st half /yr": 66.66,
+     "2nd half /yr": 22.99,
+     "trades/yr": 102.24,
+     "fees %/yr": 3.75
+    },
+    "momentum per unit of volatility, 6-month": {
+     "per yr %": 32.82,
+     "swing %": 21.95,
+     "sharpe": 1.43,
+     "worst fall %": -34.26,
+     "worst month %": -12.81,
+     "worst yr %": -13.54,
+     "1st half /yr": 47.87,
+     "2nd half /yr": 20.4,
+     "trades/yr": 120.92,
+     "fees %/yr": 3.21
+    },
+    "ALL stocks on the list (no costs)": {
+     "per yr %": 22.56,
+     "swing %": 17.29,
+     "sharpe": 1.27,
+     "worst fall %": -24.2,
+     "worst month %": -12.67,
+     "worst yr %": -1.29,
+     "1st half /yr": 34.83,
+     "2nd half /yr": 12.16,
+     "trades/yr": null,
+     "fees %/yr": null
+    }
+   },
+   "passes": [],
+   "picks": [
+    {
+     "from": "2022-11-29",
+     "chosen": "plain momentum, 12-month",
+     "sharpe_so_far": 2.55,
+     "next_6m_%": 3.8,
+     "current_bot_next_6m_%": 3.8
+    },
+    {
+     "from": "2023-06-02",
+     "chosen": "residual momentum, volatility-scaled, 12-month",
+     "sharpe_so_far": 2.22,
+     "next_6m_%": 46.6,
+     "current_bot_next_6m_%": 61.7
+    },
+    {
+     "from": "2023-12-05",
+     "chosen": "momentum per unit of volatility, 12-month",
+     "sharpe_so_far": 2.6,
+     "next_6m_%": 32.5,
+     "current_bot_next_6m_%": 35.8
+    },
+    {
+     "from": "2024-06-07",
+     "chosen": "plain momentum, 12-month",
+     "sharpe_so_far": 2.51,
+     "next_6m_%": 19.8,
+     "current_bot_next_6m_%": 20.3
+    },
+    {
+     "from": "2024-12-10",
+     "chosen": "residual momentum, volatility-scaled, 12-month",
+     "sharpe_so_far": 2.52,
+     "next_6m_%": -8.3,
+     "current_bot_next_6m_%": -6.5
+    },
+    {
+     "from": "2025-06-13",
+     "chosen": "residual momentum, volatility-scaled, 12-month",
+     "sharpe_so_far": 2.07,
+     "next_6m_%": -8.5,
+     "current_bot_next_6m_%": -15.1
+    },
+    {
+     "from": "2025-12-15",
+     "chosen": "residual momentum, volatility-scaled, 12-month",
+     "sharpe_so_far": 1.83,
+     "next_6m_%": 14.3,
+     "current_bot_next_6m_%": 19.4
+    },
+    {
+     "from": "2026-06-22",
+     "chosen": "residual momentum, volatility-scaled, 12-month",
+     "sharpe_so_far": 1.77,
+     "next_6m_%": 14.5,
+     "current_bot_next_6m_%": 7.0
+    }
+   ],
+   "oos_period": "2022-11-29 to 2026-11-13",
+   "oos": {
+    "WALK-FORWARD (chosen without hindsight)": {
+     "per yr %": 27.96,
+     "swing %": 22.67,
+     "sharpe": 1.22,
+     "worst fall %": -27.27,
+     "worst month %": -15.17,
+     "worst yr %": -9.98
+    },
+    "current Growth bot, same period": {
+     "per yr %": 29.45,
+     "swing %": 23.94,
+     "sharpe": 1.22,
+     "worst fall %": -29.92,
+     "worst month %": -15.48,
+     "worst yr %": -16.63
+    },
+    "ALL stocks on the list (no costs)": {
+     "per yr %": 16.81,
+     "swing %": 17.0,
+     "sharpe": 1.02,
+     "worst fall %": -24.2,
+     "worst month %": -12.67,
+     "worst yr %": -1.29
+    },
+    "plain momentum, 6-month, same period": {
+     "per yr %": 30.75,
+     "swing %": 24.8,
+     "sharpe": 1.23,
+     "worst fall %": -25.66,
+     "worst month %": -13.92,
+     "worst yr %": -4.93
+    },
+    "residual momentum, 12-month, same period": {
+     "per yr %": 28.33,
+     "swing %": 23.13,
+     "sharpe": 1.21,
+     "worst fall %": -28.75,
+     "worst month %": -13.68,
+     "worst yr %": -15.68
+    },
+    "residual momentum, 6-month, same period": {
+     "per yr %": 28.83,
+     "swing %": 23.13,
+     "sharpe": 1.24,
+     "worst fall %": -24.99,
+     "worst month %": -13.6,
+     "worst yr %": -7.79
+    },
+    "residual momentum, volatility-scaled, 12-month, same period": {
+     "per yr %": 29.57,
+     "swing %": 20.82,
+     "sharpe": 1.38,
+     "worst fall %": -27.27,
+     "worst month %": -15.17,
+     "worst yr %": -9.98
+    },
+    "residual momentum, volatility-scaled, 6-month, same period": {
+     "per yr %": 24.36,
+     "swing %": 20.09,
+     "sharpe": 1.22,
+     "worst fall %": -24.79,
+     "worst month %": -11.71,
+     "worst yr %": -5.72
+    },
+    "momentum per unit of volatility, 12-month, same period": {
+     "per yr %": 33.83,
+     "swing %": 22.72,
+     "sharpe": 1.42,
+     "worst fall %": -27.76,
+     "worst month %": -16.09,
+     "worst yr %": -13.9
+    },
+    "momentum per unit of volatility, 6-month, same period": {
+     "per yr %": 28.58,
+     "swing %": 21.87,
+     "sharpe": 1.28,
+     "worst fall %": -22.76,
+     "worst month %": -11.61,
+     "worst yr %": -4.05
+    }
+   }
+  }
+ },
+ "passes_both": []
+}
