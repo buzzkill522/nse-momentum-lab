@@ -445,9 +445,10 @@ def trade(state, ticker, qty, price, ts):
 
 
 def adjust_for_splits(state, prices):
-    """After a split or bonus Yahoo rewrites a share's past prices. Each holding remembers one
-    past closing price; if Yahoo now reports a different price for that same day, the share
-    count is changed to match so the holding's value does not jump."""
+    """After a split, bonus or dividend Yahoo rewrites a share's past prices. Each holding
+    remembers one past closing price; if Yahoo now reports a different price for that same day,
+    a small change is paid into cash as a dividend and a large one changes the share count,
+    so the holding's value does not jump."""
     done = prices.index[:-1]                       # finished days (the last row is today, still moving)
     for t, p in state["positions"].items():
         if t not in prices:
@@ -457,7 +458,15 @@ def adjust_for_splits(state, prices):
             same_day = [d for d in prices.index if d.date().isoformat() == ref[0]]
             if same_day and pd.notna(col[same_day[0]]) and col[same_day[0]] > 0:
                 ratio = ref[1] / float(col[same_day[0]])
-                if abs(ratio - 1) > 0.04:
+                if 1.001 < ratio <= 1.04:              # a dividend: pay it into cash
+                    cash = p["qty"] * ref[1] * (1 - 1 / ratio)
+                    state["cash"] += cash
+                    state["dividends_earned"] = state.get("dividends_earned", 0.0) + cash
+                    state.setdefault("dividends", []).append(
+                        {"day": prices.index[-1].date().isoformat(), "ticker": t.replace(".NS", ""),
+                         "qty": p["qty"], "per_share": round(cash / p["qty"], 2), "cash": round(cash, 2)})
+                    print(f"Dividend: {t} paid about Rs {cash:,.0f}")
+                elif abs(ratio - 1) > 0.04:
                     qty = max(1, round(p["qty"] * ratio))
                     state.setdefault("adjustments", []).append(
                         {"day": prices.index[-1].date().isoformat(), "ticker": t.replace(".NS", ""),
@@ -624,6 +633,7 @@ def main():
             return "month"
         return "week" if st["last_risk"] != rkey else None
 
+    early = False
     if demo:
         syms = all_tickers(demo=True)[:600] + INDEX_SYMBOLS
         _, prices, volume = demo_data(syms, 420)
@@ -638,7 +648,11 @@ def main():
                 for k, st in states.items():
                     save_state(st, k)
             return
-        needs = {k: due(k) for k in MODELS}
+        # no trading before 10:00 IST: opening prices are the jumpiest (a manual run can be early)
+        early = now.hour < 10
+        if early:
+            print("Before 10:00 IST - recording values only, no trades.")
+        needs = {k: None if early else due(k) for k in MODELS}
         if "month" in needs.values():                       # re-pick: whole stock pool
             pool = set(held)
             for k, m in MODELS.items():
@@ -658,7 +672,9 @@ def main():
     for k, m in MODELS.items():
         st, cfg = states[k], m["config"]
         accrue_interest(st, now.date(), cfg)
-        if step(st, prices, now.date(), ts, cfg, lambda cfg=cfg: choose_universe(prices, volume, cfg)):
+        if early:
+            pass
+        elif step(st, prices, now.date(), ts, cfg, lambda cfg=cfg: choose_universe(prices, volume, cfg)):
             print(f"{m['name']}: rebalanced. Exposure {st['exposure']:.0%} ->",
                   [t.replace('.NS', '') for t in st["positions"]] or "all cash")
         finish(st, k, prices, ts, demo, names)
