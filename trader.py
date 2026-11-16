@@ -241,6 +241,7 @@ def save_market(ts, fallback=None):
     """Save index levels for the website's market chart: 5-minute points for the latest
     trading day, 15-minute points for five days and daily closes for five years (weekly
     beyond the last year). Never stops the bot if Yahoo fails."""
+    levels = {}                                    # {symbol: latest level}, handed back to the bot
     try:
         import yfinance as yf
         def get(sym, **kw):
@@ -257,17 +258,15 @@ def save_market(ts, fallback=None):
             return df.dropna(subset=["Close"]) if "Close" in df else pd.DataFrame(columns=["Open", "High", "Low", "Close"])
 
         def longest(sym):
-            for period in ("5y", "2y", "1y", "6mo", "1mo"):   # some indices have a short history on Yahoo
+            """Daily prices, as far back as Yahoo will give them."""
+            for period in ("5y", "1y"):
                 df = get(sym, period=period, interval="1d")
-                if len(df) < 2:
-                    try:                                       # a second route to the same data
-                        df = yf.Ticker(sym).history(period=period, interval="1d", auto_adjust=True)
-                        if len(df) and df.index.tz is not None:
-                            df.index = df.index.tz_convert(IST).tz_localize(None).normalize()
-                        df = df.dropna(subset=["Close"])
-                    except Exception as e:  # noqa: BLE001
-                        print(f"{sym} history {period}: {e}")
-                        df = pd.DataFrame(columns=["Open", "High", "Low", "Close"])
+                if len(df) > 1:
+                    return df
+            # Yahoo often has no daily table for the smaller indices: build days from hourly prices
+            h = get(sym, period="2y", interval="1h")
+            if len(h) > 1:
+                df = h.groupby(h.index.normalize()).agg({"Open": "first", "High": "max", "Low": "min", "Close": "last"})
                 if len(df) > 1:
                     return df
             if fallback is not None and sym in fallback:       # the closes the bot itself just downloaded
@@ -281,6 +280,10 @@ def save_market(ts, fallback=None):
             ohlc = longest(sym)
             d, m = ohlc["Close"], get(sym, period="5d", interval="5m")["Close"]
             print(f"Market chart {name}: {len(d)} daily and {len(m)} five-minute points")
+            if len(d) < 2 and len(m) > 1:           # last resort: one point per day from the 5-minute prices
+                ohlc = m.groupby(m.index.normalize()).agg(["first", "max", "min", "last"])
+                ohlc.columns = ["Open", "High", "Low", "Close"]
+                d = ohlc["Close"]
             if len(d) < 2:
                 continue
             day = m.index[-1].date() if len(m) else d.index[-1].date()
@@ -294,6 +297,7 @@ def save_market(ts, fallback=None):
             op = float(row["Open"].iloc[0]) if len(row) and pd.notna(row["Open"].iloc[0]) else float(seen[0])
             yr = pd.concat([ohlc["High"].iloc[-252:], ohlc["Low"].iloc[-252:], d.iloc[-252:]]).dropna()
             old, recent = d.iloc[:-260], d.iloc[-260:]
+            levels[sym] = last
             out.append({
                 "name": name, "last": r2(last), "day": day.isoformat(),
                 "prev_close": r2(before.iloc[-1]) if len(before) else None,
@@ -308,6 +312,7 @@ def save_market(ts, fallback=None):
             MARKET_FILE.write_text(json.dumps({"updated_at": ts, "indices": out}, separators=(",", ":")))
     except Exception as e:  # noqa: BLE001
         print(f"Market chart not updated: {e}")
+    return levels
 
 
 def demo_data(symbols, periods, seed=None):
@@ -710,7 +715,7 @@ def main():
             return "month"
         return "week" if st["last_risk"] != rkey else None
 
-    early = False
+    early, levels = False, {}
     if demo:
         syms = all_tickers(demo=True)[:600] + INDEX_SYMBOLS
         _, prices, volume = demo_data(syms, 420)
@@ -719,7 +724,7 @@ def main():
     else:
         # cheap first look: is the market open today?
         _, prices, volume = download(INDEX_SYMBOLS + held, "1mo")
-        save_market(ts, prices)
+        levels = save_market(ts, prices)
         if prices.index[-1].date() != now.date():
             print(f"No prices for today yet (latest: {prices.index[-1].date()}) - market closed or holiday.")
             if reset:
@@ -743,6 +748,11 @@ def main():
             pool = set(held) | {t for st in states.values() for t in (st["universe"] or [])}
             _, prices, volume = download(sorted(pool) + INDEX_SYMBOLS, "2y")
 
+    for sym, level in levels.items():
+        if sym not in prices:                      # Yahoo sometimes drops an index from the daily table
+            print(f"{sym} missing from daily prices - using its latest 5-minute level")
+            prices, volume = prices.copy(), volume.copy()
+            prices[sym], volume[sym] = level, 0.0
     names = company_names()
     for st in states.values():
         adjust_for_splits(st, prices)
