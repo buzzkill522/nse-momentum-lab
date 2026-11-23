@@ -1,18 +1,18 @@
 {
  "started_at": "2026-11-16T09:30:44+05:30",
  "starting_capital": 1000000.0,
- "cash": 325812.700127025,
+ "cash": 180165.27648073644,
  "positions": {
   "NEULANDLAB.NS": {
-   "qty": 1,
-   "avg_price": 21444.0,
+   "qty": 2,
+   "avg_price": 20997.0,
    "bought_at": "2026-11-16T09:30:44+05:30",
-   "last_buy": "2026-11-16T09:30:44+05:30",
+   "last_buy": "2026-11-23T20:44:38+05:30",
    "ref": [
-    "2026-11-19",
-    21102.0
+    "2026-11-20",
+    20642.0
    ],
-   "last_price": 20642.0
+   "last_price": 20550.0
   },
   "CRAFTSMAN.NS": {
    "qty": 3,
@@ -20,54 +20,54 @@
    "bought_at": "2026-11-16T09:30:44+05:30",
    "last_buy": "2026-11-16T09:30:44+05:30",
    "ref": [
-    "2026-11-19",
-    11930.0
+    "2026-11-20",
+    11723.0
    ],
-   "last_price": 11723.0
+   "last_price": 11649.0
   },
   "NAVINFLUOR.NS": {
-   "qty": 3,
-   "avg_price": 10086.5,
+   "qty": 4,
+   "avg_price": 10103.375,
    "bought_at": "2026-11-16T09:30:44+05:30",
-   "last_buy": "2026-11-16T09:30:44+05:30",
+   "last_buy": "2026-11-23T20:44:38+05:30",
    "ref": [
-    "2026-11-19",
-    10203.0
+    "2026-11-20",
+    10077.0
    ],
-   "last_price": 10077.0
+   "last_price": 10154.0
   },
   "FLUOROCHEM.NS": {
-   "qty": 7,
-   "avg_price": 4685.89990234375,
+   "qty": 9,
+   "avg_price": 4732.366590711806,
    "bought_at": "2026-11-16T09:30:44+05:30",
-   "last_buy": "2026-11-16T09:30:44+05:30",
+   "last_buy": "2026-11-23T20:44:38+05:30",
    "ref": [
-    "2026-11-19",
-    4978.60009765625
+    "2026-11-20",
+    4932.7001953125
    ],
-   "last_price": 4932.7001953125
+   "last_price": 4895.0
   },
   "RADICO.NS": {
-   "qty": 7,
-   "avg_price": 4624.7998046875,
+   "qty": 9,
+   "avg_price": 4627.399848090277,
    "bought_at": "2026-11-16T09:30:44+05:30",
-   "last_buy": "2026-11-16T09:30:44+05:30",
+   "last_buy": "2026-11-23T20:44:38+05:30",
    "ref": [
-    "2026-11-19",
-    4660.0
+    "2026-11-20",
+    4665.0
    ],
-   "last_price": 4665.0
+   "last_price": 4636.5
   },
   "LAURUSLABS.NS": {
-   "qty": 14,
-   "avg_price": 2414.199951171875,
+   "qty": 19,
+   "avg_price": 2402.7525827508225,
    "bought_at": "2026-11-16T09:30:44+05:30",
-   "last_buy": "2026-11-16T09:30:44+05:30",
+   "last_buy": "2026-11-23T20:44:38+05:30",
    "ref": [
-    "2026-11-19",
-    2306.0
+    "2026-11-20",
+    2294.60009765625
    ],
-   "last_price": 2294.60009765625
+   "last_price": 2370.699951171875
   },
   "LALPATHLAB.NS": {
    "qty": 18,
@@ -75,43 +75,43 @@
    "bought_at": "2026-11-16T09:30:44+05:30",
    "last_buy": "2026-11-16T09:30:44+05:30",
    "ref": [
-    "2026-11-19",
-    1963.199951171875
+    "2026-11-20",
+    2006.0
    ],
-   "last_price": 2006.0
+   "last_price": 2040.5
   },
   "SAILIFE.NS": {
-   "qty": 19,
-   "avg_price": 1834.578947368421,
+   "qty": 25,
+   "avg_price": 1828.463994140625,
    "bought_at": "2026-11-16T09:30:44+05:30",
-   "last_buy": "2026-11-16T09:30:44+05:30",
+   "last_buy": "2026-11-23T20:44:38+05:30",
    "ref": [
-    "2026-11-19",
-    1788.4000244140625
+    "2026-11-20",
+    1800.699951171875
    ],
-   "last_price": 1800.699951171875
+   "last_price": 1809.0999755859375
   },
   "NUVAMA.NS": {
-   "qty": 19,
-   "avg_price": 1836.4000244140625,
+   "qty": 26,
+   "avg_price": 1815.3731079101562,
    "bought_at": "2026-11-16T09:30:44+05:30",
-   "last_buy": "2026-11-16T09:30:44+05:30",
+   "last_buy": "2026-11-23T20:44:38+05:30",
    "ref": [
-    "2026-11-19",
-    1834.5999755859375
+    "2026-11-20",
+    1820.800048828125
    ],
-   "last_price": 1820.800048828125
+   "last_price": 1758.300048828125
   },
   "AETHER.NS": {
-   "qty": 20,
-   "avg_price": 1700.0,
+   "qty": 28,
+   "avg_price": 1670.5428641183037,
    "bought_at": "2026-11-16T09:30:44+05:30",
-   "last_buy": "2026-11-16T09:30:44+05:30",
+   "last_buy": "2026-11-23T20:44:38+05:30",
    "ref": [
-    "2026-11-19",
-    1696.5
+    "2026-11-20",
+    1620.300048828125
    ],
-   "last_price": 1620.300048828125
+   "last_price": 1596.9000244140625
   },
   "PVRINOX.NS": {
    "qty": 21,
@@ -119,21 +119,21 @@
    "bought_at": "2026-11-16T09:30:44+05:30",
    "last_buy": "2026-11-16T09:30:44+05:30",
    "ref": [
-    "2026-11-19",
-    1698.800048828125
+    "2026-11-20",
+    1652.199951171875
    ],
-   "last_price": 1652.199951171875
+   "last_price": 1699.699951171875
   },
   "SHYAMMETL.NS": {
-   "qty": 27,
-   "avg_price": 1318.699951171875,
+   "qty": 36,
+   "avg_price": 1308.074951171875,
    "bought_at": "2026-11-16T09:30:44+05:30",
-   "last_buy": "2026-11-16T09:30:44+05:30",
+   "last_buy": "2026-11-23T20:44:38+05:30",
    "ref": [
-    "2026-11-19",
-    1294.0
+    "2026-11-20",
+    1314.300048828125
    ],
-   "last_price": 1314.300048828125
+   "last_price": 1276.199951171875
   },
   "MOTILALOFS.NS": {
    "qty": 29,
@@ -141,10 +141,10 @@
    "bought_at": "2026-11-16T09:30:44+05:30",
    "last_buy": "2026-11-16T09:30:44+05:30",
    "ref": [
-    "2026-11-19",
-    1210.4000244140625
+    "2026-11-20",
+    1205.6500244140625
    ],
-   "last_price": 1205.6500244140625
+   "last_price": 1235.0
   },
   "ACE.NS": {
    "qty": 30,
@@ -152,21 +152,21 @@
    "bought_at": "2026-11-16T09:30:44+05:30",
    "last_buy": "2026-11-16T09:30:44+05:30",
    "ref": [
-    "2026-11-19",
-    1185.9000244140625
+    "2026-11-20",
+    1170.3499755859375
    ],
-   "last_price": 1170.3499755859375
+   "last_price": 1187.449951171875
   },
   "SONACOMS.NS": {
-   "qty": 38,
-   "avg_price": 919.7000122070312,
+   "qty": 52,
+   "avg_price": 910.6269319974459,
    "bought_at": "2026-11-16T09:30:44+05:30",
-   "last_buy": "2026-11-16T09:30:44+05:30",
+   "last_buy": "2026-11-23T20:44:38+05:30",
    "ref": [
-    "2026-11-19",
-    902.0999755859375
+    "2026-11-20",
+    892.5
    ],
-   "last_price": 892.5
+   "last_price": 886.0
   },
   "ABDL.NS": {
    "qty": 46,
@@ -174,21 +174,21 @@
    "bought_at": "2026-11-16T09:30:44+05:30",
    "last_buy": "2026-11-16T09:30:44+05:30",
    "ref": [
-    "2026-11-19",
-    808.2000122070312
+    "2026-11-20",
+    794.2999877929688
    ],
-   "last_price": 794.2999877929688
+   "last_price": 802.8499755859375
   },
   "IIFL.NS": {
-   "qty": 55,
-   "avg_price": 642.7999877929688,
+   "qty": 75,
+   "avg_price": 635.3866577148438,
    "bought_at": "2026-11-16T09:30:44+05:30",
-   "last_buy": "2026-11-16T09:30:44+05:30",
+   "last_buy": "2026-11-23T20:44:38+05:30",
    "ref": [
-    "2026-11-19",
-    644.4500122070312
+    "2026-11-20",
+    611.9500122070312
    ],
-   "last_price": 611.9500122070312
+   "last_price": 615.0
   },
   "HONASA.NS": {
    "qty": 69,
@@ -196,21 +196,21 @@
    "bought_at": "2026-11-16T09:30:44+05:30",
    "last_buy": "2026-11-16T09:30:44+05:30",
    "ref": [
-    "2026-11-19",
-    529.6500244140625
+    "2026-11-20",
+    525.4000244140625
    ],
-   "last_price": 525.4000244140625
+   "last_price": 539.75
   },
   "BHEL.NS": {
-   "qty": 82,
-   "avg_price": 431.6499938964844,
+   "qty": 111,
+   "avg_price": 427.4828815632038,
    "bought_at": "2026-11-16T09:30:44+05:30",
-   "last_buy": "2026-11-16T09:30:44+05:30",
+   "last_buy": "2026-11-23T20:44:38+05:30",
    "ref": [
-    "2026-11-19",
-    435.0
+    "2026-11-20",
+    433.6499938964844
    ],
-   "last_price": 433.6499938964844
+   "last_price": 415.70001220703125
   },
   "WELSPUNLIV.NS": {
    "qty": 143,
@@ -218,10 +218,10 @@
    "bought_at": "2026-11-16T09:30:44+05:30",
    "last_buy": "2026-11-16T09:30:44+05:30",
    "ref": [
-    "2026-11-19",
-    253.13999938964844
+    "2026-11-20",
+    268.7799987792969
    ],
-   "last_price": 268.7799987792969
+   "last_price": 270.760009765625
   }
  },
  "trades": [
@@ -424,69 +424,129 @@
    "value": 35372.48,
    "fee": 0.0,
    "name": "Welspun Living Limited"
+  },
+  {
+   "time": "2026-11-23T20:44:38+05:30",
+   "ticker": "NAVINFLUOR",
+   "side": "BUY",
+   "qty": 1,
+   "price": 10154.0,
+   "value": 10154.0,
+   "fee": 0.0,
+   "name": "Navin Fluorine International Limited"
+  },
+  {
+   "time": "2026-11-23T20:44:38+05:30",
+   "ticker": "NEULANDLAB",
+   "side": "BUY",
+   "qty": 1,
+   "price": 20550.0,
+   "value": 20550.0,
+   "fee": 0.0,
+   "name": "Neuland Laboratories Limited"
+  },
+  {
+   "time": "2026-11-23T20:44:38+05:30",
+   "ticker": "FLUOROCHEM",
+   "side": "BUY",
+   "qty": 2,
+   "price": 4895.0,
+   "value": 9790.0,
+   "fee": 0.0,
+   "name": "Gujarat Fluorochemicals Limited"
+  },
+  {
+   "time": "2026-11-23T20:44:38+05:30",
+   "ticker": "RADICO",
+   "side": "BUY",
+   "qty": 2,
+   "price": 4636.5,
+   "value": 9273.0,
+   "fee": 0.0,
+   "name": "Radico Khaitan Limited"
+  },
+  {
+   "time": "2026-11-23T20:44:38+05:30",
+   "ticker": "LAURUSLABS",
+   "side": "BUY",
+   "qty": 5,
+   "price": 2370.7,
+   "value": 11853.5,
+   "fee": 0.0,
+   "name": "Laurus Labs Limited"
+  },
+  {
+   "time": "2026-11-23T20:44:38+05:30",
+   "ticker": "SAILIFE",
+   "side": "BUY",
+   "qty": 6,
+   "price": 1809.1,
+   "value": 10854.6,
+   "fee": 0.0,
+   "name": "Sai Life Sciences Limited"
+  },
+  {
+   "time": "2026-11-23T20:44:38+05:30",
+   "ticker": "NUVAMA",
+   "side": "BUY",
+   "qty": 7,
+   "price": 1758.3,
+   "value": 12308.1,
+   "fee": 0.0,
+   "name": "Nuvama Wealth Management Limited"
+  },
+  {
+   "time": "2026-11-23T20:44:38+05:30",
+   "ticker": "AETHER",
+   "side": "BUY",
+   "qty": 8,
+   "price": 1596.9,
+   "value": 12775.2,
+   "fee": 0.0,
+   "name": "Aether Industries Limited"
+  },
+  {
+   "time": "2026-11-23T20:44:38+05:30",
+   "ticker": "SHYAMMETL",
+   "side": "BUY",
+   "qty": 9,
+   "price": 1276.2,
+   "value": 11485.8,
+   "fee": 0.0,
+   "name": "Shyam Metalics and Energy Limited"
+  },
+  {
+   "time": "2026-11-23T20:44:38+05:30",
+   "ticker": "SONACOMS",
+   "side": "BUY",
+   "qty": 14,
+   "price": 886.0,
+   "value": 12404.0,
+   "fee": 0.0,
+   "name": "Sona BLW Precision Forgings Limited"
+  },
+  {
+   "time": "2026-11-23T20:44:38+05:30",
+   "ticker": "IIFL",
+   "side": "BUY",
+   "qty": 20,
+   "price": 615.0,
+   "value": 12300.0,
+   "fee": 0.0,
+   "name": "IIFL Finance Limited"
+  },
+  {
+   "time": "2026-11-23T20:44:38+05:30",
+   "ticker": "BHEL",
+   "side": "BUY",
+   "qty": 29,
+   "price": 415.7,
+   "value": 12055.3,
+   "fee": 0.0,
+   "name": "Bharat Heavy Electricals Limited"
   }
  ],
  "history": [
-  {
-   "time": "2026-11-16T09:30:44+05:30",
-   "value": 1000000.0,
-   "pct": 0.0,
-   "benchmark_pct": 0.0
-  },
-  {
-   "time": "2026-11-16T09:48:09+05:30",
-   "value": 999886.67,
-   "pct": -0.011,
-   "benchmark_pct": 0.196
-  },
-  {
-   "time": "2026-11-16T09:51:30+05:30",
-   "value": 1000381.01,
-   "pct": 0.038,
-   "benchmark_pct": null
-  },
-  {
-   "time": "2026-11-16T09:52:53+05:30",
-   "value": 1000541.16,
-   "pct": 0.054,
-   "benchmark_pct": null
-  },
-  {
-   "time": "2026-11-16T09:54:10+05:30",
-   "value": 1000471.16,
-   "pct": 0.047,
-   "benchmark_pct": 0.274
-  },
-  {
-   "time": "2026-11-16T10:41:40+05:30",
-   "value": 997147.35,
-   "pct": -0.285,
-   "benchmark_pct": -0.232
-  },
-  {
-   "time": "2026-11-16T11:51:43+05:30",
-   "value": 995007.92,
-   "pct": -0.499,
-   "benchmark_pct": -0.427
-  },
-  {
-   "time": "2026-11-16T12:16:54+05:30",
-   "value": 995763.15,
-   "pct": -0.424,
-   "benchmark_pct": -0.192
-  },
-  {
-   "time": "2026-11-16T13:47:00+05:30",
-   "value": 992508.98,
-   "pct": -0.749,
-   "benchmark_pct": -0.529
-  },
-  {
-   "time": "2026-11-16T14:42:03+05:30",
-   "value": 993199.91,
-   "pct": -0.68,
-   "benchmark_pct": -0.624
-  },
   {
    "time": "2026-11-16T15:40:03+05:30",
    "value": 994744.07,
@@ -528,10 +588,16 @@
    "value": 1003099.65,
    "pct": 0.31,
    "benchmark_pct": 0.147
+  },
+  {
+   "time": "2026-11-23T20:44:38+05:30",
+   "value": 1004348.2,
+   "pct": 0.435,
+   "benchmark_pct": -0.692
   }
  ],
  "last_rebalance": "2026-11",
- "last_risk": "2026-W47",
+ "last_risk": "2026-W48",
  "universe": [
   "MCX.NS",
   "NETWEB.NS",
@@ -970,22 +1036,22 @@
   "ABDL.NS": 0,
   "IIFL.NS": 0
  },
- "exposure": 0.715,
+ "exposure": 0.922,
  "benchmark_start": 20910.44921875,
  "benchmark": "NIFTYMIDSML400.NS",
  "benchmark_name": "Nifty MidSmallcap 400",
- "interest_day": "2026-11-20",
+ "interest_day": "2026-11-23",
  "holdings": [
   {
    "ticker": "NEULANDLAB",
    "name": "Neuland Laboratories Limited",
-   "qty": 1,
+   "qty": 2,
    "bought_at": "2026-11-16T09:30:44+05:30",
-   "last_buy": "2026-11-16T09:30:44+05:30",
-   "avg_price": 21444.0,
-   "price": 20642.0,
-   "value": 20642.0,
-   "pnl_pct": -3.74
+   "last_buy": "2026-11-23T20:44:38+05:30",
+   "avg_price": 20997.0,
+   "price": 20550.0,
+   "value": 41100.0,
+   "pnl_pct": -2.13
   },
   {
    "ticker": "CRAFTSMAN",
@@ -994,53 +1060,53 @@
    "bought_at": "2026-11-16T09:30:44+05:30",
    "last_buy": "2026-11-16T09:30:44+05:30",
    "avg_price": 11175.0,
-   "price": 11723.0,
-   "value": 35169.0,
-   "pnl_pct": 4.9
+   "price": 11649.0,
+   "value": 34947.0,
+   "pnl_pct": 4.24
   },
   {
    "ticker": "NAVINFLUOR",
    "name": "Navin Fluorine International Limited",
-   "qty": 3,
+   "qty": 4,
    "bought_at": "2026-11-16T09:30:44+05:30",
-   "last_buy": "2026-11-16T09:30:44+05:30",
-   "avg_price": 10086.5,
-   "price": 10077.0,
-   "value": 30231.0,
-   "pnl_pct": -0.09
+   "last_buy": "2026-11-23T20:44:38+05:30",
+   "avg_price": 10103.38,
+   "price": 10154.0,
+   "value": 40616.0,
+   "pnl_pct": 0.5
   },
   {
    "ticker": "FLUOROCHEM",
    "name": "Gujarat Fluorochemicals Limited",
-   "qty": 7,
+   "qty": 9,
    "bought_at": "2026-11-16T09:30:44+05:30",
-   "last_buy": "2026-11-16T09:30:44+05:30",
-   "avg_price": 4685.9,
-   "price": 4932.7,
-   "value": 34528.9,
-   "pnl_pct": 5.27
+   "last_buy": "2026-11-23T20:44:38+05:30",
+   "avg_price": 4732.37,
+   "price": 4895.0,
+   "value": 44055.0,
+   "pnl_pct": 3.44
   },
   {
    "ticker": "RADICO",
    "name": "Radico Khaitan Limited",
-   "qty": 7,
+   "qty": 9,
    "bought_at": "2026-11-16T09:30:44+05:30",
-   "last_buy": "2026-11-16T09:30:44+05:30",
-   "avg_price": 4624.8,
-   "price": 4665.0,
-   "value": 32655.0,
-   "pnl_pct": 0.87
+   "last_buy": "2026-11-23T20:44:38+05:30",
+   "avg_price": 4627.4,
+   "price": 4636.5,
+   "value": 41728.5,
+   "pnl_pct": 0.2
   },
   {
    "ticker": "LAURUSLABS",
    "name": "Laurus Labs Limited",
-   "qty": 14,
+   "qty": 19,
    "bought_at": "2026-11-16T09:30:44+05:30",
-   "last_buy": "2026-11-16T09:30:44+05:30",
-   "avg_price": 2414.2,
-   "price": 2294.6,
-   "value": 32124.4,
-   "pnl_pct": -4.95
+   "last_buy": "2026-11-23T20:44:38+05:30",
+   "avg_price": 2402.75,
+   "price": 2370.7,
+   "value": 45043.3,
+   "pnl_pct": -1.33
   },
   {
    "ticker": "LALPATHLAB",
@@ -1049,42 +1115,42 @@
    "bought_at": "2026-11-16T09:30:44+05:30",
    "last_buy": "2026-11-16T09:30:44+05:30",
    "avg_price": 1976.0,
-   "price": 2006.0,
-   "value": 36108.0,
-   "pnl_pct": 1.52
+   "price": 2040.5,
+   "value": 36729.0,
+   "pnl_pct": 3.26
   },
   {
    "ticker": "SAILIFE",
    "name": "Sai Life Sciences Limited",
-   "qty": 19,
+   "qty": 25,
    "bought_at": "2026-11-16T09:30:44+05:30",
-   "last_buy": "2026-11-16T09:30:44+05:30",
-   "avg_price": 1834.58,
-   "price": 1800.7,
-   "value": 34213.3,
-   "pnl_pct": -1.85
+   "last_buy": "2026-11-23T20:44:38+05:30",
+   "avg_price": 1828.46,
+   "price": 1809.1,
+   "value": 45227.5,
+   "pnl_pct": -1.06
   },
   {
    "ticker": "NUVAMA",
    "name": "Nuvama Wealth Management Limited",
-   "qty": 19,
+   "qty": 26,
    "bought_at": "2026-11-16T09:30:44+05:30",
-   "last_buy": "2026-11-16T09:30:44+05:30",
-   "avg_price": 1836.4,
-   "price": 1820.8,
-   "value": 34595.2,
-   "pnl_pct": -0.85
+   "last_buy": "2026-11-23T20:44:38+05:30",
+   "avg_price": 1815.37,
+   "price": 1758.3,
+   "value": 45715.8,
+   "pnl_pct": -3.14
   },
   {
    "ticker": "AETHER",
    "name": "Aether Industries Limited",
-   "qty": 20,
+   "qty": 28,
    "bought_at": "2026-11-16T09:30:44+05:30",
-   "last_buy": "2026-11-16T09:30:44+05:30",
-   "avg_price": 1700.0,
-   "price": 1620.3,
-   "value": 32406.0,
-   "pnl_pct": -4.69
+   "last_buy": "2026-11-23T20:44:38+05:30",
+   "avg_price": 1670.54,
+   "price": 1596.9,
+   "value": 44713.2,
+   "pnl_pct": -4.41
   },
   {
    "ticker": "PVRINOX",
@@ -1093,20 +1159,20 @@
    "bought_at": "2026-11-16T09:30:44+05:30",
    "last_buy": "2026-11-16T09:30:44+05:30",
    "avg_price": 1642.7,
-   "price": 1652.2,
-   "value": 34696.2,
-   "pnl_pct": 0.58
+   "price": 1699.7,
+   "value": 35693.7,
+   "pnl_pct": 3.47
   },
   {
    "ticker": "SHYAMMETL",
    "name": "Shyam Metalics and Energy Limited",
-   "qty": 27,
+   "qty": 36,
    "bought_at": "2026-11-16T09:30:44+05:30",
-   "last_buy": "2026-11-16T09:30:44+05:30",
-   "avg_price": 1318.7,
-   "price": 1314.3,
-   "value": 35486.1,
-   "pnl_pct": -0.33
+   "last_buy": "2026-11-23T20:44:38+05:30",
+   "avg_price": 1308.07,
+   "price": 1276.2,
+   "value": 45943.2,
+   "pnl_pct": -2.44
   },
   {
    "ticker": "MOTILALOFS",
@@ -1115,9 +1181,9 @@
    "bought_at": "2026-11-16T09:30:44+05:30",
    "last_buy": "2026-11-16T09:30:44+05:30",
    "avg_price": 1221.65,
-   "price": 1205.65,
-   "value": 34963.85,
-   "pnl_pct": -1.31
+   "price": 1235.0,
+   "value": 35815.0,
+   "pnl_pct": 1.09
   },
   {
    "ticker": "ACE",
@@ -1126,20 +1192,20 @@
    "bought_at": "2026-11-16T09:30:44+05:30",
    "last_buy": "2026-11-16T09:30:44+05:30",
    "avg_price": 1168.9,
-   "price": 1170.35,
-   "value": 35110.5,
-   "pnl_pct": 0.12
+   "price": 1187.45,
+   "value": 35623.5,
+   "pnl_pct": 1.59
   },
   {
    "ticker": "SONACOMS",
    "name": "Sona BLW Precision Forgings Limited",
-   "qty": 38,
+   "qty": 52,
    "bought_at": "2026-11-16T09:30:44+05:30",
-   "last_buy": "2026-11-16T09:30:44+05:30",
-   "avg_price": 919.7,
-   "price": 892.5,
-   "value": 33915.0,
-   "pnl_pct": -2.96
+   "last_buy": "2026-11-23T20:44:38+05:30",
+   "avg_price": 910.63,
+   "price": 886.0,
+   "value": 46072.0,
+   "pnl_pct": -2.7
   },
   {
    "ticker": "ABDL",
@@ -1148,20 +1214,20 @@
    "bought_at": "2026-11-16T09:30:44+05:30",
    "last_buy": "2026-11-16T09:30:44+05:30",
    "avg_price": 762.8,
-   "price": 794.3,
-   "value": 36537.8,
-   "pnl_pct": 4.13
+   "price": 802.85,
+   "value": 36931.1,
+   "pnl_pct": 5.25
   },
   {
    "ticker": "IIFL",
    "name": "IIFL Finance Limited",
-   "qty": 55,
+   "qty": 75,
    "bought_at": "2026-11-16T09:30:44+05:30",
-   "last_buy": "2026-11-16T09:30:44+05:30",
-   "avg_price": 642.8,
-   "price": 611.95,
-   "value": 33657.25,
-   "pnl_pct": -4.8
+   "last_buy": "2026-11-23T20:44:38+05:30",
+   "avg_price": 635.39,
+   "price": 615.0,
+   "value": 46125.0,
+   "pnl_pct": -3.21
   },
   {
    "ticker": "HONASA",
@@ -1170,20 +1236,20 @@
    "bought_at": "2026-11-16T09:30:44+05:30",
    "last_buy": "2026-11-16T09:30:44+05:30",
    "avg_price": 511.8,
-   "price": 525.4,
-   "value": 36252.6,
-   "pnl_pct": 2.66
+   "price": 539.75,
+   "value": 37242.75,
+   "pnl_pct": 5.46
   },
   {
    "ticker": "BHEL",
    "name": "Bharat Heavy Electricals Limited",
-   "qty": 82,
+   "qty": 111,
    "bought_at": "2026-11-16T09:30:44+05:30",
-   "last_buy": "2026-11-16T09:30:44+05:30",
-   "avg_price": 431.65,
-   "price": 433.65,
-   "value": 35559.3,
-   "pnl_pct": 0.46
+   "last_buy": "2026-11-23T20:44:38+05:30",
+   "avg_price": 427.48,
+   "price": 415.7,
+   "value": 46142.7,
+   "pnl_pct": -2.76
   },
   {
    "ticker": "WELSPUNLIV",
@@ -1192,9 +1258,9 @@
    "bought_at": "2026-11-16T09:30:44+05:30",
    "last_buy": "2026-11-16T09:30:44+05:30",
    "avg_price": 247.36,
-   "price": 268.78,
-   "value": 38435.54,
-   "pnl_pct": 8.66
+   "price": 270.76,
+   "value": 38718.68,
+   "pnl_pct": 9.46
   }
  ],
  "model": {
@@ -1232,9 +1298,9 @@
   "description": "The bot picks from the Nifty MidSmallcap 400 index. From the stocks in an uptrend it holds the 20 calmest stocks among the top third by 6-month rise. Stocks are re-picked monthly. At most 4 stocks may come from one industry. It invests less when the market is unusually jumpy (checked weekly). Idle cash is assumed to earn 6% a year, as in a liquid fund. No trading fees are charged. Prices from Yahoo Finance (may be delayed ~15 min).",
   "listed": 2391
  },
- "updated_at": "2026-11-20T19:00:43+05:30",
+ "updated_at": "2026-11-23T20:44:38+05:30",
  "demo": false,
- "interest_earned": 207.795124431233,
+ "interest_earned": 363.8715391778278,
  "dividends_earned": 1193.5270538330074,
  "dividends": [
   {
